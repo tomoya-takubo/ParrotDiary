@@ -1,19 +1,3 @@
-# Original Product - 要件定義
-
-## Skill Doc を読む
-
-- [自分や誰かのための制作物を作ることができる](/skilldocs/BUSINESS_THINKING.md)
-- [顧客が求めている要求を明確にできる](/skilldocs/REQUIREMENTS_ANALYSIS.md)
-- [要求をシステム要件として定義できる](/skilldocs/REQUIREMENT_DEFINITION.md)
-
-## 要件定義の作成
-
-### 目的
-
-オリジナルプロダクトの要件定義を決めます。
-
-### オリジナルプロダクトのテーマ及び要件を以下の形式で記載
-
 1. **一言サービスコンセプト（サービスのキャッチコピーを一言で）：**  
    『楽しく続ける、PartyParrotと一緒に』
 2. **誰のどんな課題を解決するのか？**  
