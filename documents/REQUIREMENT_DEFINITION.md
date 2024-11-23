@@ -1,11 +1,5 @@
 # Original Product - 要件定義
 
-## Skill Doc を読む
-
-- [自分や誰かのための制作物を作ることができる](/skilldocs/BUSINESS_THINKING.md)
-- [顧客が求めている要求を明確にできる](/skilldocs/REQUIREMENTS_ANALYSIS.md)
-- [要求をシステム要件として定義できる](/skilldocs/REQUIREMENT_DEFINITION.md)
-
 ## 要件定義の作成
 
 ### 目的
