@@ -58,9 +58,9 @@
       4. 活動記録の可視化（ヒートマップ）（must）
       5. PartyParrotコレクション（must）
       6. PartyParrotガチャ（must）
-      7. PartyParrotスロットセット（能力強化）（need）
-      8. 復習通知（need）
-      9. 新しいPartyParrotが追加されたときの通知システム（need）
+      7. PartyParrotスロットセット（能力強化）（want）
+      8. 復習通知（want）
+      9. 新しいPartyParrotが追加されたときの通知システム（want）
 6. **非機能要件**  
    1. パフォーマンス要件
       - ページロード2秒以内
