@@ -52,10 +52,14 @@
 .modalCard {
   width: 100%;
   max-width: 28rem;
+  background-color: white;  /* 追加：背景色を白に */
+  border-radius: 0.5rem;    /* 追加：角を丸く */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  /* 追加：影をつける */
 }
 
 .modalContent {
   padding: 1.5rem;
+  background-color: white;  /* 追加：背景色を白に */
 }
 
 .closeButton {
