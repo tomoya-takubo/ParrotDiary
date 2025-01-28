@@ -1,19 +1,27 @@
 'use client';
+import { useState } from 'react';
+import AuthModal from './AuthModal';
 import styles from '../styles/Home.module.css'
 
-export default function StartButton(){
+export default function StartButton() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   function handleStart(): void {
-    // Todo: 後でモーダルを実装する際に使用
-    console.log("はじめるボタンがクリックされました");
+    setIsModalOpen(true);
   }
 
   return (
-    <button 
-    className={styles.button}
-    onClick={handleStart}
-  >
-    はじめる
-  </button>
-  )
+    <>
+      <button 
+        className={styles.button}
+        onClick={handleStart}
+      >
+        はじめる
+      </button>
+      <AuthModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+      />
+    </>
+  );
 }
