@@ -3,8 +3,6 @@ import StartButton from './components/StartButton';
 import styles from './styles/Home.module.css';
 
 export default function Home() {
-  
-  
   return (
     <main className={styles.container}>
       <div className={styles.wrapper}>
