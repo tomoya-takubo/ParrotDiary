@@ -18,7 +18,30 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           <div className={styles.closeButton}>
             <button onClick={onClose}>✕</button>
           </div>
-          <h2>認証モーダル</h2>
+          <div className={styles.modalInner}>
+            <h2 className={styles.modalTitle}>サインイン</h2>
+            <form className={styles.form}>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>メールアドレス</label>
+                <input
+                  type='email'
+                  className={styles.input}
+                  required
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>パスワード</label>
+                <input 
+                  type="password" 
+                  className={styles.input}
+                  required
+                />
+              </div>
+              <button type='submit' className={styles.submitButton}>
+                サインイン
+              </button>
+            </form>
+          </div>
         </CardContent>
       </Card>
     </div>
