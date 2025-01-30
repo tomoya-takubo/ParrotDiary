@@ -31,7 +31,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           </div>
           <div className={styles.modalInner}>
             <h2 className={styles.modalTitle}>サインイン</h2>
-            <form className={styles.form}>
+
+            <form className={styles.form} onSubmit={handleSubmit}>
 
               {/* メールアドレス入力部 */}
               <div className={styles.formGroup}>
@@ -62,6 +63,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               </button>
 
             </form>
+
           </div>
         </CardContent>
       </Card>
