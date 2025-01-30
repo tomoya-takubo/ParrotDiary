@@ -60,6 +60,7 @@
 .modalContent {
   padding: 1.5rem;
   background-color: white;  /* 追加：背景色を白に */
+  border-radius: 0.5rem;    /* 追加：角を丸く */
 }
 
 .closeButton {
