@@ -115,3 +115,28 @@
 .submitButton:hover {
   background-color: #2563eb;
 }
+
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tab {
+  padding-bottom: 0.5rem;
+  color: #6b7280;
+  font-size: 1.125rem;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+}
+
+.tab:hover {
+  color: #374151;
+}
+
+.activeTab {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
+}
