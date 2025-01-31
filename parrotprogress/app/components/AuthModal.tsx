@@ -3,6 +3,7 @@
 import { Card, CardContent } from './ui/Card';
 import styles from '../styles/Home.module.css';
 import { useState } from 'react';
+import ForgotPasswordButton from './ForgotPasswordButton'
 
 type AuthModalProps = {
   isOpen: boolean;
@@ -143,8 +144,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               )}
 
               <button type="submit" className={styles.submitButton}>
-                {isSignUp ? 'アカウントを作成' : 'サインイン'}
-              </button>
+                  {isSignUp ? 'アカウントを作成' : 'サインイン'}
+                </button>
+                {!isSignUp && <ForgotPasswordButton />}
 
             </form>
 

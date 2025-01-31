@@ -167,3 +167,17 @@
   border: none;
   color: #6b7280;
 }
+
+.forgotPasswordButton {
+  display: block;
+  width: 100%;
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin-top: 1rem;
+  padding: 0.5rem;
+}
+
+.forgotPasswordButton:hover {
+  color: #374151;
+}
