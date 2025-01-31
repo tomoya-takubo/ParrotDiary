@@ -17,6 +17,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isSignUp, setIsSignUp]= useState(false); // サインアップボード管理
   const [passwordError, setPasswordError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   // パスワードの検証
   const validatePassword = (pass: string) => {
@@ -103,20 +104,30 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
               {/* パスワード入力部 */}
               <div className={styles.formGroup}>
-                <label className={styles.label}>パスワード</label>
-                <input
-                  type="password"
-                  className={`${styles.input} ${passwordError ? styles.inputError : ''}`}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-                {password && (
-                    <p className={styles.errorMessage}>{passwordError}</p>
-                )}
-
-              </div>
-
+  <label className={styles.label}>パスワード</label>
+  <div className={styles.passwordInput}>
+    <input 
+      type={showPassword ? "text" : "password"}
+      className={`${styles.input} ${passwordError ? styles.inputError : ''}`}
+      value={password}
+      onChange={(e) => {
+        setPassword(e.target.value);
+        validatePassword(e.target.value);
+      }}
+      required
+    />
+    <button 
+      type="button"
+      className={styles.togglePassword}
+      onClick={() => setShowPassword(!showPassword)}
+    >
+      {showPassword ? "非表示" : "表示"}
+    </button>
+  </div>
+  {passwordError && (
+    <p className={styles.errorMessage}>{passwordError}</p>
+  )}
+</div>
 
               {isSignUp && (
                 <div className={styles.formGroup}>
