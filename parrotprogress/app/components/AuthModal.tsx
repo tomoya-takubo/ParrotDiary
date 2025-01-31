@@ -14,13 +14,27 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   // フォームの状態を管理
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isSignUp, setIsSignUp]= useState(false); // サインアップボード管理
 
   // フォーム送信時の処理
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('送信されたデータ: ', {email, password, mode: isSignUp ? 'サインアップ' : 'サインイン'})
+    console.log('送信されたデータ: ', {
+      email, 
+      password, 
+      ...(isSignUp && {confirmPassword}),
+      mode: isSignUp ? 'サインアップ' : 'サインイン'
+    });
     // TODO: 後で認証処理を実装
+  }
+
+  // タブ切り替え時にフォームをリセット
+  const handleModeChange = (signUp: boolean) => {
+    setIsSignUp(signUp);
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
   }
 
   if (!isOpen) return null;
@@ -38,18 +52,21 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             </h2>
             {/* タブ切り替えを追加 */}
             <div className={styles.tabs}>
+              
               <button
-                className={`${styles.tab} ${isSignUp? styles.actibtaTab : ''}`}
+                className={`${styles.tab} ${!isSignUp ? styles.activeTab : ''}`}
                 onClick={() => setIsSignUp(false)}
               >
                 サインイン
               </button>
+
               <button
-                className={`${styles.tab} ${isSignUp? styles.actibtaTab : ''}`}
+                className={`${styles.tab} ${isSignUp ? styles.activeTab : ''}`}
                 onClick={() => setIsSignUp(true)}
               >
                 アカウント作成
               </button>
+              
             </div>
             <form className={styles.form} onSubmit={handleSubmit}>
 
@@ -77,8 +94,22 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 />
               </div>
 
+
+              {isSignUp && (
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>パスワード（確認）</label>
+                  <input 
+                    type="password" 
+                    className={styles.input}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
+
               <button type="submit" className={styles.submitButton}>
-                {isSignUp ? 'アカウント作成' : 'サインイン'}
+                {isSignUp ? 'アカウントを作成' : 'サインイン'}
               </button>
 
             </form>
