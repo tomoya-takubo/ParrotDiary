@@ -16,10 +16,29 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isSignUp, setIsSignUp]= useState(false); // サインアップボード管理
+  const [passwordError, setPasswordError] = useState('');
+
+  // パスワードの検証
+  const validatePassword = (pass: string) => {
+    if (pass.length < 8) {
+      setPasswordError('パスワードは8文字以上必要です');
+      return false;
+    }
+    setPasswordError('');
+    return true;
+  };
 
   // フォーム送信時の処理
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!validatePassword(password)) return;
+
+    if (isSignUp && password !== confirmPassword) {
+      setPasswordError('パスワードが一致しません');
+      return;
+    }
+
     console.log('送信されたデータ: ', {
       email, 
       password, 
@@ -52,21 +71,21 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             </h2>
             {/* タブ切り替えを追加 */}
             <div className={styles.tabs}>
-              
+
               <button
                 className={`${styles.tab} ${!isSignUp ? styles.activeTab : ''}`}
-                onClick={() => setIsSignUp(false)}
+                onClick={() => handleModeChange(false)}
               >
                 サインイン
               </button>
 
               <button
                 className={`${styles.tab} ${isSignUp ? styles.activeTab : ''}`}
-                onClick={() => setIsSignUp(true)}
+                onClick={() => handleModeChange(true)}
               >
                 アカウント作成
               </button>
-              
+
             </div>
             <form className={styles.form} onSubmit={handleSubmit}>
 
@@ -87,11 +106,15 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 <label className={styles.label}>パスワード</label>
                 <input
                   type="password"
-                  className={styles.input}
+                  className={`${styles.input} ${passwordError ? styles.inputError : ''}`}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
+                {password && (
+                    <p className={styles.errorMessage}>{passwordError}</p>
+                )}
+
               </div>
 
 
