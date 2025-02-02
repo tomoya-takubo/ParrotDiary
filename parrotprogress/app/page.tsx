@@ -9,6 +9,12 @@ export default function Home() {
         <div className={styles.hero}>
           <h1 className={styles.title}> ぱろっとぷろぐれす </h1>
           <p className={styles.subtitle}>PartyParrotと一緒に楽しく継続</p>
+          <div className={styles.heroParrot}>
+            <img
+              src="/images/60fpsparrot.gif"  /* パスを修正 */
+              alt="Party Parrot"
+            />
+          </div>
           <StartButton />
         </div>
       </div>
