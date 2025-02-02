@@ -109,13 +109,13 @@ const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
 };
 
 // フォームに入力があるか確認
-const hasFormInput = (): boolean => {
+const hasFormInput = useCallback((): boolean => {
   if (modalMode === 'reset') {
     return email.length > 0;
   }
   return email.length > 0 || password.length > 0 || 
     (modalMode === 'signup' && confirmPassword.length > 0);
-};
+}, [email, password, confirmPassword, modalMode]);
 
 // モーダルを閉じる前の確認
 const confirmClose = (): boolean => {
@@ -151,7 +151,25 @@ const confirmClose = (): boolean => {
     }
   }, [isOpen, handleClose]);
 
+  // ブラウザのページ離脱防止イベントの設定
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasFormInput()) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
 
+    // モーダルが開いている時のみイベントリスナーを設定
+    if (isOpen) {
+      window.addEventListener('beforeunload', handleBeforeUnload);
+      
+      // クリーンアップ関数
+      return () => {
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+      };
+    }
+  }, [isOpen, hasFormInput]);
 
   if (!isOpen) return null;
 
