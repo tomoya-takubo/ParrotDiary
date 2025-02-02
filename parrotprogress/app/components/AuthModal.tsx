@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from './ui/Card';
 import styles from '../styles/Home.module.css';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 type AuthModalProps = {
   isOpen: boolean;
@@ -24,15 +24,6 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [emailError, setEmailError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-
-  // useEffectでisOpenの変更を監視
-  useEffect(() => {
-    if (isOpen) {
-      setIsVisible(true);
-    } else {
-      setIsVisible(false);
-    }
-  }, [isOpen]);
 
   // サインインとサインアップのハンドラ
   const handleAuthSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -103,11 +94,11 @@ const validateEmail = (email: string) => {
 };
 
 // モーダルを閉じる処理
-const handleClose = () => {
+// useState等の後に追加
+const handleClose = useCallback(() => {
   setIsVisible(false);
-  // アニメーション完了後にonCloseを実行
   setTimeout(onClose, 200);
-};
+}, [onClose]);
 
 // オーバーレイクリックのハンドラを追加
 const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -116,6 +107,36 @@ const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     handleClose();
   }
 };
+
+  // useEffectでisOpenの変更を監視
+  useEffect(() => {
+    if (isOpen) {
+      setIsVisible(true);
+    } else {
+      setIsVisible(false);
+    }
+  }, [isOpen]);
+
+  // ESCキー検知のためのuseEffectを追加
+  useEffect(() => {
+    const handleEscKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleClose();
+      }
+    };
+
+    // モーダルが開いている時のみイベントリスナーを設定
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscKey);
+      
+      // クリーンアップ関数
+      return () => {
+        document.removeEventListener('keydown', handleEscKey);
+      };
+    }
+  }, [isOpen, handleClose]);
+
+
 
   if (!isOpen) return null;
 
