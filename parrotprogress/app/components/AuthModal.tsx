@@ -94,18 +94,33 @@ const validateEmail = (email: string) => {
 };
 
 // モーダルを閉じる処理
-// useState等の後に追加
 const handleClose = useCallback(() => {
-  setIsVisible(false);
-  setTimeout(onClose, 200);
+  if (confirmClose()) {
+    setIsVisible(false);
+    setTimeout(onClose, 200);
+  }
 }, [onClose]);
 
 // オーバーレイクリックのハンドラを追加
 const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
-  // モーダル本体をクリックした場合は閉じない
   if (e.target === e.currentTarget) {
     handleClose();
   }
+};
+
+// フォームに入力があるか確認
+const hasFormInput = (): boolean => {
+  if (modalMode === 'reset') {
+    return email.length > 0;
+  }
+  return email.length > 0 || password.length > 0 || 
+    (modalMode === 'signup' && confirmPassword.length > 0);
+};
+
+// モーダルを閉じる前の確認
+const confirmClose = (): boolean => {
+  if (!hasFormInput()) return true;
+  return window.confirm('入力内容が破棄されます。よろしいですか？');
 };
 
   // useEffectでisOpenの変更を監視
