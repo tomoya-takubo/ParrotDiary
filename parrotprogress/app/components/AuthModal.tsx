@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from './ui/Card';
 import styles from '../styles/Home.module.css';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 type AuthModalProps = {
   isOpen: boolean;
@@ -23,6 +23,16 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+// useEffectでisOpenの変更を監視
+useEffect(() => {
+  if (isOpen) {
+    setIsVisible(true);
+  } else {
+    setIsVisible(false);
+  }
+}, [isOpen]);
 
   // サインインとサインアップのハンドラ
   const handleAuthSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -110,10 +120,18 @@ const validateEmail = (email: string) => {
   return true;
 };
 
+// モーダルを閉じる処理
+const handleClose = () => {
+  setIsVisible(false);
+  // アニメーション完了後にonCloseを実行
+  setTimeout(onClose, 200);
+};
+
+
   if (!isOpen) return null;
 
   return (
-    <div className={styles.modal}>
+    <div className={`${styles.modal} ${isVisible ? styles.modalVisible : ''}`}>
       <Card className={styles.modalCard}>
         <CardContent className={styles.modalContent}>
           <div className={styles.closeButton}>

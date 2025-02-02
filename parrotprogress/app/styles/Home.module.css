@@ -211,3 +211,37 @@
     transform: rotate(360deg);
   }
 }
+
+/* モーダルのフェードイン/アウト */
+.modal {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 5s;
+}
+
+.modalVisible {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* モーダルカードのスライドイン/アウト */
+.modalCard {
+  width: 100%;
+  max-width: 28rem;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transform: translateY(20px);
+  transition: transform 0.2s;
+}
+
+.modalVisible .modalCard {
+  transform: translateY(0);
+}
