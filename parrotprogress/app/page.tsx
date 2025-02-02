@@ -2,6 +2,10 @@
 import { BookOpen, Gift, Timer } from 'lucide-react';
 import StartButton from './components/StartButton';
 import styles from './styles/Home.module.css';
+import { useEffect, useState } from 'react';
+import { ParrotCollection } from './components/ParrotCollection';
+
+
 
 export default function Home() {
   return (
@@ -58,7 +62,15 @@ export default function Home() {
           </div>
         </div>
       </section>
-
+      <section className={styles.collection}>
+        <div className={styles.collectionInner}>
+          <h2 className={styles.collectionTitle}>可愛いPartyParrotを集めよう！</h2>
+          <ParrotCollection />
+          <p className={styles.collectionDescription}>
+            目標達成や継続記録でレアなPartyParrotをゲット！
+          </p>
+        </div>
+      </section>
     </main>
   );
 }
