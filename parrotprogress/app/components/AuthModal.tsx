@@ -21,6 +21,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [emailError, setEmailError] = useState('');
 
   // サインインとサインアップのハンドラ
   const handleAuthSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -44,6 +45,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   // パスワードリセットのハンドラ
   const handleResetPassword = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!validateEmail(email)) return;
     console.log('リセット用メール送信:', email);
   };
 
@@ -82,7 +84,25 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setPassword('');
     setConfirmPassword('');
     setPasswordError('');
+    setEmailError('');
   }
+
+  // emailバリデーション関数を追加
+const validateEmail = (email: string) => {
+  if (!email) {
+    setEmailError('メールアドレスを入力してください');
+    return false;
+  }
+  
+  const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+  if (!emailRegex.test(email)) {
+    setEmailError('有効なメールアドレスを入力してください');
+    return false;
+  }
+
+  setEmailError('');
+  return true;
+};
 
   if (!isOpen) return null;
 
@@ -105,11 +125,18 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   <label className={styles.label}>メールアドレス</label>
                   <input 
                     type="email" 
-                    className={styles.input}
+                    className={`${styles.input} ${emailError ? styles.inputError : ''}`}
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      validateEmail(e.target.value);
+                      }
+                    }
                     required
                   />
+                  {emailError && (
+                      <p className={styles.errorMessage}>{emailError}</p>
+                  )}
                 </div>
                 <button type="submit" className={styles.submitButton}>
                   送信する
@@ -136,7 +163,6 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 >
                   サインイン
                 </button>
-
                 <button
                   className={`${styles.tab} ${modalMode === 'signup' ? styles.activeTab : ''}`}
                   onClick={() => handleModeChange('signup')}
@@ -152,11 +178,17 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                     type="email"
                     className={styles.input}
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      validateEmail(e.target.value);
+                      }
+                    }
                     required
                   />
+                  {emailError && (
+                      <p className={styles.errorMessage}>{emailError}</p>
+                  )}
                 </div>
-
                 {/* パスワード入力部 */}
                 <div className={styles.formGroup}>
                   <label className={styles.label}>パスワード</label>
