@@ -222,13 +222,13 @@
   justify-content: center;
   padding: 1rem;
   opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.2s, visibility 5s;
+  pointer-events: none;  /* visibility: hidden の代わりに */
+  transition: opacity 0.2s;
 }
 
 .modalVisible {
   opacity: 1;
-  visibility: visible;
+  pointer-events: auto;  /* visibility: visible の代わりに */
 }
 
 /* モーダルカードのスライドイン/アウト */

@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from './ui/Card';
 import styles from '../styles/Home.module.css';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 type AuthModalProps = {
   isOpen: boolean;
@@ -24,6 +24,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [emailError, setEmailError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+
+  const emailInputRef = useRef<HTMLInputElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   // サインインとサインアップのハンドラ
   const handleAuthSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -77,51 +80,51 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   }
 
   // emailバリデーション関数を追加
-const validateEmail = (email: string) => {
-  if (!email) {
-    setEmailError('メールアドレスを入力してください');
-    return false;
-  }
-  
-  const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
-  if (!emailRegex.test(email)) {
-    setEmailError('有効なメールアドレスを入力してください');
-    return false;
-  }
+  const validateEmail = (email: string) => {
+    if (!email) {
+      setEmailError('メールアドレスを入力してください');
+      return false;
+    }
+    
+    const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+    if (!emailRegex.test(email)) {
+      setEmailError('有効なメールアドレスを入力してください');
+      return false;
+    }
 
-  setEmailError('');
-  return true;
-};
+    setEmailError('');
+    return true;
+  };
 
-// モーダルを閉じる処理
-const handleClose = useCallback(() => {
-  if (confirmClose()) {
-    setIsVisible(false);
-    setTimeout(onClose, 200);
-  }
-}, [onClose]);
+  // モーダルを閉じる処理
+  const handleClose = useCallback(() => {
+    if (confirmClose()) {
+      setIsVisible(false);
+      setTimeout(onClose, 200);
+    }
+  }, [onClose]);
 
-// オーバーレイクリックのハンドラを追加
-const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
-  if (e.target === e.currentTarget) {
-    handleClose();
-  }
-};
+  // オーバーレイクリックのハンドラを追加
+  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      handleClose();
+    }
+  };
 
-// フォームに入力があるか確認
-const hasFormInput = useCallback((): boolean => {
-  if (modalMode === 'reset') {
-    return email.length > 0;
-  }
-  return email.length > 0 || password.length > 0 || 
-    (modalMode === 'signup' && confirmPassword.length > 0);
-}, [email, password, confirmPassword, modalMode]);
+  // フォームに入力があるか確認
+  const hasFormInput = useCallback((): boolean => {
+    if (modalMode === 'reset') {
+      return email.length > 0;
+    }
+    return email.length > 0 || password.length > 0 || 
+      (modalMode === 'signup' && confirmPassword.length > 0);
+  }, [email, password, confirmPassword, modalMode]);
 
-// モーダルを閉じる前の確認
-const confirmClose = (): boolean => {
-  if (!hasFormInput()) return true;
-  return window.confirm('入力内容が破棄されます。よろしいですか？');
-};
+  // モーダルを閉じる前の確認
+  const confirmClose = (): boolean => {
+    if (!hasFormInput()) return true;
+    return window.confirm('入力内容が破棄されます。よろしいですか？');
+  };
 
   // useEffectでisOpenの変更を監視
   useEffect(() => {
@@ -171,10 +174,52 @@ const confirmClose = (): boolean => {
     }
   }, [isOpen, hasFormInput]);
 
+
+    // モーダルを開いた時にメールアドレス入力欄にフォーカス
+    useEffect(() => {
+      if (isOpen && isVisible) {
+        emailInputRef.current?.focus();
+      }
+    }, [isOpen, isVisible]);
+  
+    // フォーカストラップの実装
+    useEffect(() => {
+      const handleTabKey = (e: KeyboardEvent) => {
+        if (e.key === 'Tab' && modalRef.current) {
+          const focusableElements = modalRef.current.querySelectorAll(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          );
+          const firstElement = focusableElements[0] as HTMLElement;
+          const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+  
+          if (e.shiftKey) {
+            if (document.activeElement === firstElement) {
+              e.preventDefault();
+              lastElement.focus();
+            }
+          } else {
+            if (document.activeElement === lastElement) {
+              e.preventDefault();
+              firstElement.focus();
+            }
+          }
+        }
+      };
+  
+      if (isOpen) {
+        document.addEventListener('keydown', handleTabKey);
+        return () => {
+          document.removeEventListener('keydown', handleTabKey);
+        };
+      }
+    }, [isOpen]);
+  
+
   if (!isOpen) return null;
 
   return (
     <div 
+      ref={modalRef}
       className={`${styles.modal} ${isVisible ? styles.modalVisible : ''}`}
       onClick={handleOverlayClick} 
     >
@@ -194,6 +239,7 @@ const confirmClose = (): boolean => {
                 <div className={styles.formGroup}>
                   <label className={styles.label}>メールアドレス</label>
                   <input 
+                    ref={emailInputRef}
                     type="email" 
                     className={`${styles.input} ${emailError ? styles.inputError : ''}`}
                     value={email}
@@ -251,6 +297,7 @@ const confirmClose = (): boolean => {
                 <div className={styles.formGroup}>
                   <label className={styles.label}>メールアドレス</label>
                   <input
+                    ref={emailInputRef}  // この行を追加
                     type="email"
                     className={styles.input}
                     value={email}
