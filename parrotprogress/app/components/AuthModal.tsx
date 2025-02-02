@@ -22,33 +22,39 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [passwordError, setPasswordError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   // サインインとサインアップのハンドラ
-  const handleAuthSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleAuthSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-    if (!validatePassword(password)) return;
-    
-    if (modalMode === 'signup' && password !== confirmPassword) {
-      setPasswordError('パスワードが一致しません');
-      return;
-    }
-
-    console.log('送信されたデータ:', {
-      email,
-      password,
-      ...(modalMode === 'signup' && { confirmPassword }),
-      mode: modalMode
-    });
-  };
-
-  // パスワードリセットのハンドラ
-  const handleResetPassword = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
     if (!validateEmail(email)) return;
-    console.log('リセット用メール送信:', email);
+  
+    // モードに応じた追加バリデーション
+    if (modalMode !== 'reset') {
+      if (!validatePassword(password)) return;
+      if (modalMode === 'signup' && password !== confirmPassword) {
+        setPasswordError('パスワードが一致しません');
+        return;
+      }
+    }
+  
+    setIsLoading(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      // モードに応じた送信データの構築
+      const submitData = {
+        email,
+        mode: modalMode,
+        ...(modalMode !== 'reset' && { password }),
+        ...(modalMode === 'signup' && { confirmPassword })
+      };
+      console.log('送信されたデータ:', submitData);
+    } finally {
+      setIsLoading(false);
+    }
   };
-
+  
   // パスワードの検証
   const validatePassword = (pass: string) => {
     if (pass.length < 8) {
@@ -120,7 +126,7 @@ const validateEmail = (email: string) => {
                 登録済みのメールアドレスを入力してください。<br />
                 パスワードリセット用のリンクをお送りします。
               </p>
-              <form className={styles.form} onSubmit={handleResetPassword}>
+              <form className={styles.form} onSubmit={handleAuthSubmit}>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>メールアドレス</label>
                   <input 
@@ -138,10 +144,16 @@ const validateEmail = (email: string) => {
                       <p className={styles.errorMessage}>{emailError}</p>
                   )}
                 </div>
-                <button type="submit" className={styles.submitButton}>
-                  送信する
+                <button 
+                  type="submit" 
+                  className={styles.submitButton}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <span className={styles.loadingText}>送信中...</span>
+                  ) : '送信する'}
                 </button>
-                <button
+                  <button
                   type="button"
                   className={styles.backButton}
                   onClick={() => handleModeChange('signin')}
@@ -170,7 +182,7 @@ const validateEmail = (email: string) => {
                   アカウント作成
                 </button>
               </div>
-              <form className={styles.form} onSubmit={handleSubmit}>
+              <form className={styles.form} onSubmit={handleAuthSubmit}>
                 {/* メールアドレス入力部 */}
                 <div className={styles.formGroup}>
                   <label className={styles.label}>メールアドレス</label>
@@ -229,8 +241,16 @@ const validateEmail = (email: string) => {
                   </div>
                 )}
 
-                <button type="submit" className={styles.submitButton}>
-                    {modalMode === 'signup'  ? 'アカウントを作成' : 'サインイン'}
+                <button 
+                  type="submit" 
+                  className={styles.submitButton}
+                  disabled={isLoading}
+                >
+                {isLoading ? (
+                  <span className={styles.loadingText}>送信中...</span>
+                ) : (
+                  modalMode === 'signup' ? 'アカウントを作成' : 'サインイン'
+                )}
                 </button>
                 {modalMode === 'signin' && (
                   <button
