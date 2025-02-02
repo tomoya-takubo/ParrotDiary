@@ -25,14 +25,14 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
-// useEffectでisOpenの変更を監視
-useEffect(() => {
-  if (isOpen) {
-    setIsVisible(true);
-  } else {
-    setIsVisible(false);
-  }
-}, [isOpen]);
+  // useEffectでisOpenの変更を監視
+  useEffect(() => {
+    if (isOpen) {
+      setIsVisible(true);
+    } else {
+      setIsVisible(false);
+    }
+  }, [isOpen]);
 
   // サインインとサインアップのハンドラ
   const handleAuthSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -75,24 +75,6 @@ useEffect(() => {
     return true;
   };
 
-  // フォーム送信時の処理
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!validatePassword(password)) return;
-    if (modalMode === 'signup' && password !== confirmPassword) {
-      setPasswordError('パスワードが一致しません');
-      return;
-    }
-    console.log('送信されたデータ: ', {
-      email, 
-      password, 
-      ...(modalMode === 'signup' && {confirmPassword}),
-      mode: modalMode === 'signup' ? 'サインアップ' : 'サインイン'
-    });
-    // TODO: 後で認証処理を実装
-
-  }
-
   // タブ切り替え時にフォームをリセット
   const handleModeChange = (mode: ModalMode) => {
     setModalMode(mode);
@@ -127,15 +109,25 @@ const handleClose = () => {
   setTimeout(onClose, 200);
 };
 
+// オーバーレイクリックのハンドラを追加
+const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  // モーダル本体をクリックした場合は閉じない
+  if (e.target === e.currentTarget) {
+    handleClose();
+  }
+};
 
   if (!isOpen) return null;
 
   return (
-    <div className={`${styles.modal} ${isVisible ? styles.modalVisible : ''}`}>
+    <div 
+      className={`${styles.modal} ${isVisible ? styles.modalVisible : ''}`}
+      onClick={handleOverlayClick} 
+    >
       <Card className={styles.modalCard}>
         <CardContent className={styles.modalContent}>
           <div className={styles.closeButton}>
-            <button onClick={onClose}>✕</button>
+            <button onClick={handleClose}>✕</button>
           </div>
           {modalMode === 'reset' ? (
             <div className={styles.modalInner}>
