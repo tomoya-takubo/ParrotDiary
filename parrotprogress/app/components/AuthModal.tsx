@@ -3,6 +3,7 @@
 import { Card, CardContent } from './ui/Card';
 import styles from '../styles/Home.module.css';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useAuth } from '../hooks/useAuth';
 
 type AuthModalProps = {
   isOpen: boolean;
@@ -28,6 +29,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const emailInputRef = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
+  const { login } = useAuth();
+
   // サインインとサインアップのハンドラ
   const handleAuthSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -46,14 +49,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setIsLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
-      // モードに応じた送信データの構築
-      const submitData = {
-        email,
-        mode: modalMode,
-        ...(modalMode !== 'reset' && { password }),
-        ...(modalMode === 'signup' && { confirmPassword })
-      };
-      console.log('送信されたデータ:', submitData);
+      login(email);
+      onClose();
     } finally {
       setIsLoading(false);
     }
