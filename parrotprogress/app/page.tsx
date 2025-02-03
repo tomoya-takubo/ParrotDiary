@@ -1,5 +1,5 @@
 'use client'; 
-import { BookOpen, Gift, Timer } from 'lucide-react';
+import { ArrowRight, BookOpen, Gift, Timer } from 'lucide-react';
 import StartButton from './components/StartButton';
 import styles from './styles/Home.module.css';
 import { useEffect, useState } from 'react';
@@ -69,6 +69,23 @@ export default function Home() {
           <p className={styles.collectionDescription}>
             目標達成や継続記録でレアなPartyParrotをゲット！
           </p>
+        </div>
+      </section>
+      <section className={styles.ecoSection}>
+        <div className={styles.ecoInner}>
+          <h2 className={styles.ecoTitle}>カカポ保護活動への貢献</h2>
+          <div className={styles.ecoDescription}>
+            <p>あなたの継続的な活動が、実際のカカポ（PartyParrotのモデル）の保護活動に貢献します。</p>
+            <p>カカポは絶滅が危惧されている貴重な鳥類です。</p>
+          </div>
+          <a 
+            href="https://www.doc.govt.nz/kakapo-recovery" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className={styles.ecoLink}
+          >
+            詳しく見る <ArrowRight className={styles.ecoArrow} />
+          </a>
         </div>
       </section>
     </main>
