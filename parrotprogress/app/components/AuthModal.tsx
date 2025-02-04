@@ -4,6 +4,7 @@ import { Card, CardContent } from './ui/Card';
 import styles from '../styles/Home.module.css';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { signIn, signUp } from '@/lib/auth';
 
 type AuthModalProps = {
   isOpen: boolean;
@@ -25,6 +26,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [emailError, setEmailError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [authError, setAuthError] = useState<string>('');
 
   const emailInputRef = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -34,28 +36,23 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   // サインインとサインアップのハンドラ
   const handleAuthSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
-    if (!validateEmail(email)) return;
-  
-    // モードに応じた追加バリデーション
-    if (modalMode !== 'reset') {
-      if (!validatePassword(password)) return;
-      if (modalMode === 'signup' && password !== confirmPassword) {
-        setPasswordError('パスワードが一致しません');
-        return;
-      }
-    }
+    if (!validateEmail(email) || !validatePassword(password)) return;
   
     setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      login(email);
-      onClose();
+      if (modalMode === 'signup') {
+        await signUp(email, password);
+      } else {
+        await signIn(email, password);
+      }
+      console.log('認証成功');
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : '認証に失敗しました');
     } finally {
       setIsLoading(false);
     }
-  };
-  
+  };  
+
   // パスワードの検証
   const validatePassword = (pass: string) => {
     if (pass.length < 8) {
@@ -74,6 +71,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setConfirmPassword('');
     setPasswordError('');
     setEmailError('');
+    setAuthError('');
   }
 
   // emailバリデーション関数を追加
@@ -291,6 +289,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               </div>
               <form className={styles.form} onSubmit={handleAuthSubmit}>
                 {/* メールアドレス入力部 */}
+                {authError && (
+                  <p className={styles.errorMessage}>{authError}</p>
+                )}
                 <div className={styles.formGroup}>
                   <label className={styles.label}>メールアドレス</label>
                   <input

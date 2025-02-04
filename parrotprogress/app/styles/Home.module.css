@@ -466,3 +466,9 @@
   height: 1.25rem;
   margin-left: 0.5rem;
 }
+
+.errorMessage {
+  color: #ef4444;
+  text-align: center;
+  margin-bottom: 1rem;
+}

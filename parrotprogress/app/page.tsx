@@ -2,7 +2,6 @@
 import { ArrowRight, BookOpen, Gift, Timer } from 'lucide-react';
 import StartButton from './components/StartButton';
 import styles from './styles/Home.module.css';
-import { useEffect, useState } from 'react';
 import { ParrotCollection } from './components/ParrotCollection';
 
 
@@ -36,7 +35,6 @@ export default function Home() {
               25分の集中タイムで効率的に作業。達成するたびにPartyParrotがお祝いとコインをプレゼント！
             </p>
           </div>
-
           <div className={styles.featureCard}>
             <div className={styles.featureIcon}>
               <div className={`${styles.iconWrapper} ${styles.iconPurple}`}>
@@ -48,7 +46,6 @@ export default function Home() {
               シンプルな3行で今日を振り返り。継続でPartyParrotから特別なメッセージが届きます！
             </p>
           </div>
-
           <div className={styles.featureCard}>
             <div className={styles.featureIcon}>
               <div className={`${styles.iconWrapper} ${styles.iconPink}`}>
