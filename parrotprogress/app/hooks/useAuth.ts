@@ -1,33 +1,26 @@
+// hooks/useAuth.ts
 import { useState, useEffect } from 'react';
-
-type AuthState = {
-  isLoggedIn: boolean;
-  email: string | null;
-};
+import { User } from '../types/auth';
 
 export const useAuth = () => {
-  const [authState, setAuthState] = useState<AuthState>({
-    isLoggedIn: false,
-    email: null
-  });
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const savedAuth = localStorage.getItem('auth');
-    if (savedAuth) {
-      setAuthState(JSON.parse(savedAuth));
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
     }
   }, []);
 
-  const login = (email: string) => {
-    const newState = { isLoggedIn: true, email };
-    localStorage.setItem('auth', JSON.stringify(newState));
-    setAuthState(newState);
+  const login = (userData: User) => {
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
   };
 
   const logout = () => {
-    localStorage.removeItem('auth');
-    setAuthState({ isLoggedIn: false, email: null });
+    localStorage.removeItem('user');
+    setUser(null);
   };
 
-  return { ...authState, login, logout };
+  return { user, login, logout };
 };

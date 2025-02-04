@@ -4,7 +4,7 @@ import { Card, CardContent } from './ui/Card';
 import styles from '../styles/Home.module.css';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { signIn, signUp } from '@/lib/auth';
+import { signIn, signUp } from '@/app/lib/auth';
 
 type AuthModalProps = {
   isOpen: boolean;
@@ -27,11 +27,10 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [authError, setAuthError] = useState<string>('');
+  const { user, login } = useAuth();
 
   const emailInputRef = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
-
-  const { login } = useAuth();
 
   // サインインとサインアップのハンドラ
   const handleAuthSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -40,19 +39,19 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   
     setIsLoading(true);
     try {
-      if (modalMode === 'signup') {
-        await signUp(email, password);
-      } else {
-        await signIn(email, password);
-      }
-      console.log('認証成功');
+      const userData = await (modalMode === 'signup' ? 
+        signUp(email, password) : 
+        signIn(email, password)
+      );
+      login(userData);
+      onClose();
     } catch (error) {
       setAuthError(error instanceof Error ? error.message : '認証に失敗しました');
     } finally {
       setIsLoading(false);
     }
-  };  
-
+  };
+  
   // パスワードの検証
   const validatePassword = (pass: string) => {
     if (pass.length < 8) {

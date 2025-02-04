@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import styles from '../styles/Home.module.css';
-import { ParrotImage } from '@/types';
+import { ParrotImage } from '@/app/types';
 
 const getRandomParrots = (parrots: ParrotImage[], count: number) => {
   const shuffled = [...parrots].sort(() => Math.random() - 0.5);

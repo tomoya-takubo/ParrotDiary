@@ -1,4 +1,4 @@
-import { User } from "@/types/auth";
+import { User } from "@/app/types/auth";
 
 let users: User[] = [];  // 開発用の仮のデータストア
 
