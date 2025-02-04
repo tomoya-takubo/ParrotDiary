@@ -27,6 +27,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [authError, setAuthError] = useState<string>('');
+
   const { user, login } = useAuth();
 
   const emailInputRef = useRef<HTMLInputElement>(null);
@@ -51,7 +52,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       setIsLoading(false);
     }
   };
-  
+
   // パスワードの検証
   const validatePassword = (pass: string) => {
     if (pass.length < 8) {
@@ -216,6 +217,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       ref={modalRef}
       className={`${styles.modal} ${isVisible ? styles.modalVisible : ''}`}
       onClick={handleOverlayClick} 
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modalTitle"
     >
       <Card className={styles.modalCard}>
         <CardContent className={styles.modalContent}>
@@ -224,7 +228,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           </div>
           {modalMode === 'reset' ? (
             <div className={styles.modalInner}>
-              <h2 className={styles.modalTitle}>パスワードをリセット</h2>
+              <h2 id="modalTitle" className={styles.modalTitle}>パスワードをリセット</h2>
               <p className={styles.modalDescription}>
                 登録済みのメールアドレスを入力してください。<br />
                 パスワードリセット用のリンクをお送りします。
@@ -234,7 +238,12 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   <label className={styles.label}>メールアドレス</label>
                   <input 
                     ref={emailInputRef}
-                    type="email" 
+                    id="email"
+                    name="email"
+                    type="email"
+                    aria-required="true"
+                    aria-invalid={!!emailError}
+                    aria-describedby={emailError ? "emailError" : undefined}
                     className={`${styles.input} ${emailError ? styles.inputError : ''}`}
                     value={email}
                     onChange={(e) => {
@@ -245,7 +254,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                     required
                   />
                   {emailError && (
-                      <p className={styles.errorMessage}>{emailError}</p>
+                    <p id="emailError" className={styles.errorMessage}>
+                      {emailError}
+                    </p>
                   )}
                 </div>
                 <button 
@@ -257,7 +268,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                     <span className={styles.loadingText}>送信中...</span>
                   ) : '送信する'}
                 </button>
-                  <button
+                <button
                   type="button"
                   className={styles.backButton}
                   onClick={() => handleModeChange('signin')}
@@ -268,7 +279,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             </div>
           ) : (
             <div className={styles.modalInner}>
-              <h2 className={styles.modalTitle}>
+              <h2 id="modalTitle" className={styles.modalTitle}>
                 {modalMode === 'signup'  ? 'アカウント作成' : 'サインイン'}
               </h2>
               {/* タブ切り替えを追加 */}
@@ -295,7 +306,12 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   <label className={styles.label}>メールアドレス</label>
                   <input
                     ref={emailInputRef}  // この行を追加
+                    id="email"
+                    name="email"
                     type="email"
+                    aria-required="true"
+                    aria-invalid={!!emailError}
+                    aria-describedby={emailError ? "emailError" : undefined}
                     className={styles.input}
                     value={email}
                     onChange={(e) => {
@@ -306,7 +322,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                     required
                   />
                   {emailError && (
-                      <p className={styles.errorMessage}>{emailError}</p>
+                    <p id="emailError" className={styles.errorMessage}>
+                      {emailError}
+                    </p>
                   )}
                 </div>
                 {/* パスワード入力部 */}
