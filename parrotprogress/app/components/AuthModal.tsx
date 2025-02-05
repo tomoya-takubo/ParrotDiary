@@ -5,6 +5,7 @@ import styles from '../styles/Home.module.css';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { signIn, signUp } from '@/app/lib/auth';
+import { validatePasswordStrength } from '../lib/validation';
 
 type AuthModalProps = {
   isOpen: boolean;
@@ -72,13 +73,10 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   // パスワードの検証
   const validatePassword = (pass: string) => {
-    if (pass.length < 8) {
-      setPasswordError('パスワードは8文字以上必要です');
-      return false;
-    }
-    setPasswordError('');
-    return true;
-  };
+    const validation = validatePasswordStrength(pass);
+    setPasswordError(validation.message);
+    return validation.isValid;
+    };
 
   // タブ切り替え時にフォームをリセット
   const handleModeChange = (mode: ModalMode) => {
