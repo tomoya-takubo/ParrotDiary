@@ -27,6 +27,11 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [authError, setAuthError] = useState<string>('');
+  const [formFeedback, setFormFeedback] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
+  
 
   const { user, login } = useAuth();
 
@@ -45,9 +50,21 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         signIn(email, password)
       );
       login(userData);
-      onClose();
+      setFormFeedback({
+        type: 'success',
+        message: modalMode === 'signup' ? 
+          'アカウントが作成されました！' : 
+          'ログインしました！'
+      });
+      // 1秒後にモーダルを閉じる
+      setTimeout(() => {
+        onClose();
+      }, 1000);
     } catch (error) {
-      setAuthError(error instanceof Error ? error.message : '認証に失敗しました');
+      setFormFeedback({
+        type: 'error',
+        message: error instanceof Error ? error.message : '認証に失敗しました'
+      })
     } finally {
       setIsLoading(false);
     }
@@ -72,7 +89,19 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setPasswordError('');
     setEmailError('');
     setAuthError('');
+    setFormFeedback(null);
   }
+
+  const resetForm = () => {
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
+    setPasswordError('');
+    setEmailError('');
+    setAuthError('');
+    setFormFeedback(null);
+    setModalMode('signin');
+  };
 
   // emailバリデーション関数を追加
   const validateEmail = (email: string) => {
@@ -95,8 +124,11 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const handleClose = useCallback(() => {
     if (confirmClose()) {
       setIsVisible(false);
-      setTimeout(onClose, 200);
-    }
+      setTimeout(() => {
+        onClose();
+        resetForm();  // 追加
+      }, 200);
+      }
   }, [onClose]);
 
   // オーバーレイクリックのハンドラを追加
@@ -297,6 +329,15 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   アカウント作成
                 </button>
               </div>
+              {formFeedback && (
+                <div className={`${styles.feedback} ${
+                  formFeedback.type === 'success' ? 
+                  styles.feedbackSuccess : 
+                  styles.feedbackError
+                }`}>
+                  {formFeedback.message}
+                </div>
+              )}
               <form className={styles.form} onSubmit={handleAuthSubmit}>
                 {/* メールアドレス入力部 */}
                 {authError && (

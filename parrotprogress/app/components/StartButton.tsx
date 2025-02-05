@@ -6,21 +6,26 @@ import styles from '../styles/Home.module.css'
 export default function StartButton() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  function handleStart(): void {
+  const handleModalOpen = () => {
     setIsModalOpen(true);
-  }
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+  };
 
   return (
     <>
       <button 
         className={styles.button}
-        onClick={handleStart}
+        onClick={handleModalOpen}
       >
         はじめる
       </button>
       <AuthModal 
         isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+        onClose={handleModalClose} 
+        key={isModalOpen ? 'open' : 'closed'}  // keyを追加
       />
     </>
   );
