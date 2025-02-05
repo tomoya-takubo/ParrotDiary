@@ -5,7 +5,7 @@ import styles from '../styles/Home.module.css';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { signIn, signUp } from '@/app/lib/auth';
-import { validatePasswordStrength } from '../lib/validation';
+import { validateEmailFormat, validatePasswordStrength } from '../lib/validation';
 
 type AuthModalProps = {
   isOpen: boolean;
@@ -103,19 +103,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   // emailバリデーション関数を追加
   const validateEmail = (email: string) => {
-    if (!email) {
-      setEmailError('メールアドレスを入力してください');
-      return false;
-    }
-    
-    const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
-    if (!emailRegex.test(email)) {
-      setEmailError('有効なメールアドレスを入力してください');
-      return false;
-    }
-
-    setEmailError('');
-    return true;
+    const validation = validateEmailFormat(email);
+    setEmailError(validation.message);
+    return validation.isValid;
   };
 
   // モーダルを閉じる処理

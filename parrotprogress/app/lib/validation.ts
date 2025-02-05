@@ -24,3 +24,33 @@ export function validatePasswordStrength(password: string): {
 
   return { isValid: true, message: '' };
 }
+
+export function validateEmailFormat(email: string): {
+  isValid: boolean;
+  message: string;
+} {
+  const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+  
+  if (!email) return {
+    isValid: false,
+    message: 'メールアドレスを入力してください'
+  };
+
+  if (!emailRegex.test(email)) return {
+    isValid: false,
+    message: 'メールアドレスの形式が正しくありません'
+  };
+
+  if (email.length > 254) return {
+    isValid: false,
+    message: 'メールアドレスが長すぎます'
+  };
+
+  const [localPart] = email.split('@');
+  if (localPart.length > 64) return {
+    isValid: false,
+    message: 'メールアドレスのローカル部が長すぎます'
+  };
+
+  return { isValid: true, message: '' };
+}
