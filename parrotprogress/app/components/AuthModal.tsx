@@ -318,15 +318,18 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 </button>
               </div>
               {formFeedback && (
-                <div className={`${styles.feedback} ${
+                <div className={`${styles.feedbackWrapper} ${
                   formFeedback.type === 'success' ? 
                   styles.feedbackSuccess : 
                   styles.feedbackError
                 }`}>
-                  {formFeedback.message}
+                  <div className={styles.feedbackContent}>
+                    {formFeedback.type === 'success' ? '✓ ' : '⚠ '}
+                    {formFeedback.message}
+                  </div>
                 </div>
               )}
-              <form className={styles.form} onSubmit={handleAuthSubmit}>
+                <form className={styles.form} onSubmit={handleAuthSubmit}>
                 {/* メールアドレス入力部 */}
                 {authError && (
                   <p className={styles.errorMessage}>{authError}</p>

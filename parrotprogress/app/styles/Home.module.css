@@ -489,3 +489,26 @@
   background-color: #fee2e2;
   color: #991b1b;
 }
+
+.feedbackWrapper {
+  position: relative;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  animation: slideDown 0.3s ease-out;
+}
+
+.feedbackSuccess {
+  background-color: #dcfce7;
+  border-left: 4px solid #16a34a;
+}
+
+.feedbackError {
+  background-color: #fee2e2;
+  border-left: 4px solid #dc2626;
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
