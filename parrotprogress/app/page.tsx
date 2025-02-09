@@ -15,7 +15,7 @@ export default function Home() {
           <p className={styles.subtitle}>PartyParrotと一緒に楽しく継続</p>
           <div className={styles.heroParrot}>
             <img
-              src="/images/60fpsparrot.gif"  /* パスを修正 */
+              src="/images/60fpsparrot.gif"
               alt="Party Parrot"
             />
           </div>
