@@ -5,3 +5,9 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+
+module.exports = {
+  images: {
+    domains: ['pjoolpfjjhnqyvohvixf.supabase.co'],  // ここに外部ドメインを追加
+  },
+}
