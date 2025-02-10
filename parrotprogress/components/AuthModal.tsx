@@ -4,7 +4,7 @@ import { Card, CardContent } from './ui/Card';
 import styles from '../styles/Home.module.css';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { signIn, signUp } from '@/app/lib/auth';
+import { signIn, signUp } from '@/lib/auth';
 import { validateEmailFormat, validatePasswordStrength } from '../lib/validation';
 
 type AuthModalProps = {
