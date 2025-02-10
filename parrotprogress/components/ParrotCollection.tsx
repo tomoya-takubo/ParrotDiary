@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import Image from 'next/image';
+import styles from '@/styles/ParrotCollection.module.css';
 
 // パロットの型を定義
 type Parrot = {
@@ -29,9 +30,9 @@ export default function ParrotCollection() {
   }, []);
 
   return (
-    <div className="parrot-grid">
+    <div className={styles.parrotGrid}>
       {parrots.map(parrot => (
-        <div key={parrot.id} className="parrot-card">
+        <div key={parrot.id} className={styles.parrotCard}>
           <Image src={parrot.image_path} alt={parrot.name} width={100} height={100} />
           <p>{parrot.name}</p>
         </div>

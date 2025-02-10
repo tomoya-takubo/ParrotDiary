@@ -1,11 +1,11 @@
-.parrot-grid {
+.parrotGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   padding: 20px;
 }
 
-.parrot-card {
+.parrotCard {
   background: white;
   border-radius: 12px;
   padding: 16px;
@@ -13,6 +13,6 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.parrot-card img {
+.parrotCard Image {
   border-radius: 8px;
 }
