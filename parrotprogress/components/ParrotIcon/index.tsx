@@ -1,22 +1,30 @@
 // components/ParrotIcon/index.tsx
 import React from 'react';
 import Image from 'next/image';
+import styles from './styles.module.css';
 
 type ParrotIconProps = {
   imageUrl: string;
-  name: string;  // alt属性用
+  name: string;
+  obtained: boolean;
 }
 
-const ParrotIcon: React.FC<ParrotIconProps> = ({ imageUrl, name }) => {
+const ParrotIcon: React.FC<ParrotIconProps> = ({ imageUrl, name, obtained }) => {
   return (
-    <div className="relative w-full h-full">
-      <Image
-        src={imageUrl}
-        alt={`${name}の画像`}
-        fill
-        style={{ objectFit: 'contain' }}
-        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-      />
+    <div className={`${styles.iconWrapper} ${!obtained ? styles.unobtained : ''}`}>
+      <div className={styles.imageContainer}>
+        <Image
+          src={imageUrl}
+          alt={`${name}の画像`}
+          width={100}
+          height={100}
+          style={{ 
+            objectFit: 'contain',
+            width: '100%',
+            height: '100%'
+          }}
+        />
+      </div>
     </div>
   );
 };

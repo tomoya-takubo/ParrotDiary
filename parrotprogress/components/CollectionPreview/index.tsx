@@ -18,6 +18,7 @@ type Parrot = {
     name: string;
     color_code: string;
   };
+  obtained: boolean;
 }
 
 type UserParrot = {
@@ -43,24 +44,28 @@ export default function CollectionPreview() {
         .from('parrots')
         .select(`
           *,
-          rarity:rarity_id(*)
+          rarity:rarity_id(*),
+          user_parrots(*)
         `);
-
+  
       if (parrotError) throw parrotError;
-
-      console.log('Fetched parrot data:', parrotData);
-      
+  
       if (parrotData) {
-        setParrots(parrotData);
+        // パロットデータに獲得状態を追加
+        const parrotsWithObtainedStatus = parrotData.map(parrot => ({
+          ...parrot,
+          obtained: parrot.user_parrots.length > 0  // user_parrotsが存在すれば獲得済み
+        }));
+        
+        setParrots(parrotsWithObtainedStatus);
       }
-
+  
     } catch (error) {
       console.error('Error loading parrot data:', error);
     } finally {
       setLoading(false);
     }
   };
-
   if (loading) return <div>Loading...</div>;
 
   return (
@@ -80,7 +85,8 @@ export default function CollectionPreview() {
                 <ParrotIcon 
                   imageUrl={parrot.image_url} 
                   name={parrot.name}
-                />
+                  obtained={parrot.obtained || false}  // 仮の実装。後でSupabaseのデータと連携
+                />              
               </div>
               <div className={styles.parrotName}>
                 {parrot.name}
