@@ -15,12 +15,12 @@ export type Category = {
 }
 
 export type Parrot = {
-  parrot_id: number;
+  id: number;
   name: string;
+  category_id: number; 
   rarity_id: number;
-  category_id: number;
   description: string | null;
-  image_path: string;
+  image_url: string;
 }
 
 export type UserParrot = {

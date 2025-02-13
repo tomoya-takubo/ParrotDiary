@@ -1,13 +1,10 @@
+// next.config.ts
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  images: {
+    domains: ['pjoolpfjjhnqyvohvixf.supabase.co'],
+  },
 };
 
 export default nextConfig;
-
-module.exports = {
-  images: {
-    domains: ['pjoolpfjjhnqyvohvixf.supabase.co'],  // ここに外部ドメインを追加
-  },
-}
