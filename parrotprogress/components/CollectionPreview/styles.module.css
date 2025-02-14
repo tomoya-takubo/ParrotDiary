@@ -45,3 +45,39 @@
   font-size: 0.75rem;
   color: white;
 }
+
+/* components/CollectionPreview/styles.module.css に追加 */
+.filterSection {
+  margin-bottom: 1.5rem;
+}
+
+.categories {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.filterIcon {
+  color: #6B7280;
+}
+
+.categoryButton {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  background: white;
+  color: #4B5563;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.categoryButton:hover {
+  background: #F3F4F6;
+}
+
+.categoryButton.active {
+  background: #8B5CF6;
+  color: white;
+}
+
