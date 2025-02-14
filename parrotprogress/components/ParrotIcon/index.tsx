@@ -1,4 +1,3 @@
-// components/ParrotIcon/index.tsx
 import React from 'react';
 import Image from 'next/image';
 import styles from './styles.module.css';
@@ -12,21 +11,17 @@ type ParrotIconProps = {
 const ParrotIcon: React.FC<ParrotIconProps> = ({ imageUrl, name, obtained }) => {
   return (
     <div className={`${styles.iconWrapper} ${!obtained ? styles.unobtained : ''}`}>
-      <div className={styles.imageContainer}>
-        <Image
-          src={imageUrl}
-          alt={`${name}の画像`}
-          width={100}
-          height={100}
-          style={{ 
-            objectFit: 'contain',
-            width: '100%',
-            height: '100%'
-          }}
-        />
-      </div>
+      <Image
+        src={imageUrl}
+        alt={`${name}の画像`}
+        fill  // fillを使用
+        style={{ 
+          objectFit: 'contain',
+          opacity: obtained ? 1 : 0.3,  // obtained状態に応じて透明度を変更
+        }}
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+      />
     </div>
   );
 };
-
 export default ParrotIcon;

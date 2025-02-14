@@ -1,6 +1,8 @@
 /* components/CollectionPreview/styles.module.css */
 .container {
   padding: 1.5rem;
+  max-width: 1200px;  /* コンテナの最大幅を設定 */
+  margin: 0 auto;     /* 中央寄せ */
 }
 
 .title {
@@ -9,44 +11,6 @@
   margin-bottom: 1.5rem;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(10, 1fr);
-  gap: 1.5rem;
-}
-
-.parrotCard {
-  background: white;
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.iconWrapper {
-  aspect-ratio: 1;
-  background: #f3f4f6;
-  border-radius: 0.5rem;
-  padding: 1rem;
-  margin-bottom: 1rem;
-}
-
-.parrotName {
-  text-align: center;
-  font-weight: 500;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.rarityBadge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  color: white;
-}
-
-/* components/CollectionPreview/styles.module.css に追加 */
 .filterSection {
   margin-bottom: 1.5rem;
 }
@@ -81,3 +45,150 @@
   color: white;
 }
 
+.grid {
+  display: grid;
+  grid-template-columns: repeat(6, 140px); /* 6列に増やし、カードサイズを140pxに縮小 */
+  gap: 1rem;
+  justify-content: center;
+}
+
+.parrotCard {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 0.75rem;  /* パディングも少し縮小 */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  width: 140px;     /* カードの幅を140pxに */
+}
+
+.parrotCard:hover {
+  transform: translateY(-2px);
+}
+
+.iconWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  background: #f3f4f6;
+  border-radius: 0.5rem;
+  padding: 0.5rem;  /* パディングを小さく */
+  margin-bottom: 0.5rem;  /* マージンも調整 */
+}
+
+.parrotName {
+  text-align: center;
+  font-weight: 500;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;  /* 間隔を少し狭める */
+  align-items: center;
+  font-size: 0.875rem;  /* フォントサイズを少し小さく */
+}
+
+.rarityBadge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  color: white;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modalContent {
+  background: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  width: 90%;
+  max-width: 500px;
+  position: relative;
+}
+
+.closeButton {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 1.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+}
+
+.modalHeader {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.modalIconWrapper {
+  width: 100px;
+  height: 100px;
+}
+
+.modalInfo {
+  flex: 1;
+}
+
+.modalTitle {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.description {
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+.detailsSection {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 0.5rem;
+}
+
+.detailsSection h3 {
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.detailRow:last-child {
+  border-bottom: none;
+}
+
+.notObtained {
+  color: #666;
+  font-style: italic;
+}
+
+/* styles.module.css */
+.parrotCard {
+  /* 既存のスタイル */
+  cursor: default;  /* デフォルトのカーソルに */
+}
+
+/* 獲得済みパロットの場合のみホバー効果とポインターカーソルを適用 */
+.parrotCard.obtained {
+  cursor: pointer;
+}
+
+.parrotCard.obtained:hover {
+  transform: translateY(-2px);
+}
