@@ -77,9 +77,13 @@
   font-weight: 500;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;  /* 間隔を少し狭める */
+  gap: 0.5rem;
   align-items: center;
-  font-size: 0.875rem;  /* フォントサイズを少し小さく */
+  font-size: 0.875rem;
+  word-break: break-word;      /* 任意の位置で改行可能に */
+  overflow-wrap: break-word;   /* 長い単語を折り返す */
+  max-width: 100%;            /* 親要素の幅を超えないように */
+  padding: 0 0.25rem;         /* 左右に少しパディングを追加 */
 }
 
 .rarityBadge {
