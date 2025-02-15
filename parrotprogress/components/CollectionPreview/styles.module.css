@@ -198,3 +198,54 @@
   opacity: 0.7;
   transition: opacity 0.2s;
 }
+
+/* CollectionPreview.module.css に追加 */
+.progressSection {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-top: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.progressInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.progressLabel {
+  color: #6B7280;
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
+}
+
+.progressValue {
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.progressPercentage {
+  margin-left: 0.5rem;
+  color: #8B5CF6;
+}
+
+.nextGoal {
+  color: #6B7280;
+  font-size: 0.875rem;
+}
+
+.progressBarContainer {
+  height: 0.5rem;
+  background: #E5E7EB;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.progressBar {
+  height: 100%;
+  background: #8B5CF6;
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}

@@ -154,6 +154,19 @@ export default function CollectionPreview() {
     );
   };
 
+  const calculateCollectionProgress = (parrots: Parrot[]) => {
+    const total = parrots.length;
+    const obtained = parrots.filter(parrot => parrot.obtained).length;
+    const percentage = Math.floor((obtained / total) * 100);
+    
+    return {
+      total,
+      obtained,
+      percentage
+    };
+  };
+  
+
   const filteredParrots = selectedCategory
   ? parrots
       .filter(parrot => parrot.category_id === selectedCategory)
@@ -210,6 +223,28 @@ export default function CollectionPreview() {
             </div>
           </div>
         ))}
+      </div>
+      <div className={styles.progressSection}>
+        <div className={styles.progressInfo}>
+          <div>
+            <div className={styles.progressLabel}>コレクション達成率</div>
+            <div className={styles.progressValue}>
+              {calculateCollectionProgress(parrots).obtained} / {calculateCollectionProgress(parrots).total}
+              <span className={styles.progressPercentage}>
+                ({calculateCollectionProgress(parrots).percentage}%)
+              </span>
+            </div>
+          </div>
+          <div className={styles.nextGoal}>
+            次の目標：85%達成でプラチナパロット解放！
+          </div>
+        </div>
+        <div className={styles.progressBarContainer}>
+          <div 
+            className={styles.progressBar} 
+            style={{ width: `${calculateCollectionProgress(parrots).percentage}%` }}
+          />
+        </div>
       </div>
       {selectedParrot && (
         <ParrotModal
