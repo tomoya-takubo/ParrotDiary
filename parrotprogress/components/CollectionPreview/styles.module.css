@@ -1,8 +1,9 @@
 /* components/CollectionPreview/styles.module.css */
 .container {
   padding: 1.5rem;
-  max-width: 1200px;  /* コンテナの最大幅を設定 */
-  margin: 0 auto;     /* 中央寄せ */
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
 }
 
 .title {
@@ -11,15 +12,10 @@
   margin-bottom: 1.5rem;
 }
 
-.filterSection {
-  margin-bottom: 1.5rem;
-}
-
 .categories {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .filterIcon {
@@ -30,10 +26,11 @@
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   background: white;
-  color: #4B5563;
   border: none;
   cursor: pointer;
-  transition: all 0.2s;
+  font-size: 0.875rem;
+  color: #4B5563;
+  white-space: nowrap;
 }
 
 .categoryButton:hover {
@@ -47,9 +44,10 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(6, 140px); /* 6列に増やし、カードサイズを140pxに縮小 */
+  grid-template-columns: repeat(7, 140px);  /* カードサイズを固定 */
   gap: 1rem;
   justify-content: center;
+  width: 100%;
 }
 
 .parrotCard {
@@ -199,15 +197,6 @@
   transition: opacity 0.2s;
 }
 
-/* CollectionPreview.module.css に追加 */
-.progressSection {
-  background: white;
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  margin-top: 2rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
 .progressInfo {
   display: flex;
   justify-content: space-between;
@@ -248,4 +237,64 @@
   background: #8B5CF6;
   border-radius: 9999px;
   transition: width 0.3s ease;
+}
+
+.searchBox {
+  position: relative;
+  width: 300px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9CA3AF;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.5rem 1rem 0.5rem 2.5rem;
+  border: 1px solid #E5E7EB;
+  border-radius: 0.5rem;
+  background: white;
+  font-size: 0.875rem;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #8B5CF6;
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.1);
+}
+
+/* CollectionPreview.module.css のスタイルを修正 */
+.filterSection {
+  margin: 1.5rem 0;
+}
+
+.filterHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.searchBox {
+  flex: 0 0 300px;  /* 検索バーの幅を固定 */
+}
+
+.categories {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;  /* 右寄せにする */
+}
+
+.progressSection {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-top: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  width: 100%;
 }

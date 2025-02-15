@@ -2,7 +2,7 @@
 
 // components/CollectionPreview/index.tsx
 import { useEffect, useState } from 'react';
-import { Filter } from 'lucide-react';
+import { Filter, Search } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import ParrotIcon from '../ParrotIcon';
 import styles from './styles.module.css';
@@ -41,6 +41,8 @@ export default function CollectionPreview() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [selectedParrot, setSelectedParrot] = useState<Parrot | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+
 
   const loadCategories = async () => {
     try {
@@ -167,25 +169,63 @@ export default function CollectionPreview() {
   };
   
 
-  const filteredParrots = selectedCategory
-  ? parrots
-      .filter(parrot => parrot.category_id === selectedCategory)
-      .sort((a, b) => a.parrot_id - b.parrot_id)  // 番号順にソート
-  : parrots.sort((a, b) => a.parrot_id - b.parrot_id);  // 番号順にソート
+  const filteredParrots = parrots
+  .filter(parrot => {
+    // カテゴリーフィルター
+    const categoryMatch = selectedCategory ? parrot.category_id === selectedCategory : true;
+    // 検索フィルター
+    const searchMatch = parrot.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return categoryMatch && searchMatch;
+  })
+  .sort((a, b) => a.parrot_id - b.parrot_id);
 
   if (loading) return <div>Loading...</div>;
 
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>パロットコレクション</h1>
-      <div className={styles.filterSection}>
+      <div className={styles.progressSection}>
+      <div className={styles.progressInfo}>
+        <div>
+          <div className={styles.progressLabel}>コレクション達成率</div>
+          <div className={styles.progressValue}>
+            {calculateCollectionProgress(parrots).obtained} / {calculateCollectionProgress(parrots).total}
+            <span className={styles.progressPercentage}>
+              ({calculateCollectionProgress(parrots).percentage}%)
+            </span>
+          </div>
+        </div>
+        <div className={styles.nextGoal}>
+          次の目標：85%達成でプラチナパロット解放！
+        </div>
+      </div>
+      <div className={styles.progressBarContainer}>
+        <div 
+          className={styles.progressBar} 
+          style={{ width: `${calculateCollectionProgress(parrots).percentage}%` }}
+        />
+      </div>
+    </div>
+
+    <div className={styles.filterSection}>
+      <div className={styles.filterHeader}>
+        <div className={styles.searchBox}>
+          <Search size={20} className={styles.searchIcon} />
+          <input
+            type="text"
+            placeholder="パロットを検索"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className={styles.searchInput}
+          />
+        </div>
         <div className={styles.categories}>
           <Filter size={20} className={styles.filterIcon} />
           <button
             className={`${styles.categoryButton} ${selectedCategory === null ? styles.active : ''}`}
             onClick={() => setSelectedCategory(null)}
           >
-            すべて
+            すべて ({parrots.length})
           </button>
           {categories.map(category => (
             <button
@@ -193,12 +233,13 @@ export default function CollectionPreview() {
               className={`${styles.categoryButton} ${selectedCategory === category.category_id ? styles.active : ''}`}
               onClick={() => setSelectedCategory(category.category_id)}
             >
-              {category.name}
+              {category.name} ({parrots.filter(p => p.category_id === category.category_id).length})
             </button>
           ))}
         </div>
       </div>
-      <div className={styles.grid}>
+    </div>
+    <div className={styles.grid}>
         {filteredParrots.map(parrot => (
           <div 
             key={parrot.parrot_id} 
@@ -223,28 +264,6 @@ export default function CollectionPreview() {
             </div>
           </div>
         ))}
-      </div>
-      <div className={styles.progressSection}>
-        <div className={styles.progressInfo}>
-          <div>
-            <div className={styles.progressLabel}>コレクション達成率</div>
-            <div className={styles.progressValue}>
-              {calculateCollectionProgress(parrots).obtained} / {calculateCollectionProgress(parrots).total}
-              <span className={styles.progressPercentage}>
-                ({calculateCollectionProgress(parrots).percentage}%)
-              </span>
-            </div>
-          </div>
-          <div className={styles.nextGoal}>
-            次の目標：85%達成でプラチナパロット解放！
-          </div>
-        </div>
-        <div className={styles.progressBarContainer}>
-          <div 
-            className={styles.progressBar} 
-            style={{ width: `${calculateCollectionProgress(parrots).percentage}%` }}
-          />
-        </div>
       </div>
       {selectedParrot && (
         <ParrotModal
