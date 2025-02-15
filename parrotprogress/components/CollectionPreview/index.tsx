@@ -106,6 +106,9 @@ export default function CollectionPreview() {
   };
 
   const ParrotModal = ({ parrot, onClose }: { parrot: Parrot; onClose: () => void }) => {
+    // 獲得情報を取得
+    const obtainInfo = parrot.user_parrots[0];
+
     return (
       <div className={styles.modalOverlay} onClick={onClose}>
         <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
@@ -132,19 +135,17 @@ export default function CollectionPreview() {
             <p className={styles.description}>{parrot.description}</p>
             <div className={styles.detailsSection}>
               <h3>獲得情報</h3>
-              {parrot.obtained ? (
+              {obtainInfo && (
                 <>
                   <div className={styles.detailRow}>
                     <span>獲得日時</span>
-                    <span>2024/2/15</span>
+                    <span>{new Date(obtainInfo.obtained_at).toLocaleString()}</span>
                   </div>
                   <div className={styles.detailRow}>
                     <span>重複獲得</span>
-                    <span>1回</span>
+                    <span>{obtainInfo.obtain_count}回</span>
                   </div>
                 </>
-              ) : (
-                <p className={styles.notObtained}>未獲得</p>
               )}
             </div>
           </div>
