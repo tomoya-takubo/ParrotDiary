@@ -42,7 +42,8 @@ export default function CollectionPreview() {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [selectedParrot, setSelectedParrot] = useState<Parrot | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-
+  const [searchRarity, setSearchRarity] = useState<string | null>(null);
+  
 
   const loadCategories = async () => {
     try {
@@ -172,12 +173,15 @@ export default function CollectionPreview() {
   .filter(parrot => {
     // カテゴリーフィルター
     const categoryMatch = selectedCategory ? parrot.category_id === selectedCategory : true;
-    // 検索フィルター
-    const searchMatch = parrot.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return categoryMatch && searchMatch;
+    // 名前での検索
+    const nameMatch = parrot.name.toLowerCase().includes(searchQuery.toLowerCase());
+    // レアリティでの検索
+    const rarityMatch = searchRarity ? parrot.rarity.abbreviation === searchRarity : true;
+    
+    return categoryMatch && nameMatch && rarityMatch;
   })
   .sort((a, b) => a.parrot_id - b.parrot_id);
-
+  
   if (loading) return <div>Loading...</div>;
 
   return (
@@ -209,7 +213,7 @@ export default function CollectionPreview() {
     <div className={styles.filterSection}>
       <div className={styles.filterHeader}>
         <div className={styles.searchBox}>
-          <Search size={20} className={styles.searchIcon} />
+          <Search className={styles.searchIcon} size={20} />
           <input
             type="text"
             placeholder="パロットを検索"
@@ -218,24 +222,41 @@ export default function CollectionPreview() {
             className={styles.searchInput}
           />
         </div>
-        <div className={styles.categories}>
-          <Filter size={20} className={styles.filterIcon} />
+        <div className={styles.rarityFilter}>
           <button
-            className={`${styles.categoryButton} ${selectedCategory === null ? styles.active : ''}`}
-            onClick={() => setSelectedCategory(null)}
+            className={`${styles.rarityButton} ${searchRarity === null ? styles.active : ''}`}
+            onClick={() => setSearchRarity(null)}
           >
-            すべて ({parrots.length})
+            全レアリティ
           </button>
-          {categories.map(category => (
+          {['UR', 'SR', 'R', 'N'].map((rarity) => (
             <button
-              key={category.category_id}
-              className={`${styles.categoryButton} ${selectedCategory === category.category_id ? styles.active : ''}`}
-              onClick={() => setSelectedCategory(category.category_id)}
+              key={rarity}
+              className={`${styles.rarityButton} ${searchRarity === rarity ? styles.active : ''}`}
+              onClick={() => setSearchRarity(rarity)}
             >
-              {category.name} ({parrots.filter(p => p.category_id === category.category_id).length})
+              {rarity}
             </button>
           ))}
         </div>
+      </div>
+      <div className={styles.categories}>
+        <Filter size={20} className={styles.filterIcon} />
+        <button
+          className={`${styles.categoryButton} ${selectedCategory === null ? styles.active : ''}`}
+          onClick={() => setSelectedCategory(null)}
+        >
+          すべて ({parrots.length})
+        </button>
+        {categories.map(category => (
+          <button
+            key={category.category_id}
+            className={`${styles.categoryButton} ${selectedCategory === category.category_id ? styles.active : ''}`}
+            onClick={() => setSelectedCategory(category.category_id)}
+          >
+            {category.name} ({parrots.filter(p => p.category_id === category.category_id).length})
+          </button>
+        ))}
       </div>
     </div>
     <div className={styles.grid}>
@@ -257,13 +278,13 @@ export default function CollectionPreview() {
               />
             </div>
             <div className={styles.parrotName}>
-            <div>No.{parrot.parrot_id}</div>  {/* 番号を追加 */}
-              {parrot.name}
-              <span 
-                className={`${styles.rarityBadge} ${styles[`rarityBadge${parrot.rarity.abbreviation}`]}`}
-              >
-              {parrot.rarity.abbreviation}
-              </span>
+              <div>No.{parrot.parrot_id}</div>  {/* 番号を追加 */}
+                {parrot.name}
+                <span 
+                  className={`${styles.rarityBadge} ${styles[`rarityBadge${parrot.rarity.abbreviation}`]}`}
+                >
+                {parrot.rarity.abbreviation}
+                </span>
             </div>
           </div>
         ))}

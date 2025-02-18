@@ -303,6 +303,47 @@
   transition: all 0.2s ease;
 }
 
+/* components/CollectionPreview/styles.module.css に追加 */
+.filterHeader {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.rarityFilter {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.rarityButton {
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  border: 1px solid #e5e7eb;
+  background: white;
+  font-size: 0.875rem;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rarityButton:hover {
+  background: #f3f4f6;
+}
+
+.rarityButton.active {
+  background: #8b5cf6;
+  color: white;
+  border-color: #8b5cf6;
+}
+
+/* 既存の検索ボックスのスタイルを調整 */
+.searchBox {
+  flex: 1;  /* 検索ボックスを可能な限り広げる */
+  max-width: 300px;
+}
+
 /* レア度に応じたスタイル */
 .rarityUR {
   background: linear-gradient(to right, rgba(255, 0, 0, 0.3), rgba(255, 128, 0, 0.3), rgba(255, 255, 0, 0.3), rgba(0, 255, 0, 0.3), rgba(0, 0, 255, 0.3), rgba(128, 0, 255, 0.3));
