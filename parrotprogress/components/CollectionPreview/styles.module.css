@@ -2,8 +2,10 @@
 .container {
   padding: 1.5rem;
   width: 100%;
-  max-width: 1120px;
+  max-width: 1200px;
   margin: 0 auto;
+  background: linear-gradient(to bottom, #EFF6FF, #F5F3FF); /* 背景グラデーションをコンテナに */
+  min-height: 100vh; /* 最低でも画面の高さ分は確保 */
 }
 
 .title {
@@ -44,10 +46,12 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(7, 140px);  /* カードサイズを固定 */
+  grid-template-columns: repeat(auto-fit, 140px);
   gap: 1rem;
-  justify-content: center;
   width: 100%;
+  justify-content: center;
+  margin: 0 auto;
+  padding: 0;
 }
 
 .parrotCard {
@@ -301,4 +305,29 @@
   margin-top: 1rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   width: 100%;
+}
+
+/* メディアクエリでより細かい制御を追加 */
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(auto-fit, 140px);
+  }
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(4, 140px);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(5, 140px);
+  }
+}
+
+@media (min-width: 1280px) {
+  .grid {
+    grid-template-columns: repeat(7, 140px);
+  }
 }
