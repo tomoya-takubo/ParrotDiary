@@ -17,7 +17,7 @@ type Parrot = {
   rarity: {
     rarity_id: number;
     name: string;
-    color_code: string;
+    abbreviation: string;
     drop_rate: number;
   };
   user_parrots: {
@@ -126,10 +126,9 @@ export default function CollectionPreview() {
             <div className={styles.modalInfo}>
               <h2 className={styles.modalTitle}>{parrot.name}</h2>
               <span 
-                className={styles.rarityBadge}
-                style={{ backgroundColor: parrot.rarity.color_code }}
+                className={`${styles.rarityBadge} ${styles[`rarityBadge${parrot.rarity.abbreviation}`]}`}
               >
-                {parrot.rarity.name}
+                  {parrot.rarity.abbreviation}
               </span>
             </div>
           </div>
@@ -243,9 +242,14 @@ export default function CollectionPreview() {
         {filteredParrots.map(parrot => (
           <div 
             key={parrot.parrot_id} 
-            className={`${styles.parrotCard} ${parrot.obtained ? styles.obtained : ''}`}
+            className={`
+              ${styles.parrotCard} 
+              ${parrot.obtained ? styles.obtained : ''} 
+              ${styles[`rarity${parrot.rarity.abbreviation}`]}
+            `}
             onClick={() => handleParrotClick(parrot)}
-          >            <div className={styles.iconWrapper}>
+          >
+            <div className={styles.iconWrapper}>
               <ParrotIcon 
                 imageUrl={parrot.image_url} 
                 name={parrot.name}
@@ -256,10 +260,9 @@ export default function CollectionPreview() {
             <div>No.{parrot.parrot_id}</div>  {/* 番号を追加 */}
               {parrot.name}
               <span 
-                className={styles.rarityBadge}
-                style={{ backgroundColor: parrot.rarity.color_code }}
+                className={`${styles.rarityBadge} ${styles[`rarityBadge${parrot.rarity.abbreviation}`]}`}
               >
-                {parrot.rarity.name}
+              {parrot.rarity.abbreviation}
               </span>
             </div>
           </div>
