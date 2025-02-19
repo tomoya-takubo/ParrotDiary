@@ -46,12 +46,13 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, 140px);
   gap: 1rem;
   width: 100%;
   justify-content: center;
   margin: 0 auto;
   padding: 0;
+  /* 基本サイズを180pxに拡大 */
+  grid-template-columns: repeat(auto-fit, 180px);
 }
 
 .parrotCard:hover {
@@ -80,6 +81,21 @@
   overflow-wrap: break-word;   /* 長い単語を折り返す */
   max-width: 100%;            /* 親要素の幅を超えないように */
   padding: 0 0.25rem;         /* 左右に少しパディングを追加 */
+}
+
+/* パロットの名前用のスタイルを追加 */
+.parrotNameText {
+  display: inline-block;
+  white-space: normal;
+}
+
+/* "parrot"の前で改行を強制 */
+.parrotNameText::before {
+  content: "parrot";
+  float: right;
+  width: 0;
+  height: 0;
+  overflow: hidden;
 }
 
 .rarityBadge {
@@ -294,13 +310,11 @@
 }
 
 .parrotCard {
-  /* 既存のスタイル */
   background: white;
   border-radius: 0.75rem;
   padding: 1rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  width: 140px;
-  transition: all 0.2s ease;
+  width: 180px;  /* カードの幅を180pxに拡大 */
 }
 
 /* components/CollectionPreview/styles.module.css に追加 */
@@ -338,6 +352,46 @@
   border-color: #8b5cf6;
 }
 
+/* components/CollectionPreview/styles.module.css に追加 */
+.sortButtons {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;  /* 右寄せ */
+}
+
+.sortButton {
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  border: 1px solid #e5e7eb;
+  background: white;
+  font-size: 0.875rem;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.sortButton:hover {
+  background: #f3f4f6;
+}
+
+.sortButton.active {
+  background: #8b5cf6;
+  color: white;
+  border-color: #8b5cf6;
+}
+
+/* filterHeaderのスタイルを調整 */
+.filterHeader {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
 /* 既存の検索ボックスのスタイルを調整 */
 .searchBox {
   flex: 1;  /* 検索ボックスを可能な限り広げる */
@@ -364,8 +418,13 @@
 }
 
 .rarityN {
-  background: linear-gradient(to right, rgba(156, 163, 175, 0.2), rgba(107, 114, 128, 0.2), rgba(156, 163, 175, 0.2));
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #f5f5f5, #e8e8e8, #f5f5f5);  /* より柔らかいグレー */
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.unobtained {
+  background: #d1d5db;  /* 未解放用のやや暗いグレー */
+  opacity: 0.8;
 }
 
 /* バッジのスタイル */
@@ -388,28 +447,73 @@
   background-color: #808080;  /* 標準的なグレー */
   color: white;
 }
+
+.modalContentUR {
+  background: linear-gradient(135deg, #fff, #fff),
+              linear-gradient(135deg, rgba(255, 0, 0, 0.15), rgba(255, 128, 0, 0.15), rgba(255, 255, 0, 0.15), rgba(0, 255, 0, 0.15), rgba(0, 0, 255, 0.15), rgba(128, 0, 255, 0.15));
+  background-blend-mode: overlay;
+}
+
+.modalContentSR {
+  background: linear-gradient(135deg, #fff, #fff),
+              linear-gradient(135deg, rgba(147, 51, 234, 0.15), rgba(236, 72, 153, 0.15), rgba(147, 51, 234, 0.15));
+  background-blend-mode: overlay;
+}
+
+.modalContentR {
+  background: linear-gradient(135deg, #fff, #fff),
+              linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(6, 182, 212, 0.15), rgba(59, 130, 246, 0.15));
+  background-blend-mode: overlay;
+}
+
+.modalContentN {
+  background: linear-gradient(135deg, #fff, #fff),
+              linear-gradient(135deg, rgba(156, 163, 175, 0.15), rgba(107, 114, 128, 0.15), rgba(156, 163, 175, 0.15));
+  background-blend-mode: overlay;
+}
+
+.modalContentUnobtained {
+  background: #fff;
+}
+
+.description {
+  color: #374151;  /* テキストの色を濃く */
+  margin-bottom: 1.5rem;
+  line-height: 1.6;  /* 行間を広げて読みやすく */
+  font-size: 0.95rem;
+}
+
+.detailsSection {
+  background: #f8f9fa;  /* 完全な不透明な背景に */
+  border: 1px solid #e5e7eb;  /* 境界線を追加 */
+}
+
+/* モーダルコンテンツ内の要素がより見やすくなるよう調整 */
+.modalContent .detailsSection {
+  background: rgba(255, 255, 255, 0.9);
+}
  
-/* メディアクエリでより細かい制御を追加 */
+/* 画面サイズに応じた列数の制御 */
 @media (min-width: 640px) {
   .grid {
-    grid-template-columns: repeat(auto-fit, 140px);
+    grid-template-columns: repeat(3, 180px);
   }
 }
 
 @media (min-width: 768px) {
   .grid {
-    grid-template-columns: repeat(4, 140px);
+    grid-template-columns: repeat(4, 180px);
   }
 }
 
 @media (min-width: 1024px) {
   .grid {
-    grid-template-columns: repeat(5, 140px);
+    grid-template-columns: repeat(5, 180px);
   }
 }
 
 @media (min-width: 1280px) {
   .grid {
-    grid-template-columns: repeat(7, 140px);
+    grid-template-columns: repeat(6, 180px);
   }
 }

@@ -29,6 +29,19 @@ type Parrot = {
   obtained?: boolean;  // obtainedをオプショナルに
 }
 
+type SortType = 'id' | 'rarity' | 'obtained_date';
+
+// レアリティの型を定義
+type RarityId = 'UR' | 'SR' | 'R' | 'N';
+
+// rarityOrderをRecordとして定義
+const rarityOrder: Record<RarityId, number> = {
+  'UR': 0,
+  'SR': 1,
+  'R': 2,
+  'N': 3
+};
+
 type Category = {
   category_id: number;
   code: string;
@@ -43,7 +56,8 @@ export default function CollectionPreview() {
   const [selectedParrot, setSelectedParrot] = useState<Parrot | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchRarity, setSearchRarity] = useState<string | null>(null);
-  
+  const [sortType, setSortType] = useState<SortType>('id');
+
 
   const loadCategories = async () => {
     try {
@@ -108,13 +122,29 @@ export default function CollectionPreview() {
     }
   };
 
+  const getRarityOrder = (rarityId: number): number => {
+    switch (rarityId) {
+      case 1: return 3; // N
+      case 2: return 2; // R
+      case 3: return 1; // SR
+      case 4: return 0; // UR
+      default: return 999; // 未知のレアリティは後ろに
+    }
+  };
+  
+
   const ParrotModal = ({ parrot, onClose }: { parrot: Parrot; onClose: () => void }) => {
     // 獲得情報を取得
     const obtainInfo = parrot.user_parrots[0];
 
+    const getModalClass = () => {
+      if (!parrot.obtained) return styles.modalContentUnobtained;
+      return styles[`modalContent${parrot.rarity.abbreviation}`];
+    };
+
     return (
       <div className={styles.modalOverlay} onClick={onClose}>
-        <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+        <div className={`${styles.modalContent} ${getModalClass()}`} onClick={e => e.stopPropagation()}>
           <button className={styles.closeButton} onClick={onClose}>×</button>
           <div className={styles.modalHeader}>
             <div className={styles.modalIconWrapper}>
@@ -181,8 +211,52 @@ export default function CollectionPreview() {
     return categoryMatch && nameMatch && rarityMatch;
   })
   .sort((a, b) => a.parrot_id - b.parrot_id);
-  
-  if (loading) return <div>Loading...</div>;
+
+  // 並び替え関数
+  const sortParrots = (parrots: Parrot[]) => {
+    switch (sortType) {
+      case 'rarity':
+        return [...parrots].sort((a, b) => {
+          return getRarityOrder(a.rarity.rarity_id) - getRarityOrder(b.rarity.rarity_id);
+        });
+      case 'obtained_date':
+      return [...parrots].sort((a, b) => {
+        if (!a.obtained) return 1;  // 未獲得は後ろへ
+        if (!b.obtained) return -1;
+        // 獲得日時で並び替え（新しい順）
+        return new Date(b.user_parrots[0]?.obtained_at).getTime() - 
+               new Date(a.user_parrots[0]?.obtained_at).getTime();
+      });
+    case 'id':
+    default:
+      return [...parrots].sort((a, b) => a.parrot_id - b.parrot_id);
+  }
+};
+
+// フィルター適用後のパロットをさらに並び替え
+const sortedAndFilteredParrots = sortParrots(filteredParrots);
+
+// パロット名を処理する関数を追加
+// パロット名を処理する関数を修正
+const formatParrotName = (name: string) => {
+  // パロット名の長さが一定以上の場合のみ処理
+  if (name.length > 20) {  // この数値は調整可能
+    const parts = name.split('parrot');
+    if (parts.length > 1) {
+      return (
+        <>
+          {parts[0]}
+          <br />
+          parrot{parts[1]}
+        </>
+      );
+    }
+  }
+  // 短い名前やparrotを含まない名前はそのまま返す
+  return name;
+};
+
+if (loading) return <div>Loading...</div>;
 
   return (
     <div className={styles.container}>
@@ -222,6 +296,27 @@ export default function CollectionPreview() {
             className={styles.searchInput}
           />
         </div>
+        {/* 並び替えボタンのJSXを追加（filterHeaderの中に追加） */}
+        <div className={styles.sortButtons}>
+          <button
+            className={`${styles.sortButton} ${sortType === 'id' ? styles.active : ''}`}
+            onClick={() => setSortType('id')}
+          >
+            ID順
+          </button>
+          <button
+            className={`${styles.sortButton} ${sortType === 'rarity' ? styles.active : ''}`}
+            onClick={() => setSortType('rarity')}
+          >
+            レア度順
+          </button>
+          <button
+            className={`${styles.sortButton} ${sortType === 'obtained_date' ? styles.active : ''}`}
+            onClick={() => setSortType('obtained_date')}
+          >
+            獲得日順
+          </button>
+        </div>
         <div className={styles.rarityFilter}>
           <button
             className={`${styles.rarityButton} ${searchRarity === null ? styles.active : ''}`}
@@ -229,7 +324,7 @@ export default function CollectionPreview() {
           >
             全レアリティ
           </button>
-          {['UR', 'SR', 'R', 'N'].map((rarity) => (
+          {['N', 'R', 'SR', 'UR'].map((rarity) => (
             <button
               key={rarity}
               className={`${styles.rarityButton} ${searchRarity === rarity ? styles.active : ''}`}
@@ -260,13 +355,13 @@ export default function CollectionPreview() {
       </div>
     </div>
     <div className={styles.grid}>
-        {filteredParrots.map(parrot => (
+        {sortedAndFilteredParrots.map(parrot => (
           <div 
             key={parrot.parrot_id} 
             className={`
               ${styles.parrotCard} 
               ${parrot.obtained ? styles.obtained : ''} 
-              ${styles[`rarity${parrot.rarity.abbreviation}`]}
+              ${parrot.obtained ? styles[`rarity${parrot.rarity.abbreviation}`] : styles.unobtained}
             `}
             onClick={() => handleParrotClick(parrot)}
           >
@@ -279,7 +374,9 @@ export default function CollectionPreview() {
             </div>
             <div className={styles.parrotName}>
               <div>No.{parrot.parrot_id}</div>  {/* 番号を追加 */}
-                {parrot.name}
+                <div className={styles.parrotNameText}>
+                  {formatParrotName(parrot.name)}
+                </div>
                 <span 
                   className={`${styles.rarityBadge} ${styles[`rarityBadge${parrot.rarity.abbreviation}`]}`}
                 >
