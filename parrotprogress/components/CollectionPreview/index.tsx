@@ -190,7 +190,6 @@ export default function CollectionPreview() {
     const total = parrots.length;
     const obtained = parrots.filter(parrot => parrot.obtained).length;
     const percentage = Math.floor((obtained / total) * 100);
-    
     return {
       total,
       obtained,
@@ -200,17 +199,17 @@ export default function CollectionPreview() {
   
 
   const filteredParrots = parrots
-  .filter(parrot => {
-    // カテゴリーフィルター
-    const categoryMatch = selectedCategory ? parrot.category_id === selectedCategory : true;
-    // 名前での検索
-    const nameMatch = parrot.name.toLowerCase().includes(searchQuery.toLowerCase());
-    // レアリティでの検索
-    const rarityMatch = searchRarity ? parrot.rarity.abbreviation === searchRarity : true;
-    
-    return categoryMatch && nameMatch && rarityMatch;
-  })
-  .sort((a, b) => a.parrot_id - b.parrot_id);
+    .filter(parrot => {
+      // カテゴリーフィルター
+      const categoryMatch = selectedCategory ? parrot.category_id === selectedCategory : true;
+      // 名前での検索
+      const nameMatch = parrot.name.toLowerCase().includes(searchQuery.toLowerCase());
+      // レアリティでの検索
+      const rarityMatch = searchRarity ? parrot.rarity.abbreviation === searchRarity : true;
+      
+      return categoryMatch && nameMatch && rarityMatch;
+    })
+    .sort((a, b) => a.parrot_id - b.parrot_id);
 
   // 並び替え関数
   const sortParrots = (parrots: Parrot[]) => {
@@ -227,36 +226,35 @@ export default function CollectionPreview() {
         return new Date(b.user_parrots[0]?.obtained_at).getTime() - 
                new Date(a.user_parrots[0]?.obtained_at).getTime();
       });
-    case 'id':
-    default:
-      return [...parrots].sort((a, b) => a.parrot_id - b.parrot_id);
-  }
-};
-
-// フィルター適用後のパロットをさらに並び替え
-const sortedAndFilteredParrots = sortParrots(filteredParrots);
-
-// パロット名を処理する関数を追加
-// パロット名を処理する関数を修正
-const formatParrotName = (name: string) => {
-  // パロット名の長さが一定以上の場合のみ処理
-  if (name.length > 20) {  // この数値は調整可能
-    const parts = name.split('parrot');
-    if (parts.length > 1) {
-      return (
-        <>
-          {parts[0]}
-          <br />
-          parrot{parts[1]}
-        </>
-      );
+      case 'id':
+      default:
+        return [...parrots].sort((a, b) => a.parrot_id - b.parrot_id);
     }
-  }
-  // 短い名前やparrotを含まない名前はそのまま返す
-  return name;
-};
+  };
 
-if (loading) return <div>Loading...</div>;
+  // フィルター適用後のパロットをさらに並び替え
+  const sortedAndFilteredParrots = sortParrots(filteredParrots);
+
+    // パロット名を処理する関数
+    const formatParrotName = (name: string) => {
+      // パロット名の長さが一定以上の場合のみ処理
+      if (name.length > 20) {  // この数値は調整可能
+        const parts = name.split('parrot');
+        if (parts.length > 1) {
+          return (
+            <>
+              {parts[0]}
+              <br />
+              parrot{parts[1]}
+            </>
+          );
+        }
+      }
+      // 短い名前やparrotを含まない名前はそのまま返す
+      return name;
+    };
+
+    if (loading) return <div>Loading...</div>;
 
   return (
     <div className={styles.container}>
@@ -283,7 +281,6 @@ if (loading) return <div>Loading...</div>;
         />
       </div>
     </div>
-
     <div className={styles.filterSection}>
       <div className={styles.filterHeader}>
         <div className={styles.searchBox}>
