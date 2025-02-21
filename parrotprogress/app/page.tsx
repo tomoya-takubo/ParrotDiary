@@ -2,7 +2,11 @@
 import { ArrowRight, BookOpen, Gift, Timer } from 'lucide-react';
 import StartButton from '@/components/StartButton';
 import styles from '@/styles/Home.module.css';
+<<<<<<< HEAD
 import ParrotCollection from '@/components/ParrotCollection';
+=======
+import { ParrotCollection } from '../components/LandingPageSampleParrots/index.';
+>>>>>>> landingpage
 import { createClient } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
 
