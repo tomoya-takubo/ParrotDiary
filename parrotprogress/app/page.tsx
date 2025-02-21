@@ -3,10 +3,28 @@ import { ArrowRight, BookOpen, Gift, Timer } from 'lucide-react';
 import StartButton from './components/StartButton';
 import styles from './styles/Home.module.css';
 import { ParrotCollection } from './components/ParrotCollection';
+import { createClient } from '@supabase/supabase-js';
+import { useEffect, useState } from 'react';
 
+// Supabaseクライアントを作成
+const supabase = createClient(
+  'https://pjoolpfjjhnqyvohvixf.supabase.co', // SupabaseのURL
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBqb29scGZqamhucXl2b2h2aXhmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczOTExMTc0NywiZXhwIjoyMDU0Njg3NzQ3fQ.GAwD6pu5wBy27J5JMmX3kKQlghMleMdiEsrJ35wrTc4' // APIキー
+);
 
+const getSingleGifUrl = (folder: string, fileName: string) => {
+  return supabase.storage.from('Parrots').getPublicUrl(`${folder}/${fileName}`).data.publicUrl;
+};
 
 export default function Home() {
+
+  const [gifUrl, setGifUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const url = getSingleGifUrl('parrots', '60fpsparrot.gif');
+    setGifUrl(url);
+  }, []);
+
   return (
     <main className={styles.container}>
       <div className={styles.wrapper}>
@@ -14,10 +32,7 @@ export default function Home() {
           <h1 className={styles.title}> ぱろっとぷろぐれす </h1>
           <p className={styles.subtitle}>PartyParrotと一緒に楽しく継続</p>
           <div className={styles.heroParrot}>
-            <img
-              src="/images/60fpsparrot.gif"  /* パスを修正 */
-              alt="Party Parrot"
-            />
+            {gifUrl && <img src={gifUrl} alt="Party Parrot" />}
           </div>
           <StartButton />
         </div>
