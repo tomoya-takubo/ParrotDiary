@@ -1,7 +1,7 @@
 'use client'; 
 import { ArrowRight, BookOpen, Gift, Timer } from 'lucide-react';
 import StartButton from '@/components/StartButton';
-import styles from './styles/Home.module.css';
+import styles from '@/styles/Home.module.css';
 import ParrotCollection from '@/components/ParrotCollection';
 import { createClient } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
