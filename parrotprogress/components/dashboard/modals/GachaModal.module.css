@@ -1,0 +1,141 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modalContainer {
+  background-color: white;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 400px;
+  width: 100%;
+  margin: 0 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.modalTitle {
+  font-size: 24px;
+  font-weight: bold;
+  color: #1a202c;
+}
+
+.closeButton {
+  padding: 8px;
+  border-radius: 9999px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.closeButton:hover {
+  background-color: #f7fafc;
+}
+
+.initialState {
+  text-align: center;
+  padding: 32px 0;
+}
+
+.iconWrapper {
+  margin: 0 auto 16px;
+  color: #8b5cf6;
+}
+
+.prompt {
+  color: #4a5568;
+  margin-bottom: 24px;
+}
+
+.gachaButton {
+  padding: 12px 24px;
+  background: linear-gradient(to right, #ec4899, #8b5cf6);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.gachaButton:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.spinningState {
+  text-align: center;
+  padding: 48px 0;
+}
+
+.spinner {
+  height: 128px;
+  width: 128px;
+  border-radius: 50%;
+  border: 4px solid #f3f4f6;
+  border-top-color: #8b5cf6;
+  margin: 0 auto;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.spinnerText {
+  margin-top: 16px;
+  color: #4a5568;
+}
+
+.resultState {
+  text-align: center;
+  padding: 32px 0;
+}
+
+.resultImage {
+  width: 128px;
+  height: 128px;
+  margin: 0 auto 16px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.resultTitle {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.resultDescription {
+  color: #4a5568;
+  margin-bottom: 24px;
+}
+
+.closeResultButton {
+  padding: 12px 24px;
+  background-color: #e2e8f0;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.closeResultButton:hover {
+  background-color: #cbd5e0;
+}

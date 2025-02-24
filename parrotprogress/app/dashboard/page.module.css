@@ -1,0 +1,528 @@
+.pageContainer {
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #ebf4ff, #f5f3ff);
+  padding: 24px;
+}
+
+.contentContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.headerContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.appTitle {
+  font-size: 24px;
+  font-weight: bold;
+  color: #1a202c;
+}
+
+.navButtons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.divider {
+  height: 24px;
+  width: 1px;
+  background-color: #e2e8f0;
+}
+
+.navButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: white;
+  border-radius: 8px;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  /* Link要素用に追加 */
+  text-decoration: none; 
+  color: inherit;
+  font-size: inherit;
+  font-family: inherit;
+}
+
+.navButton:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.primaryButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: linear-gradient(to right, #ec4899, #8b5cf6);
+  color: white;
+  border-radius: 8px;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
+
+.primaryButton:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.statusCard {
+  background-color: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.statusCardContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.levelProgress {
+  width: 100%;
+}
+
+.levelInfo {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  font-size: 14px;
+  color: #718096;
+}
+
+.progressBarContainer {
+  height: 12px;
+  background-color: #f1f5f9;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.progressBar {
+  height: 100%;
+  background: linear-gradient(to right, #3b82f6, #8b5cf6);
+}
+
+.gachaButton {
+  width: 100%;
+  padding: 16px 24px;
+  background: linear-gradient(to right, #ec4899, #8b5cf6);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.gachaButton:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: scale(1.01);
+}
+
+.gachaButton:active {
+  transform: scale(1);
+}
+
+.ticketContainer {
+  position: absolute;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 16px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+}
+
+.ticketLabel {
+  font-size: 14px;
+}
+
+.ticketCount {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.gachaButtonContent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.timerCard {
+  background-color: white;
+  padding: 32px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.timerHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.timerIconContainer {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, #818cf8, #6366f1);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.timerTitleContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.timerTitle {
+  font-size: 24px;
+  font-weight: bold;
+  color: #1a202c;
+}
+
+.timerSubtitle {
+  color: #718096;
+}
+
+.timerOptions {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+
+.timerOption {
+  padding: 16px;
+  border-radius: 12px;
+  color: white;
+  cursor: pointer;
+  border: none;
+}
+
+.timerOptionTime {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.timerOptionLabel {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.statsCard {
+  background-color: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.statItem {
+  padding: 0 24px;
+}
+
+.statItem:not(:first-child) {
+  border-left: 1px solid #e2e8f0;
+}
+
+.statItem:first-child {
+  padding-left: 0;
+}
+
+.statItem:last-child {
+  padding-right: 0;
+}
+
+.statHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.statIconContainer {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.statInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.statLabel {
+  font-size: 14px;
+  color: #718096;
+}
+
+.statValue {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.statDescription {
+  font-size: 14px;
+  color: #4a5568;
+}
+
+/* 3行日記スタイル */
+.diaryContainer {
+  background-color: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.diaryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.diaryTitle {
+  font-size: 20px;
+  font-weight: bold;
+  color: #1a202c;
+}
+
+.diaryTools {
+  display: flex;
+  gap: 12px;
+}
+
+.diaryTool {
+  cursor: pointer;
+  color: #718096;
+}
+
+.diarySubtitle {
+  font-size: 14px;
+  color: #718096;
+  margin-bottom: 24px;
+}
+
+.tabsList {
+  display: flex;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 16px;
+}
+
+.tabsTrigger {
+  padding: 8px 16px;
+  font-size: 14px;
+  color: #718096;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+}
+
+.tabsTrigger.active {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
+}
+
+.diaryEntries {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.diaryEntry {
+  background-color: #f8fafc;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.entryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.entryTimestamp {
+  font-size: 14px;
+  color: #718096;
+}
+
+.entryTags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.entryTag {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  background-color: #e0f2fe;
+  color: #0284c7;
+}
+
+.recordTypeTag {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 9999px;
+}
+
+.immediateTag {
+  background-color: #dbeafe;
+  color: #2563eb;
+}
+
+.laterTag {
+  background-color: #f3e8ff;
+  color: #7e22ce;
+}
+
+.editButton {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  background-color: #f1f5f9;
+  color: #64748b;
+  border: none;
+  cursor: pointer;
+}
+
+.editButton:hover {
+  background-color: #e2e8f0;
+}
+
+.entryContent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.entryLine {
+  font-size: 16px;
+  color: #1e293b;
+}
+
+.emptyEntry {
+  font-size: 14px;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+/* モーダルスタイル */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modalContainer {
+  background-color: white;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 500px;
+  width: 100%;
+  margin: 0 16px;
+}
+
+.modalHeader {
+  margin-bottom: 24px;
+}
+
+.modalTitle {
+  font-size: 20px;
+  font-weight: bold;
+  color: #1a202c;
+}
+
+.modalContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inputLabel {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.textInput {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.cancelButton {
+  padding: 8px 16px;
+  border-radius: 8px;
+  background-color: #f1f5f9;
+  color: #64748b;
+  border: none;
+  cursor: pointer;
+}
+
+.cancelButton:hover {
+  background-color: #e2e8f0;
+}
+
+.saveButton {
+  padding: 8px 16px;
+  border-radius: 8px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.saveButton:hover {
+  background-color: #2563eb;
+}

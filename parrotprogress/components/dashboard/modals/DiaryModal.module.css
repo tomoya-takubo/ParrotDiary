@@ -1,0 +1,129 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modalContainer {
+  background-color: white;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 672px;
+  width: 100%;
+  margin: 0 16px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.headerTitleContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.diaryIcon {
+  color: #718096;
+}
+
+.modalTitle {
+  font-size: 24px;
+  font-weight: bold;
+  color: #1a202c;
+}
+
+.closeButton {
+  padding: 8px;
+  border-radius: 9999px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.closeButton:hover {
+  background-color: #f7fafc;
+}
+
+.entriesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.entryCard {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.entryHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.entryTime {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #718096;
+}
+
+.entryTags {
+  display: flex;
+  gap: 8px;
+}
+
+.entryTag {
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 9999px;
+  background-color: #f7fafc;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+.activityItem {
+  padding: 4px 0 4px 16px;
+  color: #4a5568;
+}
+
+.addRecordSection {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.addRecordButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background-color: #f7fafc;
+  border: none;
+  border-radius: 12px;
+  color: #4a5568;
+  cursor: pointer;
+}
+
+.addRecordButton:hover {
+  background-color: #edf2f7;
+}

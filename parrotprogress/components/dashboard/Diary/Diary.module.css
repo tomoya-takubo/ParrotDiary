@@ -1,0 +1,251 @@
+/* 3行日記コンテナ */
+.diaryContainer {
+  background-color: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* ヘッダー部分 */
+.diaryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.diaryTitle {
+  font-size: 20px;
+  font-weight: bold;
+  color: #1a202c;
+}
+
+.diaryTools {
+  display: flex;
+  gap: 12px;
+}
+
+.diaryTool {
+  cursor: pointer;
+  color: #718096;
+}
+
+.diaryTool:hover {
+  color: #4a5568;
+}
+
+.diarySubtitle {
+  font-size: 14px;
+  color: #718096;
+  margin-bottom: 24px;
+}
+
+/* タブ関連スタイル */
+.tabsList {
+  display: flex;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 16px;
+}
+
+.tabsTrigger {
+  padding: 8px 16px;
+  font-size: 14px;
+  color: #718096;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+}
+
+.tabsTrigger:hover {
+  color: #4a5568;
+}
+
+.tabsTrigger.active {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
+}
+
+/* 日記エントリーリスト */
+.diaryEntries {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 個別の日記エントリー */
+.diaryEntry {
+  background-color: #f8fafc;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.entryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.entryTimestamp {
+  font-size: 14px;
+  color: #718096;
+}
+
+.entryTags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.entryTag {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  background-color: #e0f2fe;
+  color: #0284c7;
+}
+
+.recordTypeTag {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 9999px;
+}
+
+.immediateTag {
+  background-color: #dbeafe;
+  color: #2563eb;
+}
+
+.laterTag {
+  background-color: #f3e8ff;
+  color: #7e22ce;
+}
+
+.editButton {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  background-color: #f1f5f9;
+  color: #64748b;
+  border: none;
+  cursor: pointer;
+}
+
+.editButton:hover {
+  background-color: #e2e8f0;
+}
+
+.entryContent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.entryLine {
+  font-size: 16px;
+  color: #1e293b;
+}
+
+.emptyEntry {
+  font-size: 14px;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+/* モーダルスタイル */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modalContainer {
+  background-color: white;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 500px;
+  width: 100%;
+  margin: 0 16px;
+}
+
+.modalHeader {
+  margin-bottom: 24px;
+}
+
+.modalTitle {
+  font-size: 20px;
+  font-weight: bold;
+  color: #1a202c;
+}
+
+.modalContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inputLabel {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.textInput {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.textInput:focus {
+  outline: none;
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.cancelButton {
+  padding: 8px 16px;
+  border-radius: 8px;
+  background-color: #f1f5f9;
+  color: #64748b;
+  border: none;
+  cursor: pointer;
+}
+
+.cancelButton:hover {
+  background-color: #e2e8f0;
+}
+
+.saveButton {
+  padding: 8px 16px;
+  border-radius: 8px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.saveButton:hover {
+  background-color: #2563eb;
+}

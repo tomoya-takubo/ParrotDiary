@@ -102,23 +102,23 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   };
   //#endregion
 
-//#region フォームに入力があるか確認
-const hasFormInput = useCallback(() => {
-  if (modalMode === 'reset') {
-    return email.length > 0;
-  }
-  return email.length > 0 || password.length > 0 || 
-    (modalMode === 'signup' && confirmPassword.length > 0);
-}, [email, password, confirmPassword, modalMode]); // `modalMode` を追加
-//#endregion
+  //#region フォームに入力があるか確認
+  const hasFormInput = useCallback(() => {
+    if (modalMode === 'reset') {
+      return email.length > 0;
+    }
+    return email.length > 0 || password.length > 0 || 
+      (modalMode === 'signup' && confirmPassword.length > 0);
+  }, [email, password, confirmPassword, modalMode]); // `modalMode` を追加
+  //#endregion
 
-//#region モーダルを閉じる前の確認
-const confirmClose = useCallback((): boolean => {
-  // `hasFormInput` の結果を取得してから判定する
-  if (!hasFormInput()) return true;
-  return window.confirm('入力内容が破棄されます。よろしいですか？');
-}, [hasFormInput]); // ✅ `modalMode` の依存は不要
-//#endregion
+  //#region モーダルを閉じる前の確認
+  const confirmClose = useCallback((): boolean => {
+    // `hasFormInput` の結果を取得してから判定する
+    if (!hasFormInput()) return true;
+    return window.confirm('入力内容が破棄されます。よろしいですか？');
+  }, [hasFormInput]); // ✅ `modalMode` の依存は不要
+  //#endregion
 
   //#region モーダルを閉じる処理
     const handleClose = useCallback(() => {
@@ -406,7 +406,6 @@ const confirmClose = useCallback((): boolean => {
                     <p className={styles.errorMessage}>{passwordError}</p>
                   )}
                 </div>
-
                 {modalMode === 'signup'  && (
                   <div className={styles.formGroup}>
                     <label className={styles.label}>パスワード（確認）</label>
@@ -419,7 +418,6 @@ const confirmClose = useCallback((): boolean => {
                     />
                   </div>
                 )}
-
                 <button 
                   type="submit" 
                   className={styles.submitButton}

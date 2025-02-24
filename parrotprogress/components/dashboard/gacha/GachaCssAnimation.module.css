@@ -1,0 +1,388 @@
+/* モーダル基本スタイル */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  backdrop-filter: blur(3px);
+}
+
+.modalContainer {
+  background-color: white;
+  border-radius: 12px;
+  padding: 24px;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 16px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+  animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes scaleOut {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+}
+
+.backgroundGlow {
+  position: absolute;
+  inset: 0;
+  opacity: 0.25;
+  background-size: 200% 100%;
+  animation: bgMove 5s linear infinite;
+}
+
+@keyframes bgMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.contentWrapper {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+}
+
+/* スピニングアニメーションスタイル */
+.spinningContainer {
+  padding: 48px 0;
+}
+
+.spinningCircle {
+  width: 128px;
+  height: 128px;
+  margin: 0 auto;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  animation: spin 0.8s linear infinite, scale 2.4s ease-in-out infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes scale {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    transform: scale(1.2) rotate(180deg);
+  }
+}
+
+.spinningImage {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+}
+
+.spinningText {
+  margin-top: 16px;
+  color: #4b5563;
+  font-weight: 500;
+  animation: blink 1s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* 結果表示スタイル */
+.resultContainer {
+  padding: 32px 0;
+  animation: springIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes springIn {
+  0% {
+    transform: scale(0);
+  }
+  70% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.particlesContainer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  filter: blur(1px);
+  animation: particleFloat 2s ease-out infinite;
+}
+
+@keyframes particleFloat {
+  0% {
+    transform: scale(0) translate(-50%, -50%);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1) translate(-50%, -50%);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0) translate(-50%, -50%);
+    opacity: 0;
+  }
+}
+
+.resultImageContainer {
+  position: relative;
+  animation: float 2s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-10px) scale(1.1);
+  }
+}
+
+.resultCircle {
+  width: 192px;
+  height: 192px;
+  margin: 0 auto;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  animation: gradientMove 5s linear infinite;
+  background-size: 200% 100%;
+}
+
+.ultraRareRotate {
+  animation: rotate 20s linear infinite, gradientMove 5s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes gradientMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.resultImageWrapper {
+  background-color: white;
+  border-radius: 50%;
+  padding: 8px;
+}
+
+.ultraRareCounterRotate {
+  animation: counterRotate 20s linear infinite;
+}
+
+@keyframes counterRotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+.resultImage {
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+}
+
+.resultInfoContainer {
+  margin-top: 24px;
+}
+
+.rarityTitle {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.parrotName {
+  font-size: 20px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: fadeIn 0.5s ease-in-out;
+  animation-delay: 0.4s;
+  opacity: 0;
+  animation-fill-mode: forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.starsContainer {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.starWrapper {
+  animation: starPulse 1s ease-in-out infinite;
+}
+
+.ultraRareStar {
+  animation: starRotate 2s linear infinite;
+}
+
+@keyframes starPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+@keyframes starRotate {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.2);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+.star {
+  width: 32px;
+  height: 32px;
+  color: #facc15;
+  fill: #facc15;
+}
+
+.probabilityContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #ec4899;
+  font-weight: 500;
+  margin-bottom: 24px;
+  animation: float 1s ease-in-out infinite;
+}
+
+.sparkle {
+  width: 20px;
+  height: 20px;
+}
+
+.closeButton {
+  padding: 12px 32px;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  position: relative;
+  animation: appear 0.6s ease-out forwards;
+  animation-delay: 0.6s;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+@keyframes appear {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.closeButton:hover {
+  opacity: 0.9;
+}
