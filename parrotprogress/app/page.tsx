@@ -2,9 +2,10 @@
 import { ArrowRight, BookOpen, Gift, Timer } from 'lucide-react';
 import StartButton from '@/components/StartButton';
 import styles from '@/styles/Home.module.css';
-import ParrotCollection from '@/components/ParrotCollection';
+import { ParrotCollection } from '@/components/ParrotCollection';
 import { createClient } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 
 // Supabaseクライアントを作成
 const supabase = createClient(
@@ -32,7 +33,7 @@ export default function Home() {
           <h1 className={styles.title}> ぱろっとぷろぐれす </h1>
           <p className={styles.subtitle}>PartyParrotと一緒に楽しく継続</p>
           <div className={styles.heroParrot}>
-            {gifUrl && <img src={gifUrl} alt="Party Parrot" />}
+            {gifUrl && <Image src={gifUrl} alt="Party Parrot" />}
           </div>
           <StartButton />
         </div>

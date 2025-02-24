@@ -1,11 +1,11 @@
 'use client';
 
+//#region インポート
 import { Card, CardContent } from './ui/Card';
 import styles from '../styles/Home.module.css';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useAuth } from '../hooks/useAuth';
-import { signIn, signUp } from '@/lib/auth';
 import { validateEmailFormat, validatePasswordStrength } from '../lib/validation';
+//#endregion
 
 type AuthModalProps = {
   isOpen: boolean;
@@ -14,10 +14,9 @@ type AuthModalProps = {
 
 type ModalMode = 'signin' | 'signup' | 'reset';
 
-
 export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
-  // フォームの状態を管理
+  //#region フォームの状態を管理
   const [modalMode, setModalMode] = useState<ModalMode>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,25 +31,14 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     type: 'success' | 'error';
     message: string;
   } | null>(null);
-  
+  //#endregion
 
-  const { user, login } = useAuth();
-
-  const emailInputRef = useRef<HTMLInputElement>(null);
-  const modalRef = useRef<HTMLDivElement>(null);
-
-  // サインインとサインアップのハンドラ
+  //#region サインインとサインアップのハンドラ
   const handleAuthSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!validateEmail(email) || !validatePassword(password)) return;
-  
     setIsLoading(true);
     try {
-      const userData = await (modalMode === 'signup' ? 
-        signUp(email, password) : 
-        signIn(email, password)
-      );
-      login(userData);
       setFormFeedback({
         type: 'success',
         message: modalMode === 'signup' ? 
@@ -70,15 +58,17 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       setIsLoading(false);
     }
   };
+  //#endregion
 
-  // パスワードの検証
+  //#region パスワードの検証
   const validatePassword = (pass: string) => {
     const validation = validatePasswordStrength(pass);
     setPasswordError(validation.message);
     return validation.isValid;
-    };
+  };
+  //#endregion
 
-  // タブ切り替え時にフォームをリセット
+  //#region タブ切り替え時にフォームをリセット
   const handleModeChange = (mode: ModalMode) => {
     setModalMode(mode);
     setEmail('');
@@ -89,7 +79,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setAuthError('');
     setFormFeedback(null);
   }
+  //#endregion
 
+  //#region モーダルを閉じたときにフォームをリセット
   const resetForm = () => {
     setEmail('');
     setPassword('');
@@ -100,48 +92,75 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setFormFeedback(null);
     setModalMode('signin');
   };
+  //#endregion
 
-  // emailバリデーション関数を追加
+  //#region emailバリデーション関数を追加
   const validateEmail = (email: string) => {
     const validation = validateEmailFormat(email);
     setEmailError(validation.message);
     return validation.isValid;
   };
+  //#endregion
 
-  // モーダルを閉じる処理
-  const handleClose = useCallback(() => {
+  //#region フォームに入力があるか確認
+  const hasFormInput = useCallback(() => {
     if (confirmClose()) {
-      setIsVisible(false);
-      setTimeout(() => {
-        onClose();
-        resetForm();  // 追加
-      }, 200);
+      if (modalMode === 'reset') {
+        return email.length > 0;
       }
-  }, [onClose]);
+      return email.length > 0 || password.length > 0 || 
+        (modalMode === 'signup' && confirmPassword.length > 0);
+    }
+  }, [email, password, confirmPassword]);
+  //#endregion
 
-  // オーバーレイクリックのハンドラを追加
+  //#region モーダルを閉じる前の確認
+  const confirmClose = useCallback((): boolean => {
+    if (!hasFormInput()) return true;
+    return window.confirm('入力内容が破棄されます。よろしいですか？');
+  }, [hasFormInput, modalMode]); // ✅ `modalMode` を追加
+  //#endregion
+
+  //#region モーダルを閉じる処理
+    const handleClose = useCallback(() => {
+      if (confirmClose()) {
+        setIsVisible(false);
+        setTimeout(() => {
+          onClose();
+          resetForm();
+        }, 200);
+      }
+    }, [confirmClose, onClose]); // ✅ `confirmClose` を追加
+    //#endregion
+
+  //#region オーバーレイクリックのハンドラを追加
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       handleClose();
     }
   };
+  //#endregion
 
-  // フォームに入力があるか確認
-  const hasFormInput = useCallback((): boolean => {
-    if (modalMode === 'reset') {
-      return email.length > 0;
-    }
-    return email.length > 0 || password.length > 0 || 
-      (modalMode === 'signup' && confirmPassword.length > 0);
-  }, [email, password, confirmPassword, modalMode]);
+  const emailInputRef = useRef<HTMLInputElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const confirmCloseRef = useRef(confirmClose);
 
-  // モーダルを閉じる前の確認
-  const confirmClose = (): boolean => {
-    if (!hasFormInput()) return true;
-    return window.confirm('入力内容が破棄されます。よろしいですか？');
-  };
+  //#region （コメント実装中）
+  useEffect(() => {
+    confirmCloseRef.current = () => {
+      if (!hasFormInput()) return true;
+      return window.confirm('入力内容が破棄されます。よろしいですか？');
+    };
+  }, [hasFormInput]);
+  //#endregion
 
-  // useEffectでisOpenの変更を監視
+  //#region（コメント実装中）
+  useEffect(() => {
+    confirmCloseRef.current = confirmClose;
+  }, [confirmClose]);
+  //#endregion
+
+  //#region useEffectでisOpenの変更を監視
   useEffect(() => {
     if (isOpen) {
       setIsVisible(true);
@@ -149,8 +168,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       setIsVisible(false);
     }
   }, [isOpen]);
+  //#endregion
 
-  // ESCキー検知のためのuseEffectを追加
+  //#region ESCキー検知のためのuseEffectを追加
   useEffect(() => {
     const handleEscKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -168,8 +188,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       };
     }
   }, [isOpen, handleClose]);
+  //#endregion
 
-  // ブラウザのページ離脱防止イベントの設定
+  //#region ブラウザのページ離脱防止イベントの設定
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (hasFormInput()) {
@@ -188,47 +209,48 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       };
     }
   }, [isOpen, hasFormInput]);
+  //#endregion
 
+  //#region モーダルを開いた時にメールアドレス入力欄にフォーカス
+  useEffect(() => {
+    if (isOpen && isVisible) {
+      emailInputRef.current?.focus();
+    }
+  }, [isOpen, isVisible]);
+  //#endregion
 
-    // モーダルを開いた時にメールアドレス入力欄にフォーカス
-    useEffect(() => {
-      if (isOpen && isVisible) {
-        emailInputRef.current?.focus();
-      }
-    }, [isOpen, isVisible]);
-  
-    // フォーカストラップの実装
-    useEffect(() => {
-      const handleTabKey = (e: KeyboardEvent) => {
-        if (e.key === 'Tab' && modalRef.current) {
-          const focusableElements = modalRef.current.querySelectorAll(
-            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-          );
-          const firstElement = focusableElements[0] as HTMLElement;
-          const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
-  
-          if (e.shiftKey) {
-            if (document.activeElement === firstElement) {
-              e.preventDefault();
-              lastElement.focus();
-            }
-          } else {
-            if (document.activeElement === lastElement) {
-              e.preventDefault();
-              firstElement.focus();
-            }
+  //#region フォーカストラップの実装
+  useEffect(() => {
+    const handleTabKey = (e: KeyboardEvent) => {
+      if (e.key === 'Tab' && modalRef.current) {
+        const focusableElements = modalRef.current.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        const firstElement = focusableElements[0] as HTMLElement;
+        const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement) {
+            e.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement.focus();
           }
         }
-      };
-  
-      if (isOpen) {
-        document.addEventListener('keydown', handleTabKey);
-        return () => {
-          document.removeEventListener('keydown', handleTabKey);
-        };
       }
-    }, [isOpen]);
-  
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleTabKey);
+      return () => {
+        document.removeEventListener('keydown', handleTabKey);
+      };
+    }
+  }, [isOpen]);
+  //#endregion
 
   if (!isOpen) return null;
 

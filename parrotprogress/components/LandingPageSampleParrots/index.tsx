@@ -3,19 +3,26 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import styles from '@/styles/Home.module.css';
+import Image from 'next/image';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 // Supabaseクライアントを作成
-const supabase = createClient(
-  'https://pjoolpfjjhnqyvohvixf.supabase.co', 
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBqb29scGZqamhucXl2b2h2aXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzkxMTE3NDcsImV4cCI6MjA1NDY4Nzc0N30.jmdewkn9T5s0vwRDuSiXw-ouPHKuoL_bjvpy-jxebu8');
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 // ランダムに指定数のファイルを選択する関数
-const getRandomFiles = (files: any[], count: number) => {
+const getRandomFiles = (files: string[], count: number) => {
   return [...files].sort(() => Math.random() - 0.5).slice(0, count);
 };
 
+type SupabaseFile = {
+  name: string;
+  id?: string; // フォルダには `id` がない可能性がある
+};
+
 // フォルダ内の全ファイルを再帰的に取得する関数
-const fetchAllFiles = async (path = '', allFiles: any[] = []) => {
+const fetchAllFiles = async (path = '', allFiles: string[] = []): Promise<string[]> => {
   const { data, error } = await supabase.storage.from('Parrots').list(path);
 
   if (error) {
@@ -23,15 +30,15 @@ const fetchAllFiles = async (path = '', allFiles: any[] = []) => {
     return allFiles;
   }
 
-  for (const item of data) {
+  for (const item of data as SupabaseFile[]) {
     const fullPath = path ? `${path}/${item.name}` : item.name;
 
-    if (item.id) {
+    if (!item.id) {
       // ファイルならリストに追加
-      allFiles.push(fullPath);
-    } else {
-      // フォルダなら再帰的に取得
       await fetchAllFiles(fullPath, allFiles);
+    } else {
+      // ファイルの場合、リストに追加
+      allFiles.push(fullPath);
     }
   }
   return allFiles;
@@ -75,7 +82,7 @@ export const ParrotCollection = () => {
     <div className={styles.parrotGrid}>
       {displayParrots.map((url, i) => (
         <div key={i} className={styles.parrotItem}>
-          <img src={url} alt={`Parrot ${i + 1}`} />
+          <Image src={url} alt={`Parrot ${i + 1}`} />
         </div>
       ))}
     </div>

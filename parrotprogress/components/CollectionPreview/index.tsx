@@ -31,17 +31,6 @@ type Parrot = {
 
 type SortType = 'id' | 'rarity' | 'obtained_date';
 
-// レアリティの型を定義
-type RarityId = 'UR' | 'SR' | 'R' | 'N';
-
-// rarityOrderをRecordとして定義
-const rarityOrder: Record<RarityId, number> = {
-  'UR': 0,
-  'SR': 1,
-  'R': 2,
-  'N': 3
-};
-
 type Category = {
   category_id: number;
   code: string;

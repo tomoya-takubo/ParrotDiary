@@ -1,6 +1,6 @@
 // src/lib/api/parrot.ts
 import { supabase } from '../supabase';
-import { Parrot, UserParrot, Category, Rarity } from '@/types/parrot';
+import { UserParrot } from '@/types/parrot';
 
 export const fetchParrotData = async (userId?: string) => {
   // パロット基本データの取得

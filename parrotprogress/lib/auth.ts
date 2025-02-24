@@ -1,6 +1,6 @@
-import { User } from "@/app/types/auth";
+import { User } from "@/types/auth";
 
-let users: User[] = [];  // 開発用の仮のデータストア
+const users: User[] = [];  // 開発用の仮のデータストア
 
 export async function signUp(email: string, password: string): Promise<User> {
   if (users.find(u => u.email === email)) {
