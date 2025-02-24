@@ -33,7 +33,7 @@ export default function Home() {
           <h1 className={styles.title}> ぱろっとぷろぐれす </h1>
           <p className={styles.subtitle}>PartyParrotと一緒に楽しく継続</p>
           <div className={styles.heroParrot}>
-            {gifUrl && <Image src={gifUrl} alt="Party Parrot" />}
+            {gifUrl && <Image src={gifUrl} alt="Party Parrot" width={400} height={400}/>}
           </div>
           <StartButton />
         </div>
