@@ -6,7 +6,7 @@ import styles from './page.module.css';
 import { useRouter } from 'next/navigation';
 
 // コンポーネントのインポート
-import GachaCssAnimation from '@/components/dashboard/gacha/GachaCssAnimation';
+import GachaAnimation from '@/components/dashboard/gacha/GachaAnimation';
 import DiaryModal from '@/components/dashboard/modals/DiaryModal';
 import ActivityHistory from '@/components/dashboard/ActivityHistory/ActivityHistory';
 import Diary from '@/components/dashboard/Diary/Diary';
@@ -78,6 +78,11 @@ export default function Dashboard() {
   };
   //#endregion
 
+  // ✅ `startGacha` をここで管理
+  const startGacha = () => {
+    setShowGachaModal(true);
+  };
+
   return (
     <div className={styles.pageContainer}>
       <div className={styles.contentContainer}>
@@ -117,11 +122,9 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* ガチャボタン */}
-            <button 
-              className={styles.gachaButton}
-              onClick={() => setShowGachaModal(true)}
-            >
+            <div>
+            {/* ✅ このボタンをクリックすると `startGacha` が発火 */}
+            <button className={styles.gachaButton} onClick={startGacha}>
               <div className={styles.ticketContainer}>
                 <span className={styles.ticketLabel}>チケット</span>
                 <span className={styles.ticketCount}>3枚</span>
@@ -133,6 +136,7 @@ export default function Dashboard() {
             </button>
           </div>
         </div>
+      </div>
 
         {/* フォーカスタイマー */}
         <div className={styles.timerCard}>
@@ -211,12 +215,12 @@ export default function Dashboard() {
         <Diary />
 
         {/* モーダルコンポーネント */}
-        <GachaCssAnimation
+        <GachaAnimation
           isOpen={showGachaModal}
+          startGacha={startGacha}
           onClose={() => setShowGachaModal(false)}
           tickets={3}
         />
-        
         <DiaryModal
           isOpen={showDiaryModal}
           onClose={() => setShowDiaryModal(false)}

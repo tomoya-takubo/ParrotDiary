@@ -6,7 +6,7 @@ import { ParrotCollection } from '@/components/ParrotCollection';
 import { createClient } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import GachaAnimation from '@/components/dashboard/gacha/GachaCssAnimation';
+import GachaAnimation from '@/components/dashboard/gacha/GachaAnimation';
 
 
 // Supabaseクライアントを作成
