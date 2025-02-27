@@ -72,7 +72,12 @@ const rarityConfigs: Record<RarityType, RarityConfig>  = {
   }
 } as const;
 
-const GachaAnimation: React.FC<GachaAnimationProps> = ({ isOpen, startGacha, onClose, tickets = 3 }) => {
+const GachaAnimation: React.FC<GachaAnimationProps> = ({ 
+  isOpen, 
+  startGacha, 
+  onClose, 
+  tickets = 3 
+}) => {
   // const [isOpen, setIsOpen] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [spinning, setSpinning] = useState(false);
@@ -175,7 +180,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({ isOpen, startGacha, onC
     onClose();
   };
 
-  if (!isMounted) return null; // 🚀 SSR でのエラーを防ぐ
+  if (!isOpen) return null; // 🚀 SSR でのエラーを防ぐ
 
   return (
     <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
