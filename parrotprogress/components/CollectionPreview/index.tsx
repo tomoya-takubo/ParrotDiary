@@ -46,6 +46,9 @@ export default function CollectionPreview() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchRarity, setSearchRarity] = useState<string | null>(null);
   const [sortType, setSortType] = useState<SortType>('id');
+  // #region 獲得済みフィルター用の状態変数
+  const [showObtainedOnly, setShowObtainedOnly] = useState<boolean>(false);
+  // #endregion
 
 
   const loadCategories = async () => {
@@ -187,6 +190,7 @@ export default function CollectionPreview() {
   };
   
 
+  // #region フィルター処理の更新部分
   const filteredParrots = parrots
     .filter(parrot => {
       // カテゴリーフィルター
@@ -195,10 +199,13 @@ export default function CollectionPreview() {
       const nameMatch = parrot.name.toLowerCase().includes(searchQuery.toLowerCase());
       // レアリティでの検索
       const rarityMatch = searchRarity ? parrot.rarity.abbreviation === searchRarity : true;
+      // 獲得済みフィルター
+      const obtainedMatch = showObtainedOnly ? parrot.obtained : true;
       
-      return categoryMatch && nameMatch && rarityMatch;
+      return categoryMatch && nameMatch && rarityMatch && obtainedMatch;
     })
     .sort((a, b) => a.parrot_id - b.parrot_id);
+  // #endregion
 
   // 並び替え関数
   const sortParrots = (parrots: Parrot[]) => {
@@ -282,7 +289,8 @@ export default function CollectionPreview() {
             className={styles.searchInput}
           />
         </div>
-        {/* 並び替えボタンのJSXを追加（filterHeaderの中に追加） */}
+
+        {/* 並び替えボタンのJSX */}
         <div className={styles.sortButtons}>
           <button
             className={`${styles.sortButton} ${sortType === 'id' ? styles.active : ''}`}
@@ -303,6 +311,18 @@ export default function CollectionPreview() {
             獲得日順
           </button>
         </div>
+
+        {/* #region 獲得済みフィルターボタン */}
+        <div className={styles.obtainedFilter}>
+          <button
+            className={`${styles.obtainedButton} ${showObtainedOnly ? styles.active : ''}`}
+            onClick={() => setShowObtainedOnly(!showObtainedOnly)}
+          >
+            {showObtainedOnly ? '全て表示' : '獲得済みのみ'}
+          </button>
+        </div>
+        {/* #endregion */}
+
         <div className={styles.rarityFilter}>
           <button
             className={`${styles.rarityButton} ${searchRarity === null ? styles.active : ''}`}

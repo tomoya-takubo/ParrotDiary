@@ -215,11 +215,13 @@ export default function Dashboard() {
         <Diary />
 
         {/* モーダルコンポーネント */}
+        {/* ガチャアニメーションコンポーネント */}
         <GachaAnimation
           isOpen={showGachaModal}
-          startGacha={startGacha}
+          startGacha={() => startGacha()} // この関数は内部で自動的に呼ばれるため空関数を渡す
           onClose={() => setShowGachaModal(false)}
           tickets={3}
+          userId={1} // 現在のログインユーザーID、認証システムと連携する場合は動的に変更
         />
         <DiaryModal
           isOpen={showDiaryModal}

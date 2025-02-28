@@ -517,3 +517,34 @@
     grid-template-columns: repeat(6, 180px);
   }
 }
+
+/* #region 獲得済みフィルター用のスタイル */
+.obtainedFilter {
+  display: flex;
+  align-items: center;
+}
+
+.obtainedButton {
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  border: 1px solid #e5e7eb;
+  background: white;
+  font-size: 0.875rem;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+.obtainedButton:hover {
+  background: #f3f4f6;
+}
+
+.obtainedButton.active {
+  background: #10B981; /* 緑色を使用して「獲得済み」であることを視覚的に示す */
+  color: white;
+  border-color: #10B981;
+}
+/* #endregion */
