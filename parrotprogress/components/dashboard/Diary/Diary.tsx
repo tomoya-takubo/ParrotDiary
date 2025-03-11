@@ -474,6 +474,8 @@ const Diary: React.FC = () => {
       return false;
     }
 
+    console.log("authUser.id:", authUser.id, "Type:", typeof authUser.id);
+
     try {
       const newEntry = {
         user_id: authUser.id,
@@ -484,6 +486,8 @@ const Diary: React.FC = () => {
         line2: line2 || null,
         line3: line3 || null,
       };
+
+      console.log("送信データ:", newEntry);
   
       const { data, error } = await supabase
         .from('diary_entries')
