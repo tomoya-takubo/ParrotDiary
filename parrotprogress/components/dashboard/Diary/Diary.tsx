@@ -1,3 +1,4 @@
+import { useAuth } from '@/lib/AuthContext'; // 認証コンテキストのインポート
 import React, { useState, useEffect } from 'react';
 import { Edit2, Edit3, Search, Plus, Calendar, Clock, Hash, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase'; // Supabaseクライアントのインポート
@@ -7,7 +8,7 @@ import styles from './Diary.module.css';
 // 3行日記エントリーの型定義
 type DiaryEntryType = {
   entry_id: number;
-  user_id: number;
+  user_id: string; // 文字列型に変更（Supabase Auth IDは文字列）
   recorded_at: string;
   session_id?: number | null;
   type_id: number; // 1: regular（通常）, 2: pomodoro（ポモドーロ） など
@@ -19,6 +20,13 @@ type DiaryEntryType = {
   tags?: string[]; // フロントエンド用のタグ情報
   pomodoroType?: string; // ポモドーロ情報（あれば）
   duration?: number; // ポモドーロの長さ（あれば）
+};
+
+// ユーザー情報の型定義
+type UserType = {
+  id: string;
+  email?: string;
+  user_metadata?: any;
 };
 
 // ダイアログの状態を管理する型
@@ -42,607 +50,6 @@ type TagType = {
   name: string;
   count: number;
   lastUsed: string;
-};
-//#endregion
-
-//#region メインのDiaryコンポーネント
-/**
- * 3行日記のメインコンポーネント
- * - Supabaseからデータを取得して表示
- * - 日記の追加・編集・削除機能
- * - ポモドーロセッションとの連携
- */
-const Diary: React.FC = () => {
-  // 状態管理
-  const [diaryEntries, setDiaryEntries] = useState<DiaryEntryType[]>([]);
-  const [pomodoroSessions, setPomodoroSessions] = useState<PomodoroSessionType[]>([]);
-  const [isLoading, setIsLoading] = useState(true); // データ読み込み中フラグ
-  const [error, setError] = useState<string | null>(null); // エラーメッセージ
-  const [activeTab, setActiveTab] = useState<'all' | 'pomodoro' | 'regular'>('all'); // 現在のタブ
-  const [modalState, setModalState] = useState<DiaryModalState>({
-    isOpen: false,
-    mode: 'edit',
-    entry: null
-  });
-  const [currentTag, setCurrentTag] = useState(''); // タグ入力値
-  const [selectedTags, setSelectedTags] = useState<string[]>([]); // 選択済みタグ
-  const [showTagSuggestions, setShowTagSuggestions] = useState(false); // タグ候補表示フラグ
-  
-  // ダミーのユーザーID（実際の実装では認証から取得）
-  const currentUserId = 1;
-
-  // タグリストのダミーデータ（実際の実装ではSuperbaseから取得）
-  const allTags: TagType[] = [
-    { id: 1, name: '英語学習', count: 42, lastUsed: '2024-03-09' },
-    { id: 2, name: 'プログラミング', count: 35, lastUsed: '2024-03-09' },
-    { id: 3, name: '集中できた', count: 28, lastUsed: '2024-03-09' },
-    { id: 4, name: '数学', count: 25, lastUsed: '2024-03-08' },
-    { id: 5, name: 'リーディング', count: 20, lastUsed: '2024-03-09' }
-  ];
-
-  // よく使うタグ（使用回数上位5件）
-  const frequentTags = allTags
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 5);
-
-  // 初期データ取得
-  useEffect(() => {
-    fetchDiaryEntries();
-    fetchPomodoroSessions();
-  }, []);
-
-//#region Supabaseデータ操作関連の関数
-
-  /**
-   * 日記エントリーをSupabaseから取得する関数
-   * - ユーザーIDでフィルタリング
-   * - 記録日時の新しい順に取得
-   */
-  const fetchDiaryEntries = async () => {
-    try {
-      setIsLoading(true);
-      // Supabaseから日記データを取得
-      const { data, error } = await supabase
-        .from('diary_entries')
-        .select('*')
-        .eq('user_id', currentUserId)
-        .order('recorded_at', { ascending: false });
-
-      if (error) throw error;
-
-      // タグ情報の取得（実際の実装ではここで関連するタグテーブルからデータを取得）
-      // 今回はデモのため、ダミーのタグを一部のエントリーに追加
-      const entriesWithTags = data.map((entry: DiaryEntryType, index: number) => {
-        // サンプルタグをランダムに割り当て
-        const randomTags = index % 2 === 0 
-          ? ['英語学習', '集中できた'] 
-          : ['プログラミング'];
-        
-        return { 
-          ...entry, 
-          tags: randomTags
-        };
-      });
-
-      setDiaryEntries(entriesWithTags);
-    } catch (err) {
-      console.error('日記データの取得エラー:', err);
-      setError('日記データの取得に失敗しました。');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  /**
-   * ポモドーロセッションをSupabaseから取得する関数
-   * - ポモドーロ関連の日記エントリー表示に使用
-   */
-  const fetchPomodoroSessions = async () => {
-    try {
-      // Supabaseからポモドーロセッションを取得
-      const { data, error } = await supabase
-        .from('pomodoro_sessions')
-        .select('*')
-        .eq('user_id', currentUserId)
-        .order('started_at', { ascending: false });
-
-      if (error) throw error;
-      setPomodoroSessions(data || []);
-    } catch (err) {
-      console.error('ポモドーロセッションの取得エラー:', err);
-    }
-  };
-
-  /**
-   * 日記エントリーを更新する関数
-   * @param entryId エントリーID
-   * @param line1 1行目のテキスト
-   * @param line2 2行目のテキスト
-   * @param line3 3行目のテキスト
-   * @returns 更新成功したかどうか
-   */
-  const updateDiaryEntry = async (entryId: number, line1: string, line2: string, line3: string) => {
-    try {
-      // Supabaseで日記エントリーを更新
-      const { error } = await supabase
-        .from('diary_entries')
-        .update({ 
-          line1, 
-          line2, 
-          line3, 
-          updated_at: new Date().toISOString() 
-        })
-        .eq('entry_id', entryId);
-
-      if (error) throw error;
-
-      // 成功したらエントリーリストを更新
-      setDiaryEntries(prev => 
-        prev.map(entry => 
-          entry.entry_id === entryId
-            ? { ...entry, line1, line2, line3, updated_at: new Date().toISOString() }
-            : entry
-        )
-      );
-
-      // タグの更新処理はここに追加（タグテーブルがある場合）
-      // 例: deleteTagsForEntry(entryId) -> insertNewTags(entryId, selectedTags)
-      
-      return true;
-    } catch (err) {
-      console.error('日記の更新エラー:', err);
-      setError('日記の更新に失敗しました。');
-      return false;
-    }
-  };
-
-  /**
-   * 新しい日記エントリーを作成する関数
-   * @param line1 1行目のテキスト
-   * @param line2 2行目のテキスト
-   * @param line3 3行目のテキスト
-   * @param typeId エントリータイプID（1: 通常, 2: ポモドーロ）
-   * @param sessionId ポモドーロセッションID（あれば）
-   * @returns 作成成功したかどうか
-   */
-  const createDiaryEntry = async (line1: string, line2: string, line3: string, typeId: number, sessionId: number | null = null) => {
-    try {
-      // 新しいエントリーオブジェクトを作成
-      // entry_idは指定せず、Supabaseに自動生成させる
-      const newEntry = {
-        user_id: currentUserId,
-        recorded_at: new Date(new Date().getTime() + 9 * 60 * 60 * 1000).toISOString(),  // 日本時間（UTC+9）を明示的に設定
-        session_id: sessionId,
-        type_id: typeId,
-        line1: line1 || null,
-        line2: line2 || null,
-        line3: line3 || null,
-        // created_atとupdated_atはデフォルト値があるので省略可能
-      };
-  
-      console.log('Creating new entry:', newEntry);
-  
-      // Supabaseで新しい日記エントリーを作成
-      const { data, error } = await supabase
-        .from('diary_entries')
-        .insert([newEntry])
-        .select();
-  
-      if (error) {
-        console.error('Supabase error details:', error);
-        throw error;
-      }
-  
-      // 成功したらエントリーリストを更新
-      if (data && data.length > 0) {
-        setDiaryEntries(prev => [
-          { ...data[0], tags: selectedTags },
-          ...prev
-        ]);
-        return true;
-      }
-      
-      return false;
-    } catch (err) {
-      console.error('日記の作成エラー:', err);
-      setError('日記の作成に失敗しました。');
-      return false;
-    }
-  };
-
-  /**
-   * 日記エントリーを削除する関数
-   * @param entryId 削除するエントリーID
-   * @returns 削除成功したかどうか
-   */
-  const deleteDiaryEntry = async (entryId: number) => {
-    try {
-      // Supabaseでエントリーを削除
-      const { error } = await supabase
-        .from('diary_entries')
-        .delete()
-        .eq('entry_id', entryId);
-
-      if (error) throw error;
-
-      // 成功したらエントリーリストから削除
-      setDiaryEntries(prev => prev.filter(entry => entry.entry_id !== entryId));
-      return true;
-    } catch (err) {
-      console.error('日記の削除エラー:', err);
-      setError('日記の削除に失敗しました。');
-      return false;
-    }
-  };
-  //#endregion
-
-//#region モーダル操作関連の関数
-  /**
-   * 編集モーダルを開く
-   * @param entry 編集対象のエントリー
-   */
-  const openEditModal = (entry: DiaryEntryType) => {
-    setModalState({
-      isOpen: true,
-      mode: 'edit',
-      entry
-    });
-    
-    // エントリーに関連するタグがあれば選択状態にする
-    if (entry.tags) {
-      setSelectedTags(entry.tags);
-    } else {
-      setSelectedTags([]);
-    }
-  };
-
-  /**
-   * 新規作成モーダルを開く
-   * @param typeId エントリータイプID（1: 通常, 2: ポモドーロ）
-   * @param sessionId 関連するポモドーロセッションID（オプション）
-   */
-  const openAddModal = (typeId: number = 1, sessionId: number | null = null) => {
-    // typeId: 1 = regular（通常）, 2 = pomodoro（ポモドーロ） など
-    const newEntry: DiaryEntryType = {
-      entry_id: -1, // 一時的なID
-      user_id: currentUserId,
-      recorded_at: new Date().toISOString(),
-      session_id: sessionId,
-      type_id: typeId,
-      line1: '',
-      line2: '',
-      line3: '',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-    
-    // ポモドーロセッションIDがある場合、関連する情報を追加
-    if (sessionId) {
-      const session = pomodoroSessions.find(s => s.session_id === sessionId);
-      if (session) {
-        newEntry.pomodoroType = session.pomodoro_type;
-        newEntry.duration = session.duration;
-      }
-    }
-    
-    setModalState({
-      isOpen: true,
-      mode: 'add',
-      entry: newEntry
-    });
-    
-    // タグをリセット
-    setSelectedTags([]);
-  };
-
-  /**
-   * モーダルを閉じる
-   */
-  const closeModal = () => {
-    setModalState(prev => ({ ...prev, isOpen: false }));
-    setCurrentTag('');
-    setShowTagSuggestions(false);
-  };
-  //#endregion
-
-  //#region 日記およびタグ操作関連の関数
-  /**
-   * 日記の保存処理
-   * - 入力検証を行い、問題なければ保存処理を実行
-   * @param line1 1行目のテキスト
-   * @param line2 2行目のテキスト
-   * @param line3 3行目のテキスト
-   * @returns 保存成功したかどうか
-   */
-  const handleSaveDiary = async (line1: string, line2: string, line3: string) => {
-    if (!modalState.entry) return false;
-
-    // 入力検証: line1が空ならline2とline3も空、line2が空ならline3も空であること
-    if ((!line1 && (line2 || line3)) || (!line2 && line3)) {
-      setError('入力順序に誤りがあります。前の行が空の場合、後の行にも入力できません。');
-      return false;
-    }
-
-    // 少なくとも1行は入力されているか確認
-    if (!line1 && !line2 && !line3) {
-      setError('少なくとも1行は入力してください。');
-      return false;
-    }
-
-    if (modalState.mode === 'edit') {
-      // 編集モードの場合
-      return await updateDiaryEntry(modalState.entry.entry_id, line1, line2, line3);
-    } else {
-      // 新規作成モードの場合
-      return await createDiaryEntry(
-        line1, 
-        line2, 
-        line3, 
-        modalState.entry.type_id,
-        modalState.entry.session_id
-      );
-    }
-  };
-
-  /**
-   * タブを切り替える
-   * @param tab 切り替え先のタブ値
-   */
-  const handleTabChange = (tab: 'all' | 'pomodoro' | 'regular') => {
-    setActiveTab(tab);
-  };
-
-  /**
-   * タグを追加する
-   * @param tagName 追加するタグ名
-   */
-  const handleAddTag = (tagName: string) => {
-    if (!selectedTags.includes(tagName)) {
-      setSelectedTags([...selectedTags, tagName]);
-    }
-    setCurrentTag('');
-    setShowTagSuggestions(false);
-  };
-
-  /**
-   * タグを削除する
-   * @param tagToRemove 削除するタグ名
-   */
-  const handleRemoveTag = (tagToRemove: string) => {
-    setSelectedTags(selectedTags.filter(tag => tag !== tagToRemove));
-  };
-
-  /**
-   * 現在のタブに表示するエントリーをフィルタリングする
-   * - 各タブごとに直近3件のみを表示
-   * @returns フィルタリングされた日記エントリーの配列（最大3件）
-   */
-  const getFilteredEntries = () => {
-    let filteredEntries;
-    
-    if (activeTab === 'all') {
-      // すべてのエントリー（最大3件）
-      filteredEntries = diaryEntries;
-    } else if (activeTab === 'pomodoro') {
-      // ポモドーロ関連のエントリーのみ
-      filteredEntries = diaryEntries.filter(entry => entry.type_id === 2 || entry.session_id !== null);
-    } else {
-      // 通常の記録のみ
-      filteredEntries = diaryEntries.filter(entry => entry.type_id === 1 && entry.session_id === null);
-    }
-    
-    // 日付順にソートして最大3件まで返す
-    return filteredEntries.slice(0, 3);
-  };
-
-  /**
-   * 日記タイプの表示名を取得する
-   * @param typeId タイプID
-   * @param sessionId セッションID
-   * @returns 表示用のタイプ名
-   */
-  const getDiaryTypeName = (typeId: number, sessionId: number | null) => {
-    if (typeId === 2 || sessionId !== null) {
-      return 'ポモドーロ';
-    }
-    return '通常';
-  };
-  //#endregion
-
-// ローディング中の表示
-if (isLoading) {
-  return (
-    <div className={styles.diaryContainer}>
-      <div className={styles.emptyEntry}>
-        <p>データを読み込み中...</p>
-      </div>
-    </div>
-  );
-}
-
-// エラー表示
-if (error) {
-  return (
-    <div className={styles.diaryContainer}>
-      <div className={styles.emptyEntry}>
-        <p className={styles.errorText}>{error}</p>
-        <button 
-          onClick={() => {
-            setError(null);
-            fetchDiaryEntries();
-          }}
-          className={styles.saveButton}
-        >
-          再試行
-        </button>
-      </div>
-    </div>
-  );
-}
-
-return (
-  <div className={styles.diaryContainer}>
-    {/* ヘッダー */}
-    <div className={styles.diaryHeader}>
-      <h2 className={styles.diaryTitle}>3行日記</h2>
-      <div className={styles.diaryTools}>
-      <span title="新規日記を作成">
-        <Edit2 
-          size={20} 
-          className={styles.diaryTool} 
-          onClick={() => openAddModal(1)}
-        />
-      </span>
-      <span title="日記を検索">
-        <Search size={20} className={styles.diaryTool} />
-      </span>
-      </div>
-    </div>
-    
-    {/* サブヘッダー */}
-    <div className={styles.diarySubtitle}>
-      今日の出来事を3行で記録しましょう
-    </div>
-
-    {/* タブと日記エントリー */}
-    <div>
-      {/* タブ切り替え */}
-      <div className={styles.tabsList}>
-        <button 
-          className={`${styles.tabsTrigger} ${activeTab === 'all' ? styles.active : ''}`}
-          onClick={() => handleTabChange('all')}
-        >
-          すべて
-        </button>
-        <button 
-          className={`${styles.tabsTrigger} ${activeTab === 'pomodoro' ? styles.active : ''}`}
-          onClick={() => handleTabChange('pomodoro')}
-        >
-          ポモドーロ
-        </button>
-        <button 
-          className={`${styles.tabsTrigger} ${activeTab === 'regular' ? styles.active : ''}`}
-          onClick={() => handleTabChange('regular')}
-        >
-          通常の記録
-        </button>
-      </div>
-
-      {/* 日記エントリーリスト */}
-      <div className={styles.diaryEntries}>
-        {getFilteredEntries().length === 0 ? (
-          <div className={styles.emptyEntry}>
-            記録がありません
-          </div>
-        ) : (
-          getFilteredEntries().map(entry => (
-            <div key={entry.entry_id} className={styles.diaryEntry}>
-              <div className={styles.entryHeader}>
-                <div className={styles.entryTimestamp}>
-                  記録時刻: {new Date(entry.recorded_at).toLocaleString('ja-JP')}
-                  {entry.session_id && entry.pomodoroType && (
-                    <span style={{ marginLeft: '8px' }}>
-                      {entry.pomodoroType} ({entry.duration}分)
-                    </span>
-                  )}
-                </div>
-                <div className={styles.entryTags}>
-                  <span className={`${styles.recordTypeTag} ${entry.type_id === 2 ? styles.immediateTag : styles.laterTag}`}>
-                    {getDiaryTypeName(entry.type_id, entry.session_id ?? null)}
-                  </span>
-                  {entry.tags?.map((tag, index) => (
-                    <span key={index} className={styles.entryTag}>
-                      #{tag}
-                    </span>
-                  ))}
-                  <button
-                    onClick={() => openEditModal(entry)}
-                    className={styles.editButton}
-                  >
-                    {entry.line1 ? '編集' : '記録する'}
-                  </button>
-                </div>
-              </div>
-              
-              {entry.line1 ? (
-                <div className={styles.entryContent}>
-                  <div className={styles.entryLine}>{entry.line1}</div>
-                  {entry.line2 && <div className={styles.entryLine}>{entry.line2}</div>}
-                  {entry.line3 && <div className={styles.entryLine}>{entry.line3}</div>}
-                </div>
-              ) : (
-                <div className={styles.emptyEntry}>
-                  まだ記録がありません
-                </div>
-              )}
-            </div>
-          ))
-        )}
-      </div>
-    </div>
-
-    {/* 編集/作成モーダル */}
-    {modalState.isOpen && modalState.entry && (
-      <div 
-        className={styles.modalOverlay}
-        onClick={(e) => {
-          if (e.target === e.currentTarget) {
-            closeModal();
-          }
-        }}
-      >
-        <div className={styles.modalContainer}>
-          <button
-            onClick={closeModal}
-            className={styles.closeButton}
-            aria-label="閉じる"
-          >
-            <X size={20} />
-          </button>
-          
-          <div className={styles.modalHeader}>
-            <h2 className={styles.modalTitle}>
-              {modalState.mode === 'edit' ? '3行日記を編集' : '3行日記を作成'}
-            </h2>
-          </div>
-          <div className={styles.modalContent}>
-            <div className={styles.entryTimestamp}>
-              {new Date(modalState.entry.recorded_at).toLocaleString('ja-JP')} の記録
-              {modalState.entry.session_id && modalState.entry.pomodoroType && (
-                <span style={{ marginLeft: '8px' }}>
-                  {modalState.entry.pomodoroType} ({modalState.entry.duration}分)
-                </span>
-              )}
-            </div>
-            
-            {/* 3行日記フォームコンポーネント */}
-            <DiaryForm 
-              entry={modalState.entry}
-              selectedTags={selectedTags}
-              currentTag={currentTag}
-              showTagSuggestions={showTagSuggestions}
-              allTags={allTags}
-              frequentTags={frequentTags}
-              onTagInput={(value) => {
-                setCurrentTag(value);
-                setShowTagSuggestions(value.length > 0);
-              }}
-              onAddTag={handleAddTag}
-              onRemoveTag={handleRemoveTag}
-              onSave={async (line1, line2, line3) => {
-                const success = await handleSaveDiary(line1, line2, line3);
-                if (success) {
-                  closeModal();
-                }
-              }}
-              onCancel={closeModal}
-            />
-          </div>
-        </div>
-      </div>
-    )}
-  </div>
-);
 };
 //#endregion
 
@@ -688,10 +95,6 @@ const DiaryForm: React.FC<DiaryFormProps> = ({
 
   /**
    * 入力検証を行う関数
-   * - line1が空ならline2とline3も空であること
-   * - line2が空ならline3も空であること
-   * - 少なくとも1行は入力されていること
-   * @returns 検証結果（true: 問題なし、false: エラーあり）
    */
   const validateForm = () => {
     // 空白を除去して検証
@@ -725,7 +128,6 @@ const DiaryForm: React.FC<DiaryFormProps> = ({
 
   /**
    * フォームの送信処理
-   * - 入力検証を行い、問題なければ保存処理を実行
    */
   const handleSubmit = () => {
     if (validateForm()) {
@@ -735,7 +137,6 @@ const DiaryForm: React.FC<DiaryFormProps> = ({
 
   /**
    * 2行目の入力フィールドの変更ハンドラ
-   * - 1行目が空の場合は入力できないようにする
    */
   const handleLine2Change = (value: string) => {
     if (!line1.trim() && value.trim()) {
@@ -748,7 +149,6 @@ const DiaryForm: React.FC<DiaryFormProps> = ({
 
   /**
    * 3行目の入力フィールドの変更ハンドラ
-   * - 1行目または2行目が空の場合は入力できないようにする
    */
   const handleLine3Change = (value: string) => {
     if ((!line1.trim() || !line2.trim()) && value.trim()) {
@@ -780,7 +180,7 @@ const DiaryForm: React.FC<DiaryFormProps> = ({
         </div>
       )}
 
-      {/* 3行入力フィールド */}
+      {/* 入力フィールド */}
       <div className={styles.inputGroup}>
         <div className={styles.inputWrapper}>
           <input
@@ -788,7 +188,6 @@ const DiaryForm: React.FC<DiaryFormProps> = ({
             value={line1}
             onChange={(e) => setLine1(e.target.value)}
             className={styles.textInput}
-            // placeholder="できたこと（例：英語の単語を50個覚えた）"
             maxLength={50}
           />
           <span className={styles.charCount}>
@@ -804,7 +203,6 @@ const DiaryForm: React.FC<DiaryFormProps> = ({
             value={line2}
             onChange={(e) => handleLine2Change(e.target.value)}
             className={styles.textInput}
-            // placeholder="気づいたこと（例：音読すると記憶に残りやすい）"
             maxLength={50}
             disabled={!line1.trim()}
           />
@@ -821,7 +219,6 @@ const DiaryForm: React.FC<DiaryFormProps> = ({
             value={line3}
             onChange={(e) => handleLine3Change(e.target.value)}
             className={styles.textInput}
-            // placeholder="明日やりたいこと（例：リスニング練習を増やす）"
             maxLength={50}
             disabled={!line1.trim() || !line2.trim()}
           />
@@ -935,11 +332,575 @@ const DiaryForm: React.FC<DiaryFormProps> = ({
         <Edit3 size={20} />
         記録する
       </button>
-
     </div>
   );
 };
 //#endregion
 
-export default Diary;
+/**
+ * 3行日記のメインコンポーネント
+ */
+const Diary: React.FC = () => {
 
+  const { user: authUser, isLoading: authLoading } = useAuth();
+
+  // 状態管理
+  const [diaryEntries, setDiaryEntries] = useState<DiaryEntryType[]>([]);
+  const [pomodoroSessions, setPomodoroSessions] = useState<PomodoroSessionType[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'all' | 'pomodoro' | 'regular'>('all');
+  const [modalState, setModalState] = useState<DiaryModalState>({
+    isOpen: false,
+    mode: 'edit',
+    entry: null
+  });
+  const [currentTag, setCurrentTag] = useState('');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [showTagSuggestions, setShowTagSuggestions] = useState(false);
+
+
+  // タグリストのデータ
+  const allTags: TagType[] = [
+    { id: 1, name: '英語学習', count: 42, lastUsed: '2024-03-09' },
+    { id: 2, name: 'プログラミング', count: 35, lastUsed: '2024-03-09' },
+    { id: 3, name: '集中できた', count: 28, lastUsed: '2024-03-09' },
+    { id: 4, name: '数学', count: 25, lastUsed: '2024-03-08' },
+    { id: 5, name: 'リーディング', count: 20, lastUsed: '2024-03-09' }
+  ];
+
+  // よく使うタグ
+  const frequentTags = allTags
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
+  // ユーザー情報が変更されたときにデータを取得
+  useEffect(() => {
+    if (authUser) {
+      console.log('認証フックからユーザー情報取得:', authUser);
+      fetchDiaryEntries();
+      fetchPomodoroSessions();
+    } else if (!authLoading) {
+      // 認証読み込み完了後にユーザーがいない場合
+      setError('ログインが必要です。');
+      setIsLoading(false);
+    }
+  }, [authUser, authLoading]);
+
+  /**
+   * 日記エントリーを取得する関数
+   */
+  const fetchDiaryEntries = async () => {
+    if (!authUser) return;
+
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('diary_entries')
+        .select('*')
+        .eq('user_id', authUser.id)
+        .order('recorded_at', { ascending: false });
+
+      if (error) throw error;
+
+      // データ処理...
+      const entriesWithTags = data ? data.map((entry: DiaryEntryType, index: number) => {
+        const randomTags = index % 2 === 0 
+          ? ['英語学習', '集中できた'] 
+          : ['プログラミング'];
+        
+        return { 
+          ...entry, 
+          tags: randomTags
+        };
+      }) : [];
+
+      setDiaryEntries(entriesWithTags);
+    } catch (err) {
+      console.error('日記データの取得エラー:', err);
+      setError('日記データの取得に失敗しました。');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchPomodoroSessions = async () => {
+    if (!authUser) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('pomodoro_sessions')
+        .select('*')
+        .eq('user_id', authUser.id)
+        .order('started_at', { ascending: false });
+
+      if (error) throw error;
+      setPomodoroSessions(data || []);
+    } catch (err) {
+      console.error('ポモドーロセッションの取得エラー:', err);
+    }
+  };
+
+  // エントリー更新関数
+  const updateDiaryEntry = async (entryId: number, line1: string, line2: string, line3: string) => {
+    try {
+      const { data: entryData, error: entryError } = await supabase
+        .from('diary_entries')
+        .select('user_id')
+        .eq('entry_id', entryId)
+        .single();
+
+      if (entryError) throw entryError;
+
+      if (entryData.user_id !== authUser?.id) {
+        setError('このエントリーを編集する権限がありません。');
+        return false;
+      }
+
+      // 更新処理...
+
+      return true;
+    } catch (err) {
+      console.error('日記の更新エラー:', err);
+      setError('日記の更新に失敗しました。');
+      return false;
+    }
+  };
+
+  // 新規エントリー作成関数
+  const createDiaryEntry = async (line1: string, line2: string, line3: string, typeId: number, sessionId: number | null = null) => {
+    if (!authUser) {
+      setError('ログインが必要です。');
+      return false;
+    }
+
+    try {
+      const newEntry = {
+        user_id: authUser.id,
+        recorded_at: new Date(new Date().getTime() + 9 * 60 * 60 * 1000).toISOString(),
+        session_id: sessionId,
+        type_id: typeId,
+        line1: line1 || null,
+        line2: line2 || null,
+        line3: line3 || null,
+      };
+  
+      const { data, error } = await supabase
+        .from('diary_entries')
+        .insert([newEntry])
+        .select();
+  
+      if (error) throw error;
+  
+      if (data && data.length > 0) {
+        setDiaryEntries(prev => [
+          { ...data[0], tags: selectedTags },
+          ...prev
+        ]);
+        return true;
+      }
+    } catch (err) {
+      console.error('日記の作成エラー:', err);
+      setError('日記の作成に失敗しました');
+      return false;
+    }
+  };
+
+  /**
+   * 日記エントリーを削除する関数
+   */
+  const deleteDiaryEntry = async (entryId: number) => {
+    try {
+      const { data: entryData, error: entryError } = await supabase
+        .from('diary_entries')
+        .select('user_id')
+        .eq('entry_id', entryId)
+        .single();
+
+      if (entryError) throw entryError;
+
+      if (entryData.user_id !== authUser?.id) {
+        setError('このエントリーを削除する権限がありません。');
+        return false;
+      }
+
+      const { error } = await supabase
+        .from('diary_entries')
+        .delete()
+        .eq('entry_id', entryId);
+
+      if (error) throw error;
+
+      setDiaryEntries(prev => prev.filter(entry => entry.entry_id !== entryId));
+      return true;
+    } catch (err) {
+      console.error('日記の削除エラー:', err);
+      setError('日記の削除に失敗しました');
+      return false;
+    }
+  };
+
+  /**
+   * 編集モーダルを開く
+   */
+  const openEditModal = (entry: DiaryEntryType) => {
+    setModalState({
+      isOpen: true,
+      mode: 'edit',
+      entry
+    });
+    
+    if (entry.tags) {
+      setSelectedTags(entry.tags);
+    } else {
+      setSelectedTags([]);
+    }
+  };
+
+  /**
+   * 新規作成モーダルを開く
+   */
+  const openAddModal = (typeId: number = 1, sessionId: number | null = null) => {
+    if (!authUser) {
+      setError('ログインが必要です');
+      return;
+    }
+    
+    const newEntry: DiaryEntryType = {
+      entry_id: -1,
+      user_id: authUser.id,
+      recorded_at: new Date().toISOString(),
+      session_id: sessionId,
+      type_id: typeId,
+      line1: '',
+      line2: '',
+      line3: '',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    if (sessionId) {
+      const session = pomodoroSessions.find(s => s.session_id === sessionId);
+      if (session) {
+        newEntry.pomodoroType = session.pomodoro_type;
+        newEntry.duration = session.duration;
+      }
+    }
+    
+    
+    setModalState({
+      isOpen: true,
+      mode: 'add',
+      entry: newEntry
+    });
+    
+    setSelectedTags([]);
+  };
+
+  /**
+   * モーダルを閉じる
+   */
+  const closeModal = () => {
+    setModalState(prev => ({ ...prev, isOpen: false }));
+    setCurrentTag('');
+    setShowTagSuggestions(false);
+  };
+
+  /**
+   * 日記の保存処理
+   */
+  const handleSaveDiary = async (line1: string, line2: string, line3: string) => {
+    if (!modalState.entry) return false;
+
+    if ((!line1 && (line2 || line3)) || (!line2 && line3)) {
+      setError('入力順序に誤りがあります。前の行が空の場合、後の行にも入力できません。');
+      return false;
+    }
+
+    if (!line1 && !line2 && !line3) {
+      setError('少なくとも1行は入力してください。');
+      return false;
+    }
+
+    if (modalState.mode === 'edit') {
+      return await updateDiaryEntry(modalState.entry.entry_id, line1, line2, line3);
+    } else {
+      return await createDiaryEntry(
+        line1, 
+        line2, 
+        line3, 
+        modalState.entry.type_id,
+        modalState.entry.session_id
+      );
+    }
+  };
+
+  /**
+   * タブを切り替える
+   */
+  const handleTabChange = (tab: 'all' | 'pomodoro' | 'regular') => {
+    setActiveTab(tab);
+  };
+
+  /**
+   * タグを追加する
+   */
+  const handleAddTag = (tagName: string) => {
+    if (!selectedTags.includes(tagName)) {
+      setSelectedTags([...selectedTags, tagName]);
+    }
+    setCurrentTag('');
+    setShowTagSuggestions(false);
+  };
+
+  /**
+   * タグを削除する
+   */
+  const handleRemoveTag = (tagToRemove: string) => {
+    setSelectedTags(selectedTags.filter(tag => tag !== tagToRemove));
+  };
+
+  /**
+   * 表示するエントリーをフィルタリングする
+   */
+  const getFilteredEntries = () => {
+    let filteredEntries;
+    
+    if (activeTab === 'all') {
+      filteredEntries = diaryEntries;
+    } else if (activeTab === 'pomodoro') {
+      filteredEntries = diaryEntries.filter(entry => entry.type_id === 2 || entry.session_id !== null);
+    } else {
+      filteredEntries = diaryEntries.filter(entry => entry.type_id === 1 && entry.session_id === null);
+    }
+    
+    return filteredEntries.slice(0, 3);
+  };
+
+  /**
+   * 日記タイプの表示名を取得する
+   */
+  const getDiaryTypeName = (typeId: number, sessionId: number | null) => {
+    if (typeId === 2 || sessionId !== null) {
+      return 'ポモドーロ';
+    }
+    return '通常';
+  };
+
+  // 認証エラー状態のレンダリング
+  if (!authUser && !authLoading && !isLoading) {
+    return (
+      <div className={styles.diaryContainer}>
+        <div className={styles.emptyEntry}>
+          <p className={styles.errorText}>この機能を利用するにはログインが必要です。</p>
+          {/* ログインリンクなど */}
+        </div>
+      </div>
+    );
+  }
+
+  // ローディング中のレンダリング
+  if (authLoading || isLoading) {
+    return (
+      <div className={styles.diaryContainer}>
+        <div className={styles.emptyEntry}>
+          <p>データを読み込み中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // エラー表示のレンダリング
+  if (error && !isLoading) {
+    return (
+      <div className={styles.diaryContainer}>
+        <div className={styles.emptyEntry}>
+          <p className={styles.errorText}>{error}</p>
+          <button 
+            onClick={() => {
+              setError(null);
+              fetchDiaryEntries();
+            }}
+            className={styles.saveButton}
+          >
+            再試行
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // メインのレンダリング
+  return (
+    <div className={styles.diaryContainer}>
+      {/* ヘッダー */}
+      <div className={styles.diaryHeader}>
+        <h2 className={styles.diaryTitle}>3行日記</h2>
+        <div className={styles.diaryTools}>
+          <span title="新規日記を作成">
+            <Edit2 
+              size={20} 
+              className={styles.diaryTool} 
+              onClick={() => openAddModal(1)}
+            />
+          </span>
+          <span title="日記を検索">
+            <Search size={20} className={styles.diaryTool} />
+          </span>
+        </div>
+      </div>
+      
+      {/* ユーザー情報表示 */}
+      {authUser && (
+        <div className={styles.diarySubtitle}>
+          {authUser.email || authUser.user_metadata?.name || 'ログインユーザー'}さんの日記
+        </div>
+      )}
+      
+      {/* サブヘッダー */}
+      <div className={styles.diarySubtitle}>
+        今日の出来事を3行で記録しましょう
+      </div>
+
+      {/* タブと日記エントリー */}
+      <div>
+        {/* タブ切り替え */}
+        <div className={styles.tabsList}>
+          <button 
+            className={`${styles.tabsTrigger} ${activeTab === 'all' ? styles.active : ''}`}
+            onClick={() => handleTabChange('all')}
+          >
+            すべて
+          </button>
+          <button 
+            className={`${styles.tabsTrigger} ${activeTab === 'pomodoro' ? styles.active : ''}`}
+            onClick={() => handleTabChange('pomodoro')}
+          >
+            ポモドーロ
+          </button>
+          <button 
+            className={`${styles.tabsTrigger} ${activeTab === 'regular' ? styles.active : ''}`}
+            onClick={() => handleTabChange('regular')}
+          >
+            通常の記録
+          </button>
+        </div>
+
+        {/* 日記エントリーリスト */}
+        <div className={styles.diaryEntries}>
+          {getFilteredEntries().length === 0 ? (
+            <div className={styles.emptyEntry}>
+              記録がありません
+            </div>
+          ) : (
+            getFilteredEntries().map(entry => (
+              <div key={entry.entry_id} className={styles.diaryEntry}>
+                <div className={styles.entryHeader}>
+                  <div className={styles.entryTimestamp}>
+                    記録時刻: {new Date(entry.recorded_at).toLocaleString('ja-JP')}
+                    {entry.session_id && entry.pomodoroType && (
+                      <span style={{ marginLeft: '8px' }}>
+                        {entry.pomodoroType} ({entry.duration}分)
+                      </span>
+                    )}
+                  </div>
+                  <div className={styles.entryTags}>
+                    <span className={`${styles.recordTypeTag} ${entry.type_id === 2 ? styles.immediateTag : styles.laterTag}`}>
+                      {getDiaryTypeName(entry.type_id, entry.session_id ?? null)}
+                    </span>
+                    {entry.tags?.map((tag, index) => (
+                      <span key={index} className={styles.entryTag}>
+                        #{tag}
+                      </span>
+                    ))}
+                    <button
+                      onClick={() => openEditModal(entry)}
+                      className={styles.editButton}
+                    >
+                      {entry.line1 ? '編集' : '記録する'}
+                    </button>
+                  </div>
+                </div>
+                
+                {entry.line1 ? (
+                  <div className={styles.entryContent}>
+                    <div className={styles.entryLine}>{entry.line1}</div>
+                    {entry.line2 && <div className={styles.entryLine}>{entry.line2}</div>}
+                    {entry.line3 && <div className={styles.entryLine}>{entry.line3}</div>}
+                  </div>
+                ) : (
+                  <div className={styles.emptyEntry}>
+                    まだ記録がありません
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* 編集/作成モーダル */}
+      {modalState.isOpen && modalState.entry && (
+        <div 
+          className={styles.modalOverlay}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              closeModal();
+            }
+          }}
+        >
+          <div className={styles.modalContainer}>
+            <button
+              onClick={closeModal}
+              className={styles.closeButton}
+              aria-label="閉じる"
+            >
+              <X size={20} />
+            </button>
+            
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>
+                {modalState.mode === 'edit' ? '3行日記を編集' : '3行日記を作成'}
+              </h2>
+            </div>
+            <div className={styles.modalContent}>
+              <div className={styles.entryTimestamp}>
+                {new Date(modalState.entry.recorded_at).toLocaleString('ja-JP')} の記録
+                {modalState.entry.session_id && modalState.entry.pomodoroType && (
+                  <span style={{ marginLeft: '8px' }}>
+                    {modalState.entry.pomodoroType} ({modalState.entry.duration}分)
+                  </span>
+                )}
+              </div>
+              
+              {/* 3行日記フォームコンポーネント */}
+              <DiaryForm 
+                entry={modalState.entry}
+                selectedTags={selectedTags}
+                currentTag={currentTag}
+                showTagSuggestions={showTagSuggestions}
+                allTags={allTags}
+                frequentTags={frequentTags}
+                onTagInput={(value: string) => {
+                  setCurrentTag(value);
+                  setShowTagSuggestions(value.length > 0);
+                }}
+                onAddTag={handleAddTag}
+                onRemoveTag={handleRemoveTag}
+                onSave={async (line1: string, line2: string, line3: string) => {
+                  const success = await handleSaveDiary(line1, line2, line3);
+                  if (success) {
+                    closeModal();
+                  }
+                }}
+                onCancel={closeModal}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Diary;

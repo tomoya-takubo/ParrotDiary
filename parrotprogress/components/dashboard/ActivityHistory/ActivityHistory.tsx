@@ -151,7 +151,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ onCellClick, width = 
           // .lte('recorded_at', formatDateString(today));
 
           // デバッグ出力
-          console.log('取得したデータ:', data);
+          // console.log('取得したデータ:', data);
           // console.log('今日の日付:', formatDateString(today));
         
         if (error) {
