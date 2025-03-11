@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Timer, Star, Gift, Book, Award, Users, HelpCircle, Zap, Link } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Timer, Star, Gift, Book, Award, Users, HelpCircle, Zap, Link, LogOut } from 'lucide-react';
 import styles from './page.module.css';
 import { useRouter } from 'next/navigation';
+import { signOut } from '@/lib/authentication';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
 // コンポーネントのインポート
 import GachaAnimation from '@/components/dashboard/gacha/GachaAnimation';
@@ -15,7 +17,7 @@ import type { DiaryEntry, UserStatus } from '@/types';
 //#region Dashboard コンポーネント - メインダッシュボード
 export default function Dashboard() {
   const router = useRouter();
-
+  const supabase = createClientComponentClient();
   
   //#region State
   // モーダル表示用のstate
@@ -23,6 +25,7 @@ export default function Dashboard() {
   const [showDiaryModal, setShowDiaryModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedDiaryEntries, setSelectedDiaryEntries] = useState<DiaryEntry[]>([]);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // ユーザーステータスデータ
   const userStatus: UserStatus = {
@@ -76,6 +79,27 @@ export default function Dashboard() {
     setSelectedDiaryEntries(mockEntries);
     setShowDiaryModal(true);
   };
+
+  // ログアウト処理を行うハンドラ
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+      const response = await signOut();
+      
+      if (response.success) {
+        // ログアウト成功時にホームページへリダイレクト
+        router.push('/');
+      } else {
+        console.error('ログアウトエラー:', response.error);
+        alert('ログアウトに失敗しました。もう一度お試しください。');
+        setIsLoggingOut(false);
+      }
+    } catch (error) {
+      console.error('ログアウト処理エラー:', error);
+      alert('ログアウト中にエラーが発生しました。');
+      setIsLoggingOut(false);
+    }
+  };
   //#endregion
 
   // ✅ `startGacha` をここで管理
@@ -90,6 +114,15 @@ export default function Dashboard() {
         <div className={styles.headerContainer}>
           <h1 className={styles.appTitle}>ぱろっとぷろぐれす</h1>
           <div className={styles.navButtons}>
+            {/* ログアウトボタンを追加 */}
+            <button 
+              className={`${styles.navButton} ${styles.logoutButton}`}
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+            >
+              <LogOut size={20} />
+              <span>{isLoggingOut ? 'ログアウト中...' : 'ログアウト'}</span>
+            </button>
             <div className={styles.divider}></div>
             <button className={styles.navButton}>
               <Star size={20} />
@@ -222,12 +255,6 @@ export default function Dashboard() {
           onClose={() => setShowGachaModal(false)}
           tickets={3}
           userId={1} // 現在のログインユーザーID、認証システムと連携する場合は動的に変更
-        />
-        <DiaryModal
-          isOpen={showDiaryModal}
-          onClose={() => setShowDiaryModal(false)}
-          date={selectedDate}
-          entries={selectedDiaryEntries}
         />
       </div>
     </div>

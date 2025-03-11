@@ -5,6 +5,10 @@ import { Card, CardContent } from './ui/Card';
 import styles from '../styles/Home.module.css';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { validateEmailFormat, validatePasswordStrength } from '../lib/validation';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { useRouter } from 'next/navigation';
+import { Database } from '../types/supabase';
+import { signUpWithEmail, signInWithEmail, sendPasswordResetEmail } from '../lib/authentication';
 //#endregion
 
 type AuthModalProps = {
@@ -15,6 +19,9 @@ type AuthModalProps = {
 type ModalMode = 'signin' | 'signup' | 'reset';
 
 export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
+  // Supabaseクライアントの初期化
+  const supabase = createClientComponentClient<Database>();
+  const router = useRouter();
 
   //#region フォームの状態を管理
   const [modalMode, setModalMode] = useState<ModalMode>('signin');
@@ -33,32 +40,307 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   } | null>(null);
   //#endregion
 
-  //#region サインインとサインアップのハンドラ
+  //#region 認証処理メイン関数
+  /**
+   * 認証フォーム送信時の処理を担当するメインハンドラー
+   * 
+   * このメソッドは以下の認証処理を扱います：
+   * - 新規ユーザー登録（サインアップ）
+   * - 既存ユーザーのログイン（サインイン）
+   * - パスワードリセットメールの送信
+   * 
+   * 各処理では適切な入力検証を行い、Supabase認証およびデータベース操作を実行します。
+   * エラー発生時は適切なエラーメッセージを表示し、成功時はダッシュボードへリダイレクトします。
+   * 
+   * @param e - フォーム送信イベント
+   */
   const handleAuthSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    //#region バリデーション関数
+    // メールアドレスの検証
+    const validateEmail = (email: string) => {
+      const validation = validateEmailFormat(email);
+      setEmailError(validation.message);
+      return validation.isValid;
+    };
+    
+    // パスワード強度の検証
+    const validatePassword = (pass: string) => {
+      const validation = validatePasswordStrength(pass);
+      setPasswordError(validation.message);
+      return validation.isValid;
+    };
+    
+    // パスワードと確認用パスワードの一致検証
+    const validatePasswordMatch = () => {
+      if (password !== confirmPassword) {
+        setPasswordError('パスワードと確認用パスワードが一致しません');
+        return false;
+      }
+      return true;
+    };
+    //#endregion
+
+    // 基本的な入力検証
     if (!validateEmail(email) || !validatePassword(password)) return;
+    
+    // 送信処理の開始
     setIsLoading(true);
+    setAuthError('');
+
+      // 現在時刻を日本時間（JST）で取得
+    const getCurrentJSTTime = () => {
+      const now = new Date();
+      // 日本時間に調整（UTC+9）
+      now.setHours(now.getHours() + 9);
+      return now.toISOString();
+    };
+    
+    // 現在時刻を取得
+    const currentTime = getCurrentJSTTime();
+
     try {
-      setFormFeedback({
-        type: 'success',
-        message: modalMode === 'signup' ? 
-          'アカウントが作成されました！' : 
-          'ログインしました！'
-      });
-      // 1秒後にモーダルを閉じる
-      setTimeout(() => {
-        onClose();
-      }, 1000);
+      //#region モード別処理分岐
+      // modalModeに応じて処理を分岐（サインアップ、サインイン、パスワードリセット）
+      if (modalMode === 'signup') {
+        //#region アカウント新規作成処理
+        // サインアップ用の追加検証
+        if (!validateEmail(email) || !validatePassword(password) || !validatePasswordMatch()) {
+          setIsLoading(false);
+          return;
+        }
+        
+        console.log('サインアッププロセス開始:', { email });
+        
+        // Step 1: Supabaseの認証システムにユーザーを登録
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            // メール確認をスキップしてすぐにサインイン状態にするための設定
+            data: {
+              email_confirmed: true
+            }
+          }
+        });
+
+        if (error) throw error;
+
+        // Step 2: 作成したアカウントで即座にサインイン
+        console.log('サインインプロセス開始');
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+
+        if (signInError) throw signInError;
+
+        // Step 3: 関連テーブルにユーザーデータを挿入
+        if (data.user?.id && data.user?.email) {
+          try {
+            //#region データベースへのレコード挿入処理
+            // Step 3.1: usersテーブルにユーザー基本情報を挿入
+            console.log('usersテーブルに挿入開始');
+            const { error: usersError } = await supabase.from('users').insert({
+              id: data.user.id,
+              email: data.user.email,
+              password_hash: 'managed-by-supabase',
+              last_login_at: currentTime, // 初回ログイン時刻を記録
+              total_xp: 0,                // 初期経験値
+              level: 1,                   // 初期レベル
+              created_at: currentTime,    // 作成日時
+              updated_at: currentTime     // 更新日時
+            });
+            
+            if (usersError) {
+              console.error('usersテーブル挿入エラー:', usersError);
+              throw new Error(`usersテーブルINSERTエラー: ${usersError.message}`);
+            }
+            console.log('usersテーブル挿入成功');
+            
+            // Step 3.2: ユーザーストリーク情報を初期化
+            console.log('user_streaksテーブルに挿入開始');
+            const { error: streakError } = await supabase.from('user_streaks').insert({
+              user_id: data.user.id,
+              login_streak_count: 0,
+              login_max_streak: 0,
+              pomodoro_streak_count: 0,  // ここを修正
+              pomodoro_max_streak: 0,
+              last_login_date: currentTime,
+              last_pomodoro_date: null,
+              created_at: currentTime,
+              updated_at: currentTime
+            });
+
+            if (streakError) {
+              console.error('user_streaksテーブル挿入エラー:', streakError);
+              throw new Error(`user_streaksテーブルINSERTエラー: ${streakError.message}`);
+            }
+            console.log('user_streaksテーブル挿入成功');
+
+            // Step 3.3: 初期ガチャチケットの付与
+            console.log('gacha_ticketsテーブルに挿入開始');
+            console.log('gacha_ticketsテーブルに挿入開始');
+            const { error: gachaError } = await supabase.from('gacha_tickets').insert({
+              user_id: data.user.id,
+              ticket_count: 9999,         // 'count' ではなく 'ticket_count'
+              last_updated: currentTime // 'expires_at' や 'created_at' ではなく 'last_updated'
+            });
+
+            if (gachaError) {
+              console.error('gacha_ticketsテーブル挿入エラー:', gachaError);
+              throw new Error(`gacha_ticketsテーブルINSERTエラー: ${gachaError.message}`);
+            }
+            console.log('gacha_ticketsテーブル挿入成功');
+            //#endregion
+
+            console.log('全てのユーザー関連データが正常に作成されました');
+
+          } catch (insertError) {
+            //#region エラー時のクリーンアップ処理
+            console.error('データ挿入エラー:', insertError);
+            
+            // エラー発生時は作成したレコードを削除してロールバック
+            try {
+              console.log('エラー発生によるクリーンアップ処理開始');
+              
+              // 各テーブルから関連レコードを削除
+              await supabase.from('users').delete().eq('id', data.user.id);
+              await supabase.from('user_streaks').delete().eq('user_id', data.user.id);
+              await supabase.from('gacha_tickets').delete().eq('user_id', data.user.id);
+              
+              console.log('データベースからのクリーンアップ完了');
+              
+              // 注意: 認証システムからのユーザー削除はクライアントサイドでは通常実行できない
+              console.log('注意: 認証システムからのユーザー削除はバックエンド側で行う必要があります');
+            } catch (cleanupError) {
+              console.error('クリーンアップ中にエラーが発生:', cleanupError);
+            }
+            //#endregion
+            
+            throw insertError; // 上位のcatchブロックで処理するためにエラーを再スロー
+          }
+        }
+
+        // Step 4: 成功フィードバックとリダイレクト
+        setFormFeedback({
+          type: 'success',
+          message: 'アカウントが作成されました。ダッシュボードに移動します...'
+        });
+        
+        // ダッシュボードへリダイレクト
+        setTimeout(() => {
+          router.push('/dashboard');
+          onClose();
+        }, 2000);
+        //#endregion
+        
+      } else if (modalMode === 'signin') {
+        //#region 既存ユーザーのサインイン処理
+        // Step 1: Supabaseでサインイン認証
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+        
+        if (error) throw error;
+        
+        // Step 2: 最終ログイン時間を更新
+        if (data.user?.id) {
+          try {
+            // usersテーブルのログイン関連フィールドを更新
+            const { error: updateError } = await supabase
+              .from('users')
+              .update({ 
+                last_login_at: new Date().toISOString(), // 最終ログイン時刻
+                updated_at: new Date().toISOString()     // 更新日時
+              })
+              .eq('id', data.user.id);
+              
+            if (updateError) {
+              console.error('ログイン時間更新エラー:', updateError);
+              // 致命的ではないのでスローせず、続行
+            }
+          } catch (updateError) {
+            console.error('ログイン時間更新中にエラー:', updateError);
+            // 致命的ではないのでスローせず、続行
+          }
+        }
+
+        // Step 3: 成功フィードバックとリダイレクト
+        setFormFeedback({
+          type: 'success',
+          message: 'ログインしました！'
+        });
+
+        // ダッシュボードへリダイレクト
+        setTimeout(() => {
+          router.push('/dashboard');
+          onClose();
+        }, 1000);
+        //#endregion
+        
+      } else if (modalMode === 'reset') {
+        //#region パスワードリセット処理
+        // パスワードリセットメール送信
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/auth/reset-password` // リセット後のリダイレクト先
+        });
+        
+        if (error) throw error;
+
+        // 成功フィードバック
+        setFormFeedback({
+          type: 'success',
+          message: 'パスワードリセット用のメールを送信しました。'
+        });
+        
+        // 3秒後にモーダルを閉じる
+        setTimeout(() => {
+          onClose();
+        }, 3000);
+        //#endregion
+      }
+      //#endregion
     } catch (error) {
+      //#region エラーハンドリング
+      // エラー内容をログに出力
+      console.error('認証エラー:', error);
+      
+      // エラーメッセージの変換と表示
+      const errorMessage = error instanceof Error ? error.message : '認証に失敗しました';
+      const translatedError = translateAuthError(errorMessage);
+      
       setFormFeedback({
         type: 'error',
-        message: error instanceof Error ? error.message : '認証に失敗しました'
-      })
+        message: translatedError
+      });
+      setAuthError(translatedError);
+      //#endregion
     } finally {
+      // 処理完了時に必ずローディング状態を解除
       setIsLoading(false);
     }
   };
   //#endregion
+
+  // エラーメッセージの日本語変換関数
+  const translateAuthError = (error: string): string => {
+    // 一般的なSupabaseのエラーメッセージを日本語に変換
+    const errorMap: {[key: string]: string} = {
+      'Invalid login credentials': 'メールアドレスまたはパスワードが正しくありません',
+      'Email not confirmed': 'メールアドレスが未確認です。確認メールをご確認ください',
+      'User already registered': 'このメールアドレスは既に登録されています',
+      'Password should be at least 6 characters': 'パスワードは6文字以上である必要があります',
+      'Email format is invalid': 'メールアドレスの形式が正しくありません',
+      'Password recovery requires an email': 'パスワード回復にはメールアドレスが必要です',
+      'Rate limit exceeded': 'リクエスト回数の上限に達しました。しばらく経ってからお試しください',
+      'User not found': 'ユーザーが見つかりません',
+    };
+
+    return errorMap[error] || 'エラーが発生しました。もう一度お試しください';
+  };
 
   //#region パスワードの検証
   const validatePassword = (pass: string) => {
@@ -80,7 +362,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setFormFeedback(null);
   }
   //#endregion
-
+  
   //#region モーダルを閉じたときにフォームをリセット
   const resetForm = () => {
     setEmail('');
@@ -109,7 +391,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     }
     return email.length > 0 || password.length > 0 || 
       (modalMode === 'signup' && confirmPassword.length > 0);
-  }, [email, password, confirmPassword, modalMode]); // `modalMode` を追加
+  }, [email, password, confirmPassword, modalMode]);
   //#endregion
 
   //#region モーダルを閉じる前の確認
@@ -117,7 +399,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     // `hasFormInput` の結果を取得してから判定する
     if (!hasFormInput()) return true;
     return window.confirm('入力内容が破棄されます。よろしいですか？');
-  }, [hasFormInput]); // ✅ `modalMode` の依存は不要
+  }, [hasFormInput]);
   //#endregion
 
   //#region モーダルを閉じる処理
@@ -129,7 +411,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           resetForm();
         }, 200);
       }
-    }, [confirmClose, onClose]); // ✅ `confirmClose` を追加
+    }, [confirmClose, onClose]);
     //#endregion
 
   //#region オーバーレイクリックのハンドラを追加
@@ -140,25 +422,34 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   };
   //#endregion
 
+  // パスワード一致のチェック関数を追加
+const validatePasswordMatch = () => {
+  if (password !== confirmPassword) {
+    setPasswordError('パスワードと確認用パスワードが一致しません');
+    return false;
+  }
+  return true;
+};
+
+// 入力フィールド変更時のハンドラ（確認用パスワード用）
+const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const value = e.target.value;
+  setConfirmPassword(value);
+  
+  // 確認用パスワードが入力されたら、パスワードとの一致をチェック
+  if (value && password !== value) {
+    setPasswordError('パスワードと確認用パスワードが一致しません');
+  } else if (password && value) {
+    // パスワードが一致した場合はエラーをクリア
+    setPasswordError('');
+  }
+};
+
   const emailInputRef = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const confirmCloseRef = useRef(confirmClose);
 
-  //#region （コメント実装中）
-  useEffect(() => {
-    confirmCloseRef.current = () => {
-      if (!hasFormInput()) return true;
-      return window.confirm('入力内容が破棄されます。よろしいですか？');
-    };
-  }, [hasFormInput]);
-  //#endregion
-
-  //#region（コメント実装中）
-  useEffect(() => {
-    confirmCloseRef.current = confirmClose;
-  }, [confirmClose]);
-  //#endregion
-
+  // 既存のuseEffect関連部分はそのまま維持
   //#region useEffectでisOpenの変更を監視
   useEffect(() => {
     if (isOpen) {
@@ -250,6 +541,22 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     }
   }, [isOpen]);
   //#endregion
+
+  // セッションの確認と自動リダイレクト
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        // すでにログイン済みの場合はダッシュボードにリダイレクト
+        router.push('/dashboard');
+        onClose();
+      }
+    };
+    
+    if (isOpen) {
+      checkSession();
+    }
+  }, [isOpen, router, onClose, supabase.auth]);
 
   if (!isOpen) return null;
 
@@ -352,13 +659,10 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               )}
                 <form className={styles.form} onSubmit={handleAuthSubmit}>
                 {/* メールアドレス入力部 */}
-                {authError && (
-                  <p className={styles.errorMessage}>{authError}</p>
-                )}
                 <div className={styles.formGroup}>
                   <label className={styles.label}>メールアドレス</label>
                   <input
-                    ref={emailInputRef}  // この行を追加
+                    ref={emailInputRef}
                     id="email"
                     name="email"
                     type="email"

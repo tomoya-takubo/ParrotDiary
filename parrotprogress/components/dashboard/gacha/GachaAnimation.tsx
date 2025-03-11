@@ -147,7 +147,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
   const [isMounted, setIsMounted] = useState(false);
   const [selectedParrot, setSelectedParrot] = useState<Parrot | null>(null);
   const [gifUrl, setGifUrl] = useState<string | null>(null);
-
+  //#endregion
 
   //#region ライフサイクル管理
   // コンポーネントマウント時の処理
@@ -169,9 +169,11 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
   
   //#endregion
 
+  //#region 一匹のparrotのgifのURLを取得
   const getSingleGifUrl = (folder: string, fileName: string) => {
     return supabase.storage.from('Parrots').getPublicUrl(`${folder}/${fileName}`).data.publicUrl;
   };
+  //#endregion
 
   //#region ガチャ処理関数
   /**
@@ -557,7 +559,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                           <motion.div
                             key={i}
                             animate={{
-                              rotate: currentRarity === 'ultra_rare' ? [0, 360] : 0,
+                              rotate: [0, 360],
                               scale: [1, 1.2, 1],
                             }}
                             transition={{

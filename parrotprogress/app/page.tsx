@@ -9,11 +9,10 @@ import Image from 'next/image';
 import GachaAnimation from '@/components/dashboard/gacha/GachaAnimation';
 
 
-// Supabaseクライアントを作成
-const supabase = createClient(
-  'https://pjoolpfjjhnqyvohvixf.supabase.co', // SupabaseのURL
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBqb29scGZqamhucXl2b2h2aXhmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczOTExMTc0NywiZXhwIjoyMDU0Njg3NzQ3fQ.GAwD6pu5wBy27J5JMmX3kKQlghMleMdiEsrJ35wrTc4' // APIキー
-);
+// Supabase クライアントの初期化
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 const getSingleGifUrl = (folder: string, fileName: string) => {
   return supabase.storage.from('Parrots').getPublicUrl(`${folder}/${fileName}`).data.publicUrl;

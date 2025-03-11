@@ -526,3 +526,19 @@
 .saveButton:hover {
   background-color: #2563eb;
 }
+
+/* ログアウトボタン */
+.logoutButton {
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.logoutButton:hover {
+  background-color: #fee2e2;
+  color: #ef4444;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logoutButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
