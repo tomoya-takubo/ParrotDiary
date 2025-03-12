@@ -376,54 +376,31 @@ const Diary: React.FC = () => {
 
   // ユーザー情報が変更されたときにデータを取得
   useEffect(() => {
-    // 認証処理中は単に待機
-    if (authLoading) {
-      setIsLoading(true);
-      return;
-    }
-    
-    // 認証済みかどうかに関わらず、エラーメッセージはクリア
-    setError(null);
-    
-    if (authUser) {
-      // 認証済みならデータ取得（非同期関数ではなく通常の関数として呼び出す）
-      fetchDiaryEntries();
-      fetchPomodoroSessions();
-    } else {
-      // 未認証でも空データでUIを表示
-      setDiaryEntries([]);
-      setPomodoroSessions([]);
-      setIsLoading(false);
-    }
-  }, [authUser, authLoading]);
-
-  /**
-   * 日記エントリーを取得する関数
-   */
-  const fetchDiaryEntries = () => {
-    if (!authUser) {
-      setDiaryEntries([]);
-      setIsLoading(false);
-      return;
-    }
-    
-    try {
-      setIsLoading(true);
+    const handleAuth = async () => {
+      // 認証処理中は単に待機
+      if (authLoading) {
+        setIsLoading(true);
+        return;
+      }
+      
+      // 認証済みかどうかに関わらず、エラーメッセージはクリア
       setError(null);
       
-      // Supabaseからデータを取得
-      supabase
-        .from('diary_entries')
-        .select('*')
-        .eq('user_id', authUser.id)
-        .order('recorded_at', { ascending: false })
-        .then(({ data, error }) => {
-          if (error) {
-            throw error;
-          }
+      if (authUser) {
+        setIsLoading(true);
+        
+        try {
+          // 日記データの取得
+          const { data: diaryData, error: diaryError } = await supabase
+            .from('diary_entries')
+            .select('*')
+            .eq('user_id', authUser.id)
+            .order('recorded_at', { ascending: false });
+            
+          if (diaryError) throw diaryError;
           
           // データ処理...
-          const entriesWithTags = data ? data.map((entry: DiaryEntryType, index: number) => {
+          const entriesWithTags = diaryData ? diaryData.map((entry: DiaryEntryType, index: number) => {
             const randomTags = index % 2 === 0 
               ? ['英語学習', '集中できた'] 
               : ['プログラミング'];
@@ -435,45 +412,34 @@ const Diary: React.FC = () => {
           }) : [];
           
           setDiaryEntries(entriesWithTags);
-          setIsLoading(false);
-        })
-        .catch((err: Error) => {
-          console.error('日記データの取得エラー:', err);
-          setError('データ取得エラー');
+          
+          // ポモドーロセッションも取得
+          const { data: pomodoroData, error: pomodoroError } = await supabase
+            .from('pomodoro_sessions')
+            .select('*')
+            .eq('user_id', authUser.id)
+            .order('started_at', { ascending: false });
+            
+          if (pomodoroError) throw pomodoroError;
+          setPomodoroSessions(pomodoroData || []);
+        } catch (err: any) {
+          console.error('データ取得エラー:', err);
+          setError('データ取得に失敗しました');
           setDiaryEntries([]);
+          setPomodoroSessions([]);
+        } finally {
           setIsLoading(false);
-        });
-    } catch (err: unknown) {
-      const error = err as Error;
-      console.error('日記データの取得エラー:', error);
-      setError('データ取得エラー');
-      setDiaryEntries([]);
-      setIsLoading(false);
-    }
-  };
-
-  const fetchPomodoroSessions = () => {
-    if (!authUser) {
-      setPomodoroSessions([]);
-      return;
-    }
-    
-    supabase
-      .from('pomodoro_sessions')
-      .select('*')
-      .eq('user_id', authUser.id)
-      .order('started_at', { ascending: false })
-      .then(({ data, error }) => {
-        if (error) {
-          throw error;
         }
-        setPomodoroSessions(data || []);
-      })
-      .catch((err: Error) => {
-        console.error('ポモドーロセッションの取得エラー:', err);
+      } else {
+        // 未認証でも空データでUIを表示
+        setDiaryEntries([]);
         setPomodoroSessions([]);
-      });
-  };
+        setIsLoading(false);
+      }
+    };
+    
+    handleAuth();
+  }, [authUser, authLoading]);
   
   // エントリー更新関数
   const updateDiaryEntry = async (entryId: number, line1: string, line2: string, line3: string) => {
@@ -732,26 +698,6 @@ const Diary: React.FC = () => {
       <div className={styles.diaryContainer}>
         <div className={styles.emptyEntry}>
           <p>データを読み込み中...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // データ取得エラーの表示 - 認証関連のエラーは表示しない
-  if (error && !error.includes('ログイン') && !isLoading) {
-    return (
-      <div className={styles.diaryContainer}>
-        <div className={styles.emptyEntry}>
-          <p className={styles.errorText}>{error}</p>
-          <button 
-            onClick={() => {
-              setError(null);
-              fetchDiaryEntries();
-            }}
-            className={styles.saveButton}
-          >
-            再試行
-          </button>
         </div>
       </div>
     );
