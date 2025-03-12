@@ -160,14 +160,14 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
         
         setLoading(true);
         
-        // ユーザーがログインしていない場合
         if (!user || !session) {
-          console.log('ユーザーがログインしていません');
-          setError('この機能を利用するにはログインが必要です');
+          console.log('認証情報を待機中...');
+          // 空のデータを設定して表示を継続
+          setEntriesByDate({});
           setLoading(false);
           return;
         }
-        
+          
         const userId = user.id;
         console.log('認証されたユーザーID:', userId);
         
@@ -187,13 +187,19 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
           .lte('recorded_at', formatDateString(today) + ' 23:59:59')  // 1日の終わりまで含める
           .order('recorded_at', { ascending: false });
 
-          // デバッグ出力
-          console.log('取得したデータ:', data);
-          console.log('今日の日付:', formatDateString(today));
-        
+        // デバッグ出力
+        console.log('取得したデータ:', data);
+        console.log('今日の日付:', formatDateString(today));
+      
+        // エラー処理
         if (error) {
           console.error('データ取得エラー:', error);
-          throw error;
+          // エラーを設定するが、「ログインが必要です」エラーは回避
+          setError(`データの取得に失敗しました: ${error.message}`);
+          // エラーがあっても空のデータを設定して表示を維持
+          setEntriesByDate({});
+          setLoading(false);
+          return;
         }
         
         console.log('取得した活動履歴:', data?.length || 0, '件');
@@ -210,11 +216,8 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
         });
         
         setEntriesByDate(entriesByDate);
-        
-        // データが見つからない場合
-        if (!data || data.length === 0) {
-          console.log('データが見つかりませんでした');
-        }
+        // エラーをクリア
+        setError(null);
 
         console.log('今日の日付（JST）:', formatDateString(today));
         console.log('取得したエントリーの日付一覧:', data?.map(e => formatDateForComparison(e.recorded_at)));
@@ -222,8 +225,9 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
 
       } catch (err) {
         console.error('日記エントリー取得中のエラー:', err);
-        setError(`エラーが発生しました: ${(err as Error).message}`);
-      } finally {
+        setError(`予期せぬエラーが発生しました: ${(err as Error).message}`);
+        setEntriesByDate({});
+        } finally {
         setLoading(false);
       }
     };
@@ -234,11 +238,12 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
 
   //#region カレンダーグリッド生成
   useEffect(() => {
-    if ((Object.keys(entriesByDate).length > 0 || !loading) && columnCount > 0) {
+    // entriesByDateが空でも実行できるように条件を修正
+    if ((!loading || Object.keys(entriesByDate).length >= 0) && columnCount > 0) {
       generateCalendarGrid();
     }
   }, [currentOffset, entriesByDate, loading, columnCount]);
-  
+    
   // カレンダーグリッドの生成
   const generateCalendarGrid = () => {
     const today = new Date();
@@ -426,13 +431,9 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
           </div>
         </div>
 
-        {authLoading ? (
-          <div className={styles.loading}>認証情報を確認中...</div>
-        ) : !user ? (
-          <div className={styles.error}>この機能を利用するにはログインが必要です。</div>
-        ) : loading ? (
+        {(authLoading || loading) ? (
           <div className={styles.loading}>データを読み込み中...</div>
-        ) : error ? (
+        ) : error && error !== 'この機能を利用するにはログインが必要です' ? (
           <div className={styles.error}>エラー: {error}</div>
         ) : (
           <div className={styles.calendarContent}>

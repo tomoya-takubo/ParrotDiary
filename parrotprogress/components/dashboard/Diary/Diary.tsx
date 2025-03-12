@@ -376,13 +376,23 @@ const Diary: React.FC = () => {
 
   // ユーザー情報が変更されたときにデータを取得
   useEffect(() => {
+    // 認証処理中は単に待機
+    if (authLoading) {
+      setIsLoading(true);
+      return;
+    }
+    
+    // 認証済みかどうかに関わらず、エラーメッセージはクリア
+    setError(null);
+    
     if (authUser) {
-      // console.log('認証フックからユーザー情報取得:', authUser);
+      // 認証済みならデータ取得（非同期関数ではなく通常の関数として呼び出す）
       fetchDiaryEntries();
       fetchPomodoroSessions();
-    } else if (!authLoading) {
-      // 認証読み込み完了後にユーザーがいない場合
-      setError('ログインが必要です。');
+    } else {
+      // 未認証でも空データでUIを表示
+      setDiaryEntries([]);
+      setPomodoroSessions([]);
       setIsLoading(false);
     }
   }, [authUser, authLoading]);
@@ -390,57 +400,81 @@ const Diary: React.FC = () => {
   /**
    * 日記エントリーを取得する関数
    */
-  const fetchDiaryEntries = async () => {
-    if (!authUser) return;
-
+  const fetchDiaryEntries = () => {
+    if (!authUser) {
+      setDiaryEntries([]);
+      setIsLoading(false);
+      return;
+    }
+    
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
+      setError(null);
+      
+      // Supabaseからデータを取得
+      supabase
         .from('diary_entries')
         .select('*')
         .eq('user_id', authUser.id)
-        .order('recorded_at', { ascending: false });
-
-      if (error) throw error;
-
-      // データ処理...
-      const entriesWithTags = data ? data.map((entry: DiaryEntryType, index: number) => {
-        const randomTags = index % 2 === 0 
-          ? ['英語学習', '集中できた'] 
-          : ['プログラミング'];
-        
-        return { 
-          ...entry, 
-          tags: randomTags
-        };
-      }) : [];
-
-      setDiaryEntries(entriesWithTags);
-    } catch (err) {
-      console.error('日記データの取得エラー:', err);
-      setError('日記データの取得に失敗しました。');
-    } finally {
+        .order('recorded_at', { ascending: false })
+        .then(({ data, error }) => {
+          if (error) {
+            throw error;
+          }
+          
+          // データ処理...
+          const entriesWithTags = data ? data.map((entry: DiaryEntryType, index: number) => {
+            const randomTags = index % 2 === 0 
+              ? ['英語学習', '集中できた'] 
+              : ['プログラミング'];
+            
+            return { 
+              ...entry, 
+              tags: randomTags
+            };
+          }) : [];
+          
+          setDiaryEntries(entriesWithTags);
+          setIsLoading(false);
+        })
+        .catch((err: Error) => {
+          console.error('日記データの取得エラー:', err);
+          setError('データ取得エラー');
+          setDiaryEntries([]);
+          setIsLoading(false);
+        });
+    } catch (err: unknown) {
+      const error = err as Error;
+      console.error('日記データの取得エラー:', error);
+      setError('データ取得エラー');
+      setDiaryEntries([]);
       setIsLoading(false);
     }
   };
 
-  const fetchPomodoroSessions = async () => {
-    if (!authUser) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('pomodoro_sessions')
-        .select('*')
-        .eq('user_id', authUser.id)
-        .order('started_at', { ascending: false });
-
-      if (error) throw error;
-      setPomodoroSessions(data || []);
-    } catch (err) {
-      console.error('ポモドーロセッションの取得エラー:', err);
+  const fetchPomodoroSessions = () => {
+    if (!authUser) {
+      setPomodoroSessions([]);
+      return;
     }
+    
+    supabase
+      .from('pomodoro_sessions')
+      .select('*')
+      .eq('user_id', authUser.id)
+      .order('started_at', { ascending: false })
+      .then(({ data, error }) => {
+        if (error) {
+          throw error;
+        }
+        setPomodoroSessions(data || []);
+      })
+      .catch((err: Error) => {
+        console.error('ポモドーロセッションの取得エラー:', err);
+        setPomodoroSessions([]);
+      });
   };
-
+  
   // エントリー更新関数
   const updateDiaryEntry = async (entryId: number, line1: string, line2: string, line3: string) => {
     try {
@@ -470,12 +504,12 @@ const Diary: React.FC = () => {
   // 新規エントリー作成関数
   const createDiaryEntry = async (line1: string, line2: string, line3: string, typeId: number, sessionId: number | null = null) => {
     if (!authUser) {
-      setError('ログインが必要です。');
+      console.log('ユーザーが認証されていません');
       return false;
     }
-
+  
     console.log("authUser.id:", authUser.id, "Type:", typeof authUser.id);
-
+  
     try {
       const newEntry = {
         user_id: authUser.id,
@@ -486,7 +520,7 @@ const Diary: React.FC = () => {
         line2: line2 || null,
         line3: line3 || null,
       };
-
+  
       console.log("送信データ:", newEntry);
   
       const { data, error } = await supabase
@@ -503,6 +537,7 @@ const Diary: React.FC = () => {
         ]);
         return true;
       }
+      return false;
     } catch (err) {
       console.error('日記の作成エラー:', err);
       setError('日記の作成に失敗しました');
@@ -566,7 +601,7 @@ const Diary: React.FC = () => {
    */
   const openAddModal = (typeId: number = 1, sessionId: number | null = null) => {
     if (!authUser) {
-      setError('ログインが必要です');
+      console.log('未認証状態でのモーダルオープン試行');
       return;
     }
     
@@ -691,18 +726,6 @@ const Diary: React.FC = () => {
     return '通常';
   };
 
-  // 認証エラー状態のレンダリング
-  if (!authUser && !authLoading && !isLoading) {
-    return (
-      <div className={styles.diaryContainer}>
-        <div className={styles.emptyEntry}>
-          <p className={styles.errorText}>この機能を利用するにはログインが必要です。</p>
-          {/* ログインリンクなど */}
-        </div>
-      </div>
-    );
-  }
-
   // ローディング中のレンダリング
   if (authLoading || isLoading) {
     return (
@@ -714,8 +737,8 @@ const Diary: React.FC = () => {
     );
   }
 
-  // エラー表示のレンダリング
-  if (error && !isLoading) {
+  // データ取得エラーの表示 - 認証関連のエラーは表示しない
+  if (error && !error.includes('ログイン') && !isLoading) {
     return (
       <div className={styles.diaryContainer}>
         <div className={styles.emptyEntry}>
@@ -745,26 +768,37 @@ const Diary: React.FC = () => {
             <Edit2 
               size={20} 
               className={styles.diaryTool} 
-              onClick={() => openAddModal(1)}
+              onClick={() => authUser ? openAddModal(1) : console.log('ログインが必要です')}
+              style={!authUser ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
             />
           </span>
           <span title="日記を検索">
-            <Search size={20} className={styles.diaryTool} />
+            <Search 
+              size={20} 
+              className={styles.diaryTool} 
+              style={!authUser ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+            />
           </span>
         </div>
       </div>
       
-      {/* ユーザー情報表示 */}
-      {authUser && (
+      {/* ユーザー情報表示 - 条件付きレンダリング */}
+      {authUser ? (
         <div className={styles.diarySubtitle}>
           {authUser.email || authUser.user_metadata?.name || 'ログインユーザー'}さんの日記
         </div>
+      ) : (
+        <div className={styles.diarySubtitle}>
+          今日の出来事を3行で記録しましょう
+        </div>
       )}
       
-      {/* サブヘッダー */}
-      <div className={styles.diarySubtitle}>
-        今日の出来事を3行で記録しましょう
-      </div>
+      {/* 未ログイン時のメッセージは控えめに表示 */}
+      {!authUser && !authLoading && (
+        <div className={styles.diarySubtitle} style={{ fontSize: '0.8em', color: '#666' }}>
+          ※ログインするとデータが保存されます
+        </div>
+      )}
 
       {/* タブと日記エントリー */}
       <div>
