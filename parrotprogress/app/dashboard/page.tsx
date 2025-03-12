@@ -27,19 +27,26 @@ export default function Dashboard() {
   const [selectedDiaryEntries, setSelectedDiaryEntries] = useState<DiaryEntry[]>([]);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  // ユーザーステータスデータ
-  const userStatus: UserStatus = {
-    level: 15,
-    currentXP: 2800,
-    nextLevelXP: 3500,
-    dailyXP: 280,
-    dailyGoalXP: 500,
-    focusTimeToday: 125,
-    focusTimeGoal: 150,
-    streak: 15,
-    ranking: 'シルバー'
-  };
+// page.tsx の userStatus 定義部分に以下を追加
+const userStatus: UserStatus = {
+  level: 15,
+  currentXP: 2800,
+  nextLevelXP: 3500,
+  dailyXP: 280,
+  dailyGoalXP: 500,
+  totalDiaryEntries: 42, // 日記総記録数
+  streak: 15,
+  ranking: getRankFromStreak(15) // 連続ログイン日数からランクを決定
+};
 
+// ページの上部または別のファイルに追加する関数
+function getRankFromStreak(streak: number): string {
+  if (streak >= 60) return 'プラチナ';
+  if (streak >= 30) return 'ゴールド';
+  if (streak >= 10) return 'シルバー';
+  return 'ブロンズ';
+}
+  
   // タイマーオプション
   const timerOptions = [
     { time: 5, label: 'クイック', gradient: 'linear-gradient(135deg, #60a5fa, #3b82f6)' },
@@ -56,6 +63,11 @@ export default function Dashboard() {
    * 選択された日付の日記データをSupabaseから取得し、モーダルで表示する
    */
   const handleActivityCellClick = (date: string) => {
+    // ガチャモーダルが開いている場合は処理を中断
+    if (showGachaModal) {
+      return;
+    }
+    
     console.log(`セルがクリックされました: ${date}`);
     
     // 実際のアプリケーションではここでsupabaseからデータを取得
@@ -102,9 +114,14 @@ export default function Dashboard() {
   };
   //#endregion
 
-  // ✅ `startGacha` をここで管理
+  // ガチャを開始する関数
   const startGacha = () => {
     setShowGachaModal(true);
+  };
+  
+  // ガチャを閉じる関数
+  const closeGacha = () => {
+    setShowGachaModal(false);
   };
 
   return (
@@ -156,43 +173,23 @@ export default function Dashboard() {
             </div>
 
             <div>
-            {/* ✅ このボタンをクリックすると `startGacha` が発火 */}
-            <button className={styles.gachaButton} onClick={startGacha}>
-              <div className={styles.ticketContainer}>
-                <span className={styles.ticketLabel}>チケット</span>
-                <span className={styles.ticketCount}>3枚</span>
-              </div>
-              <div className={styles.gachaButtonContent}>
-                <Gift size={24} />
-                <span>ガチャを回す</span>
-              </div>
-            </button>
-          </div>
-        </div>
-      </div>
-
-        {/* フォーカスタイマー */}
-        <div className={styles.timerCard}>
-          <div className={styles.timerHeader}>
-            <div className={styles.timerIconContainer}>
-              <Timer size={32} />
-            </div>
-            <div className={styles.timerTitleContainer}>
-              <h2 className={styles.timerTitle}>フォーカスタイマー</h2>
-              <p className={styles.timerSubtitle}>集中モードを選んで始めましょう</p>
-            </div>
-          </div>
-          <div className={styles.timerOptions}>
-            {timerOptions.map((option, index) => (
+              {/* ガチャボタン */}
               <button 
-                key={index} 
-                className={styles.timerOption}
-                style={{ background: option.gradient }}
+                className={styles.gachaButton} 
+                onClick={startGacha}
+                // ガチャモーダルが開いているときはボタンを無効化
+                disabled={showGachaModal}
               >
-                <div className={styles.timerOptionTime}>{option.time}分</div>
-                <div className={styles.timerOptionLabel}>{option.label}</div>
+                <div className={styles.ticketContainer}>
+                  <span className={styles.ticketLabel}>チケット</span>
+                  <span className={styles.ticketCount}>3枚</span>
+                </div>
+                <div className={styles.gachaButtonContent}>
+                  <Gift size={24} />
+                  <span>ガチャを回す</span>
+                </div>
               </button>
-            ))}
+            </div>
           </div>
         </div>
 
@@ -201,10 +198,10 @@ export default function Dashboard() {
           <div className={styles.statsGrid}>
             {[
               {
-                icon: Timer,
-                title: '本日の集中時間',
-                value: `${userStatus.focusTimeToday}分`,
-                subtext: `目標まであと${userStatus.focusTimeGoal - userStatus.focusTimeToday}分！がんばりましょう`,
+                icon: Book,
+                title: '日記総記録数',
+                value: '42件',
+                subtext: '継続は力なり！',
                 gradient: 'linear-gradient(135deg, #60a5fa, #3b82f6)'
               },
               {
@@ -240,9 +237,12 @@ export default function Dashboard() {
             ))}
           </div>
         </div>
-
-        {/* 活動履歴 */}
-        <ActivityHistory onCellClick={handleActivityCellClick} />
+      
+        {/* 活動履歴 - ガチャモーダルの状態を渡す */}
+        <ActivityHistory 
+          onCellClick={handleActivityCellClick} 
+          isGachaOpen={showGachaModal} 
+        />
 
         {/* 3行日記 */}
         <Diary />
@@ -251,11 +251,12 @@ export default function Dashboard() {
         {/* ガチャアニメーションコンポーネント */}
         <GachaAnimation
           isOpen={showGachaModal}
-          startGacha={() => startGacha()} // この関数は内部で自動的に呼ばれるため空関数を渡す
-          onClose={() => setShowGachaModal(false)}
+          startGacha={startGacha}
+          onClose={closeGacha}
           tickets={3}
           userId={1} // 現在のログインユーザーID、認証システムと連携する場合は動的に変更
         />
+        
       </div>
     </div>
   );

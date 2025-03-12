@@ -166,7 +166,7 @@
   color: #2b6cb0;
   font-weight: bold;
   box-shadow: 0 0 0 2px #3182ce;
-  z-index: 10;
+  /* z-index: 10; */
 }
 
 /* レベル説明 */
@@ -206,4 +206,25 @@
   justify-content: center;
   background-color: rgba(255, 255, 255, 0.8);
   z-index: 20;
+}
+
+/* ガチャモーダル表示中のセル用スタイル */
+.disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  filter: grayscale(80%) !important;
+}
+
+/* カレンダー全体にオーバーレイを追加 */
+.gachaOverlay::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.05);
+  z-index: 5;
+  pointer-events: none;
 }

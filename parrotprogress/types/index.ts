@@ -25,8 +25,7 @@ export type UserStatus = {
   nextLevelXP: number;
   dailyXP: number;
   dailyGoalXP: number;
-  focusTimeToday: number;
-  focusTimeGoal: number;
+  totalDiaryEntries: number;
   streak: number;
   ranking: string;
 };

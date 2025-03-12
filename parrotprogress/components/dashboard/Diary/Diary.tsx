@@ -377,7 +377,7 @@ const Diary: React.FC = () => {
   // ユーザー情報が変更されたときにデータを取得
   useEffect(() => {
     if (authUser) {
-      console.log('認証フックからユーザー情報取得:', authUser);
+      // console.log('認証フックからユーザー情報取得:', authUser);
       fetchDiaryEntries();
       fetchPomodoroSessions();
     } else if (!authLoading) {

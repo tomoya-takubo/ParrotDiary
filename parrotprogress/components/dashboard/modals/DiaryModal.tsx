@@ -8,6 +8,7 @@ type DiaryModalProps = {
   onClose: () => void;
   date: string | null;
   entries: DiaryEntry[];
+  onDataUpdated?: () => void; // オプショナルなコールバック関数として追加
 };
 
 const DiaryModal: React.FC<DiaryModalProps> = ({

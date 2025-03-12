@@ -3,17 +3,20 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import styles from './ActivityHistory.module.css';
 import { createClient } from '@supabase/supabase-js';
 import DiaryModal from '@/components/dashboard/modals/DiaryModal';
+import { useAuth } from '@/lib/AuthContext'; // 認証コンテキストをインポート
 
 //#region 型定義
+// モーダルの状態をGachaModalと連動させるためのpropsを追加
 type ActivityHistoryProps = {
   onCellClick?: (date: string) => void;
   width?: string | number;
+  isGachaOpen?: boolean; // ガチャモーダルが開いているかどうかのフラグ
 };
 
 // 日記エントリーの型
 type DiaryEntry = {
   entry_id: number;
-  user_id: number;
+  user_id: string;
   recorded_at: string;
   session_id?: number;
   type_id?: number;
@@ -51,7 +54,13 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-const ActivityHistory: React.FC<ActivityHistoryProps> = ({ onCellClick, width = '100%' }) => {
+const ActivityHistory: React.FC<ActivityHistoryProps> = ({ 
+  onCellClick, 
+  width = '100%',
+  isGachaOpen = false // デフォルトはfalse
+}) => {  // 認証コンテキストから情報を取得
+  const { user, session, isLoading: authLoading } = useAuth();
+  
   //#region 定数
   const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const CELL_WIDTH = 36; // セルの幅
@@ -88,7 +97,14 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ onCellClick, width = 
   const [showModal, setShowModal] = useState(false);
   // モーダル用の日記エントリー
   const [modalEntries, setModalEntries] = useState<ModalDiaryEntry[]>([]);
+  // データ更新トリガー
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   //#endregion
+
+  // データを再取得する関数
+  const refreshData = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
 
   //#region レイアウト調整
   // カードの幅に基づいて表示する列数を計算
@@ -120,7 +136,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ onCellClick, width = 
   //#endregion
 
   //#region データ取得
-  // 日付文字列の処理を改善する関数（ActivityHistory.tsx内に追加）
+  // 日付文字列の処理を改善する関数
   const formatDateForComparison = (dateString: string): string => {
     // スペース区切り形式
     if (typeof dateString === 'string' && dateString.includes(' ')) {
@@ -133,60 +149,78 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ onCellClick, width = 
     return dateString;
   };
   
-  // 初回マウント時にデータを取得
+  // 認証状態とトリガーに基づいてデータを取得
   useEffect(() => {
     const fetchDiaryEntries = async () => {
       try {
+        // 認証のロード中は何もしない
+        if (authLoading) {
+          return;
+        }
+        
         setLoading(true);
         
-        // 今日から6ヶ月前までのデータを取得
+        // ユーザーがログインしていない場合
+        if (!user || !session) {
+          console.log('ユーザーがログインしていません');
+          setError('この機能を利用するにはログインが必要です');
+          setLoading(false);
+          return;
+        }
+        
+        const userId = user.id;
+        console.log('認証されたユーザーID:', userId);
+        
+        // 日付範囲の設定
         const today = new Date();
         const sixMonthsAgo = new Date(today);
         sixMonthsAgo.setMonth(today.getMonth() - 6);
         
+        console.log(`ユーザーID ${userId} の活動履歴を取得中...`);
+        
+        // ユーザー固有のデータを取得
         const { data, error } = await supabase
           .from('diary_entries')
-          .select('entry_id, user_id, recorded_at, line1, line2, line3, type_id, created_at, updated_at')
-          // .gte('recorded_at', formatDateString(sixMonthsAgo))
-          // .lte('recorded_at', formatDateString(today));
-
-          // デバッグ出力
-          // console.log('取得したデータ:', data);
-          // console.log('今日の日付:', formatDateString(today));
+          .select('*')
+          .eq('user_id', userId)
+          .gte('recorded_at', formatDateString(sixMonthsAgo))
+          .lte('recorded_at', formatDateString(today))
+          .order('recorded_at', { ascending: false });
         
         if (error) {
+          console.error('データ取得エラー:', error);
           throw error;
         }
+        
+        console.log('取得した活動履歴:', data?.length || 0, '件');
         
         // エントリーを日付ごとにグループ化
         const entriesByDate: Record<string, DiaryEntry[]> = {};
         data?.forEach((entry) => {
-          const rawDate = entry.recorded_at;
-          // console.log('エントリーの生の日付:', rawDate);
-        
           const date = formatDateForComparison(entry.recorded_at);
-          // console.log('正規化後の日付:', date);
-
+          
           if (!entriesByDate[date]) {
             entriesByDate[date] = [];
           }
           entriesByDate[date].push(entry as DiaryEntry);
         });
+        
         setEntriesByDate(entriesByDate);
-
-        // 最終的な日付別エントリー
-        // console.log('日付別エントリー:', entriesByDate);
-
+        
+        // データが見つからない場合
+        if (!data || data.length === 0) {
+          console.log('データが見つかりませんでした');
+        }
       } catch (err) {
-        setError((err as Error).message);
-        console.error('日記エントリーの取得中にエラーが発生しました:', err);
+        console.error('日記エントリー取得中のエラー:', err);
+        setError(`エラーが発生しました: ${(err as Error).message}`);
       } finally {
         setLoading(false);
       }
     };
     
     fetchDiaryEntries();
-  }, []);
+  }, [user, session, authLoading, refreshTrigger]); // 認証情報が変わるか、リフレッシュトリガーが変わったときに再取得
   //#endregion
 
   //#region カレンダーグリッド生成
@@ -294,6 +328,12 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ onCellClick, width = 
   //#region イベントハンドラー
   // セルクリックのハンドラー
   const handleCellClick = (cell: CellData) => {
+
+        // ガチャモーダルが開いている場合は処理をスキップ
+        if (isGachaOpen) {
+          return;
+        }
+    
     setSelectedDate(cell.date);
     
     // 親コンポーネントに通知
@@ -303,27 +343,35 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ onCellClick, width = 
     
     // 選択された日付のエントリーをモーダル用に変換
     const entries = entriesByDate[cell.date] || [];
-    const modalData: ModalDiaryEntry[] = entries.map(entry => {
-      const recordedTime = new Date(entry.recorded_at);
-      
-      // 時間を整形
-      const hours = recordedTime.getHours().toString().padStart(2, '0');
-      const minutes = recordedTime.getMinutes().toString().padStart(2, '0');
-      const timeStr = `${hours}:${minutes}`;
-      
-      // 活動内容を配列に変換
-      const activities = [entry.line1];
-      if (entry.line2) activities.push(entry.line2);
-      if (entry.line3) activities.push(entry.line3);
-      
-      return {
-        time: timeStr,
-        tags: ['3行日記'], // 仮のタグ
-        activities
-      };
-    });
     
-    setModalEntries(modalData);
+    if (entries.length === 0) {
+      console.log('選択された日付のエントリーがありません:', cell.date);
+      // エントリーがない場合でも空のモーダルを表示（新規作成用）
+      setModalEntries([]);
+    } else {
+      const modalData: ModalDiaryEntry[] = entries.map(entry => {
+        const recordedTime = new Date(entry.recorded_at);
+        
+        // 時間を整形
+        const hours = recordedTime.getHours().toString().padStart(2, '0');
+        const minutes = recordedTime.getMinutes().toString().padStart(2, '0');
+        const timeStr = `${hours}:${minutes}`;
+        
+        // 活動内容を配列に変換
+        const activities = [entry.line1];
+        if (entry.line2) activities.push(entry.line2);
+        if (entry.line3) activities.push(entry.line3);
+        
+        return {
+          time: timeStr,
+          tags: ['3行日記'], // 仮のタグ
+          activities
+        };
+      });
+      
+      setModalEntries(modalData);
+    }
+    
     setShowModal(true);
   };
   
@@ -369,7 +417,11 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ onCellClick, width = 
           </div>
         </div>
 
-        {loading ? (
+        {authLoading ? (
+          <div className={styles.loading}>認証情報を確認中...</div>
+        ) : !user ? (
+          <div className={styles.error}>この機能を利用するにはログインが必要です。</div>
+        ) : loading ? (
           <div className={styles.loading}>データを読み込み中...</div>
         ) : error ? (
           <div className={styles.error}>エラー: {error}</div>
@@ -397,11 +449,14 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ onCellClick, width = 
                       >
                         {cell && (
                           <button
-                            className={`${styles.cell} ${getLevelClassName(
-                              cell.level, 
-                              cell.isToday
-                            )}`}
+                            // getLevelClassNameを使わず、直接条件分岐してクラス名を適用
+                            className={`
+                              ${styles.cell} 
+                              ${cell.isToday ? styles.cellToday : styles[`level${cell.level}`]}
+                              ${isGachaOpen ? styles.disabled : ''}
+                            `}
                             onClick={() => handleCellClick(cell)}
+                            disabled={isGachaOpen} 
                             aria-label={`${cell.year}年${cell.month + 1}月${cell.day}日 (アクティビティ: ${cell.count}件)`}
                           >
                             {cell.day}
@@ -434,6 +489,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ onCellClick, width = 
         onClose={handleCloseModal}
         date={selectedDate ? formatDisplayDate(selectedDate) : null}
         entries={modalEntries}
+        onDataUpdated={refreshData} // データが更新されたときに再取得するためのコールバック
       />
     </div>
   );
