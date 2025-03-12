@@ -8,18 +8,15 @@ import styles from './Diary.module.css';
 // 3行日記エントリーの型定義
 type DiaryEntryType = {
   entry_id: number;
-  user_id: string; // 文字列型に変更（Supabase Auth IDは文字列）
+  user_id: string;
   recorded_at: string;
-  session_id?: number | null;
-  type_id: number; // 1: regular（通常）, 2: pomodoro（ポモドーロ） など
+  type_id: number; // 1: regular（通常）のみに簡素化
   line1: string | null;
   line2: string | null;
   line3: string | null;
   created_at: string;
   updated_at: string;
   tags?: string[]; // フロントエンド用のタグ情報
-  pomodoroType?: string; // ポモドーロ情報（あれば）
-  duration?: number; // ポモドーロの長さ（あれば）
 };
 
 // ユーザー情報の型定義
@@ -346,10 +343,8 @@ const Diary: React.FC = () => {
 
   // 状態管理
   const [diaryEntries, setDiaryEntries] = useState<DiaryEntryType[]>([]);
-  const [pomodoroSessions, setPomodoroSessions] = useState<PomodoroSessionType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'all' | 'pomodoro' | 'regular'>('all');
   const [modalState, setModalState] = useState<DiaryModalState>({
     isOpen: false,
     mode: 'edit',
@@ -359,8 +354,7 @@ const Diary: React.FC = () => {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
 
-
-  // タグリストのデータ
+  // タグリストのデータ - allTags 定義を追加
   const allTags: TagType[] = [
     { id: 1, name: '英語学習', count: 42, lastUsed: '2024-03-09' },
     { id: 2, name: 'プログラミング', count: 35, lastUsed: '2024-03-09' },
@@ -369,12 +363,12 @@ const Diary: React.FC = () => {
     { id: 5, name: 'リーディング', count: 20, lastUsed: '2024-03-09' }
   ];
 
-  // よく使うタグ
+  // よく使うタグ - frequentTags 定義を追加
   const frequentTags = allTags
     .sort((a, b) => b.count - a.count)
     .slice(0, 5);
 
-  // ユーザー情報が変更されたときにデータを取得
+  // useEffect内からポモドーロ関連の取得処理を削除
   useEffect(() => {
     const handleAuth = async () => {
       // 認証処理中は単に待機
@@ -383,82 +377,59 @@ const Diary: React.FC = () => {
         return;
       }
       
-      // 認証済みかどうかに関わらず、エラーメッセージはクリア
       setError(null);
-      
-      // ログを追加してデバッグを容易に
       console.log('認証状態:', authUser ? '認証済み' : '未認証', 'User ID:', authUser?.id);
       
-      if (authUser?.id) { // authUser.id が存在するかを明示的に確認
+      if (authUser?.id) {
         setIsLoading(true);
         
-      // 日記データの取得部分を修正
-      try {
-        // 日記データの取得
-        const { data: diaryData, error: diaryError } = await supabase
-          .from('diary_entries')
-          .select('*')
-          .eq('user_id', authUser.id)
-          .order('recorded_at', { ascending: false });
+        try {
+          // 日記データの取得
+          const { data: diaryData, error: diaryError } = await supabase
+            .from('diary_entries')
+            .select('*')
+            .eq('user_id', authUser.id)
+            .order('recorded_at', { ascending: false });
+            
+          if (diaryError) throw diaryError;
           
-        if (diaryError) throw diaryError;
-        
-        console.log('取得した日記エントリー:', diaryData?.length || 0);
-        
-        // データ処理 - 明示的に型アサーションを追加
-        const entriesWithTags = diaryData ? diaryData.map((entry: any) => {
-          const randomTags = (entry.entry_id || 0) % 2 === 0 
-            ? ['英語学習', '集中できた'] 
-            : ['プログラミング'];
+          console.log('取得した日記エントリー:', diaryData?.length || 0);
           
-          // 明示的に DiaryEntryType として整形
-          return { 
-            entry_id: entry.entry_id,
-            user_id: entry.user_id,
-            recorded_at: entry.recorded_at,
-            session_id: entry.session_id,
-            type_id: entry.type_id,
-            line1: entry.line1,
-            line2: entry.line2,
-            line3: entry.line3,
-            created_at: entry.created_at,
-            updated_at: entry.updated_at,
-            tags: randomTags
-          } as DiaryEntryType;
-        }) : [];
-        
-        setDiaryEntries(entriesWithTags);
-        
-        // ポモドーロセッションも取得
-        const { data: pomodoroData, error: pomodoroError } = await supabase
-          .from('pomodoro_sessions')
-          .select('*')
-          .eq('user_id', authUser.id)
-          .order('started_at', { ascending: false });
+          // データ処理 - 明示的に型アサーションを追加
+          const entriesWithTags = diaryData ? diaryData.map((entry: any) => {
+            const randomTags = (entry.entry_id || 0) % 2 === 0 
+              ? ['英語学習', '集中できた'] 
+              : ['プログラミング'];
+            
+            // ポモドーロ関連フィールドを除外
+            return { 
+              entry_id: entry.entry_id,
+              user_id: entry.user_id,
+              recorded_at: entry.recorded_at,
+              type_id: entry.type_id,
+              line1: entry.line1,
+              line2: entry.line2,
+              line3: entry.line3,
+              created_at: entry.created_at,
+              updated_at: entry.updated_at,
+              tags: randomTags
+            } as DiaryEntryType;
+          }) : [];
           
-        if (pomodoroError) throw pomodoroError;
-        
-        // 明示的に型変換
-        const typedPomodoroData = pomodoroData ? pomodoroData.map((session: any) => ({
-          session_id: session.session_id,
-          pomodoro_type: session.pomodoro_type,
-          duration: session.duration,
-          started_at: session.started_at
-        } as PomodoroSessionType)) : [];
-        
-        setPomodoroSessions(typedPomodoroData);
-      } catch (err: any) {
-        console.error('データ取得エラー:', err);
-        setError('データ取得に失敗しました');
-        setDiaryEntries([]);
-        setPomodoroSessions([]);
-      } finally {
-        setIsLoading(false);
-      }
+          setDiaryEntries(entriesWithTags);
+          
+          // ポモドーロセッション取得部分を削除
+          
+        } catch (err: any) {
+          console.error('データ取得エラー:', err);
+          setError('データ取得に失敗しました');
+          setDiaryEntries([]);
+        } finally {
+          setIsLoading(false);
+        }
       } else {
         // 未認証でも空データでUIを表示
         setDiaryEntries([]);
-        setPomodoroSessions([]);
         setIsLoading(false);
       }
     };
@@ -493,7 +464,7 @@ const Diary: React.FC = () => {
   };
 
   // 新規エントリー作成関数
-  const createDiaryEntry = async (line1: string, line2: string, line3: string, typeId: number, sessionId: number | null = null) => {
+  const createDiaryEntry = async (line1: string, line2: string, line3: string, typeId: number = 1) => {
     if (!authUser) {
       console.log('ユーザーが認証されていません');
       return false;
@@ -505,7 +476,6 @@ const Diary: React.FC = () => {
       const newEntry = {
         user_id: authUser.id,
         recorded_at: new Date(new Date().getTime() + 9 * 60 * 60 * 1000).toISOString(),
-        session_id: sessionId,
         type_id: typeId,
         line1: line1 || null,
         line2: line2 || null,
@@ -592,7 +562,7 @@ const Diary: React.FC = () => {
   /**
    * 新規作成モーダルを開く
    */
-  const openAddModal = (typeId: number = 1, sessionId: number | null = null) => {
+  const openAddModal = () => {
     if (!authUser?.id) {
       console.log('未認証状態でのモーダルオープン試行 - User:', authUser);
       return;
@@ -602,22 +572,13 @@ const Diary: React.FC = () => {
       entry_id: -1,
       user_id: authUser.id,
       recorded_at: new Date().toISOString(),
-      session_id: sessionId,
-      type_id: typeId,
+      type_id: 1,
       line1: '',
       line2: '',
       line3: '',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
-
-    if (sessionId) {
-      const session = pomodoroSessions.find(s => s.session_id === sessionId);
-      if (session) {
-        newEntry.pomodoroType = session.pomodoro_type;
-        newEntry.duration = session.duration;
-      }
-    }
     
     console.log('新規日記モーダルを開く:', newEntry);
     
@@ -662,17 +623,9 @@ const Diary: React.FC = () => {
         line1, 
         line2, 
         line3, 
-        modalState.entry.type_id,
-        modalState.entry.session_id
+        modalState.entry.type_id
       );
     }
-  };
-
-  /**
-   * タブを切り替える
-   */
-  const handleTabChange = (tab: 'all' | 'pomodoro' | 'regular') => {
-    setActiveTab(tab);
   };
 
   /**
@@ -697,26 +650,14 @@ const Diary: React.FC = () => {
    * 表示するエントリーをフィルタリングする
    */
   const getFilteredEntries = () => {
-    let filteredEntries;
-    
-    if (activeTab === 'all') {
-      filteredEntries = diaryEntries;
-    } else if (activeTab === 'pomodoro') {
-      filteredEntries = diaryEntries.filter(entry => entry.type_id === 2 || entry.session_id !== null);
-    } else {
-      filteredEntries = diaryEntries.filter(entry => entry.type_id === 1 && entry.session_id === null);
-    }
-    
-    return filteredEntries.slice(0, 3);
+    // タブによるフィルタリングを削除し、単純に最新の3件を返す
+    return diaryEntries.slice(0, 3);
   };
 
   /**
    * 日記タイプの表示名を取得する
    */
-  const getDiaryTypeName = (typeId: number, sessionId: number | null) => {
-    if (typeId === 2 || sessionId !== null) {
-      return 'ポモドーロ';
-    }
+  const getDiaryTypeName = (typeId: number) => {
     return '通常';
   };
 
@@ -742,7 +683,7 @@ const Diary: React.FC = () => {
             <Edit2 
               size={20} 
               className={styles.diaryTool} 
-              onClick={() => authUser?.id ? openAddModal(1) : console.log('ログインが必要です')}
+              onClick={() => authUser?.id ? openAddModal() : console.log('ログインが必要です')}
               style={!authUser?.id ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
             />
           </span>
@@ -754,48 +695,28 @@ const Diary: React.FC = () => {
             />
           </span>
         </div>
-      </div>      
-      {/* ユーザー情報表示 - 条件付きレンダリング */}
-      {authUser?.id ? (
-      <div className={styles.diarySubtitle}>
-        {authUser.email || authUser.user_metadata?.name || 'ログインユーザー'}さんの日記
       </div>
+      
+      {/* ユーザー情報表示 */}
+      {authUser?.id ? (
+        <div className={styles.diarySubtitle}>
+          {authUser.email || authUser.user_metadata?.name || 'ログインユーザー'}さんの日記
+        </div>
       ) : (
         <div className={styles.diarySubtitle}>
           今日の出来事を3行で記録しましょう
         </div>
-      )}      
-      {/* 未ログイン時のメッセージは控えめに表示 */}
+      )}
+      
+      {/* 未ログイン時のメッセージ */}
       {!authUser && !authLoading && (
         <div className={styles.diarySubtitle} style={{ fontSize: '0.8em', color: '#666' }}>
           ※ログインするとデータが保存されます
         </div>
       )}
 
-      {/* タブと日記エントリー */}
+      {/* 日記エントリー - タブ切り替え部分を削除 */}
       <div>
-        {/* タブ切り替え */}
-        <div className={styles.tabsList}>
-          <button 
-            className={`${styles.tabsTrigger} ${activeTab === 'all' ? styles.active : ''}`}
-            onClick={() => handleTabChange('all')}
-          >
-            すべて
-          </button>
-          <button 
-            className={`${styles.tabsTrigger} ${activeTab === 'pomodoro' ? styles.active : ''}`}
-            onClick={() => handleTabChange('pomodoro')}
-          >
-            ポモドーロ
-          </button>
-          <button 
-            className={`${styles.tabsTrigger} ${activeTab === 'regular' ? styles.active : ''}`}
-            onClick={() => handleTabChange('regular')}
-          >
-            通常の記録
-          </button>
-        </div>
-
         {/* 日記エントリーリスト */}
         <div className={styles.diaryEntries}>
           {getFilteredEntries().length === 0 ? (
@@ -808,16 +729,9 @@ const Diary: React.FC = () => {
                 <div className={styles.entryHeader}>
                   <div className={styles.entryTimestamp}>
                     記録時刻: {new Date(entry.recorded_at).toLocaleString('ja-JP')}
-                    {entry.session_id && entry.pomodoroType && (
-                      <span style={{ marginLeft: '8px' }}>
-                        {entry.pomodoroType} ({entry.duration}分)
-                      </span>
-                    )}
                   </div>
                   <div className={styles.entryTags}>
-                    <span className={`${styles.recordTypeTag} ${entry.type_id === 2 ? styles.immediateTag : styles.laterTag}`}>
-                      {getDiaryTypeName(entry.type_id, entry.session_id ?? null)}
-                    </span>
+                    {/* タイプタグを削除または単純化 */}
                     {entry.tags?.map((tag, index) => (
                       <span key={index} className={styles.entryTag}>
                         #{tag}
@@ -849,7 +763,7 @@ const Diary: React.FC = () => {
         </div>
       </div>
 
-      {/* 編集/作成モーダル */}
+      {/* 編集/作成モーダル - ポモドーロ関連表示を削除 */}
       {modalState.isOpen && modalState.entry && (
         <div 
           className={styles.modalOverlay}
@@ -876,11 +790,6 @@ const Diary: React.FC = () => {
             <div className={styles.modalContent}>
               <div className={styles.entryTimestamp}>
                 {new Date(modalState.entry.recorded_at).toLocaleString('ja-JP')} の記録
-                {modalState.entry.session_id && modalState.entry.pomodoroType && (
-                  <span style={{ marginLeft: '8px' }}>
-                    {modalState.entry.pomodoroType} ({modalState.entry.duration}分)
-                  </span>
-                )}
               </div>
               
               {/* 3行日記フォームコンポーネント */}

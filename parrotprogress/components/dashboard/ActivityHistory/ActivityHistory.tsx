@@ -4,6 +4,7 @@ import styles from './ActivityHistory.module.css';
 import { createClient } from '@supabase/supabase-js';
 import DiaryModal from '@/components/dashboard/modals/DiaryModal';
 import { useAuth } from '@/lib/AuthContext'; // 認証コンテキストをインポート
+import EditDiaryModal from '@/components/dashboard/modals/EditDiaryModal';
 
 //#region 型定義
 // モーダルの状態をGachaModalと連動させるためのpropsを追加
@@ -13,8 +14,8 @@ type ActivityHistoryProps = {
   isGachaOpen?: boolean; // ガチャモーダルが開いているかどうかのフラグ
 };
 
-// 日記エントリーの型
-type DiaryEntry = {
+// データベースの日記エントリー型
+type DBDiaryEntry = {
   entry_id: number;
   user_id: string;
   recorded_at: string;
@@ -27,7 +28,7 @@ type DiaryEntry = {
   updated_at: string;
 };
 
-// モーダル表示用の日記エントリー型
+// モーダル表示用の日記エントリー型（ActivityDiaryEntryと同一構造）
 type ModalDiaryEntry = {
   time: string;
   tags: string[];
@@ -37,7 +38,7 @@ type ModalDiaryEntry = {
 // アクティビティレベルの型
 type ActivityLevel = 0 | 1 | 2 | 3 | 4;
 
-// #region セルデータの型
+// セルデータの型
 type CellData = {
   date: string;
   day: number;
@@ -87,7 +88,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
     rows: {}
   });
   // エントリーデータ（日付ごと）
-  const [entriesByDate, setEntriesByDate] = useState<Record<string, DiaryEntry[]>>({});
+  const [entriesByDate, setEntriesByDate] = useState<Record<string, DBDiaryEntry[]>>({});
   // 選択されたセルデータ
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   // 日記エントリーデータのロード状態
@@ -100,9 +101,12 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
   const [modalEntries, setModalEntries] = useState<ModalDiaryEntry[]>([]);
   // データ更新トリガー
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-
+  // 認証リトライカウント
   const [authRetryCount, setAuthRetryCount] = useState(0);
-
+  // 編集対象のエントリー
+  const [editingEntry, setEditingEntry] = useState<ModalDiaryEntry | null>(null);
+  // 編集モーダル表示状態
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   //#endregion
 
   // データを再取得する関数
@@ -210,14 +214,14 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
         console.log('取得した活動履歴:', data?.length || 0, '件');
         
         // エントリーを日付ごとにグループ化
-        const entriesByDate: Record<string, DiaryEntry[]> = {};
+        const entriesByDate: Record<string, DBDiaryEntry[]> = {};
         data?.forEach((entry) => {
           const date = formatDateForComparison(entry.recorded_at);
           
           if (!entriesByDate[date]) {
             entriesByDate[date] = [];
           }
-          entriesByDate[date].push(entry as DiaryEntry);
+          entriesByDate[date].push(entry as DBDiaryEntry);
         });
         
         setEntriesByDate(entriesByDate);
@@ -359,16 +363,36 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
     
     return styles[`level${level}`];
   };
+
+  // DBデータをモーダル表示用データに変換
+  const convertToModalEntry = (dbEntry: DBDiaryEntry): ModalDiaryEntry => {
+    const recordedTime = new Date(dbEntry.recorded_at);
+    
+    // 時間を整形
+    const hours = recordedTime.getHours().toString().padStart(2, '0');
+    const minutes = recordedTime.getMinutes().toString().padStart(2, '0');
+    const timeStr = `${hours}:${minutes}`;
+    
+    // 活動内容を配列に変換
+    const activities = [dbEntry.line1];
+    if (dbEntry.line2) activities.push(dbEntry.line2);
+    if (dbEntry.line3) activities.push(dbEntry.line3);
+    
+    return {
+      time: timeStr,
+      tags: ['3行日記'], // 仮のタグ
+      activities
+    };
+  };
   //#endregion
 
   //#region イベントハンドラー
   // セルクリックのハンドラー
   const handleCellClick = (cell: CellData) => {
-
-        // ガチャモーダルが開いている場合は処理をスキップ
-        if (isGachaOpen) {
-          return;
-        }
+    // ガチャモーダルが開いている場合は処理をスキップ
+    if (isGachaOpen) {
+      return;
+    }
     
     setSelectedDate(cell.date);
     
@@ -385,26 +409,8 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
       // エントリーがない場合でも空のモーダルを表示（新規作成用）
       setModalEntries([]);
     } else {
-      const modalData: ModalDiaryEntry[] = entries.map(entry => {
-        const recordedTime = new Date(entry.recorded_at);
-        
-        // 時間を整形
-        const hours = recordedTime.getHours().toString().padStart(2, '0');
-        const minutes = recordedTime.getMinutes().toString().padStart(2, '0');
-        const timeStr = `${hours}:${minutes}`;
-        
-        // 活動内容を配列に変換
-        const activities = [entry.line1];
-        if (entry.line2) activities.push(entry.line2);
-        if (entry.line3) activities.push(entry.line3);
-        
-        return {
-          time: timeStr,
-          tags: ['3行日記'], // 仮のタグ
-          activities
-        };
-      });
-      
+      // DBエントリーをモーダル用エントリーに変換
+      const modalData = entries.map(convertToModalEntry);
       setModalEntries(modalData);
     }
     
@@ -424,6 +430,26 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
   // モーダルを閉じるハンドラー
   const handleCloseModal = () => {
     setShowModal(false);
+  };
+
+  // エントリー編集ハンドラー
+  const handleEditEntry = (entry: ModalDiaryEntry) => {
+    setEditingEntry(entry);
+    setIsEditModalOpen(true);
+    setShowModal(false); // DiaryModalを閉じる
+  };
+
+  // 編集モーダルを閉じるハンドラー
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setEditingEntry(null);
+  };
+
+  // 編集完了後のハンドラー
+  const handleEditComplete = () => {
+    setIsEditModalOpen(false);
+    setEditingEntry(null);
+    refreshData(); // データを再取得して表示を更新
   };
   //#endregion
 
@@ -481,7 +507,6 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
                       >
                         {cell && (
                           <button
-                            // getLevelClassNameを使わず、直接条件分岐してクラス名を適用
                             className={`
                               ${styles.cell} 
                               ${styles[`level${cell.level}`]}
@@ -520,8 +545,21 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
         onClose={handleCloseModal}
         date={selectedDate ? formatDisplayDate(selectedDate) : null}
         entries={modalEntries}
-        onDataUpdated={refreshData} // データが更新されたときに再取得するためのコールバック
+        onDataUpdated={refreshData}
+        isToday={selectedDate === formatDateForComparison(new Date().toISOString())}
+        onEditEntry={handleEditEntry}
       />
+      
+      {/* 編集モーダル */}
+      {isEditModalOpen && editingEntry && (
+        <EditDiaryModal
+          isOpen={isEditModalOpen}
+          onClose={handleCloseEditModal}
+          entry={editingEntry}
+          date={selectedDate ? formatDisplayDate(selectedDate) : null}
+          onSave={handleEditComplete}
+        />
+      )}
     </div>
   );
 };

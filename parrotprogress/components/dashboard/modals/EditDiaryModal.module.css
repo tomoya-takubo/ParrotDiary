@@ -1,0 +1,324 @@
+/* モーダルオーバーレイ */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+/* モーダルコンテナ */
+.modalContainer {
+  position: relative;
+  background-color: #f8f9fa;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 800px;
+  width: 100%;
+  margin: 0 16px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* モーダルヘッダー */
+.modalHeader {
+  margin-bottom: 24px;
+}
+
+.modalTitle {
+  font-size: 20px;
+  font-weight: bold;
+  color: #1a202c;
+}
+
+.modalContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.entryTimestamp {
+  font-size: 14px;
+  color: #718096;
+  margin-bottom: 8px;
+}
+
+/* 入力グループ */
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inputLabel {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.inputWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.textInput {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.textInput:focus {
+  outline: none;
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.textInput:disabled {
+  background-color: #f1f5f9;
+  cursor: not-allowed;
+}
+
+/* 文字数カウンタ */
+.charCount {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* エラーテキスト */
+.errorText {
+  color: #e53e3e;
+  font-size: 14px;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background-color: #fff5f5; /* 非常に薄い赤色 */
+  border-radius: 8px;
+  border: none; /* 枠線なし */
+}
+
+/* タグセクション */
+.tagSection {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* タグ入力コンテナ */
+.tagInputContainer {
+  position: relative;
+  margin-bottom: 8px;
+}
+
+/* タグ入力ラッパー */
+.tagInputWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* タグアイコン */
+.tagIcon {
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+/* タグ追加ボタン */
+.addTagButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.addTagButton:hover {
+  background-color: #2563eb;
+}
+
+.addTagButton:disabled {
+  background-color: #93c5fd;
+  cursor: not-allowed;
+}
+
+/* タグサジェスト */
+.tagSuggestions {
+  position: absolute;
+  z-index: 10;
+  width: 100%;
+  margin-top: 4px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+}
+
+/* タグサジェストリスト */
+.tagSuggestionsList {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* タグサジェストアイテム */
+.tagSuggestion {
+  width: 100%;
+  padding: 8px 12px;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tagSuggestion:hover {
+  background-color: #f8fafc;
+}
+
+/* よく使うタグコンテナ */
+.frequentTagsContainer {
+  margin-top: 4px;
+}
+
+/* よく使うタグラベル */
+.frequentTagsLabel {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+/* よく使うタグリスト */
+.frequentTagsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* よく使うタグ */
+.frequentTag {
+  padding: 6px 12px;
+  background-color: #f1f5f9;
+  color: #475569;
+  border: none;
+  border-radius: 9999px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.frequentTag:hover {
+  background-color: #e0f2fe;
+  color: #0284c7;
+}
+
+/* タグカウント */
+.tagCount {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* 選択済みタグコンテナ */
+.selectedTagsContainer {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* 選択済みタグ */
+.selectedTag {
+  padding: 6px 12px;
+  background-color: #f0f7ff; /* 非常に薄い青色 */
+  color: #0284c7;
+  border: none; /* 枠線なし */
+  border-radius: 9999px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* タグ削除ボタン */
+.removeTagButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: #0284c7;
+  cursor: pointer;
+  padding: 2px;
+}
+
+.removeTagButton:hover {
+  color: #0369a1;
+}
+
+/* 閉じるボタン */
+.closeButton {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+}
+
+.closeButton:hover {
+  background-color: #f1f5f9;
+  color: #475569;
+}
+
+/* 記録ボタン */
+.recordButton {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  gap: 8px;
+  transition: background-color 0.2s;
+  margin-top: 24px;
+}
+
+.recordButton:hover {
+  background-color: #2563eb;
+}
+
+.recordButton:disabled {
+  background-color: #93c5fd;
+  cursor: not-allowed;
+}

@@ -12,7 +12,7 @@
 }
 
 .modalContainer {
-  background-color: white;
+  background-color: #ffffff; /* 白色に変更 */
   border-radius: 16px;
   padding: 24px;
   max-width: 672px;
@@ -20,7 +20,7 @@
   margin: 0 16px;
   max-height: 80vh;
   overflow-y: auto;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* 影を軽くする */
 }
 
 .modalHeader {
@@ -65,9 +65,10 @@
 }
 
 .entryCard {
-  border: 1px solid #e2e8f0;
+  border: none; /* 枠線を削除 */
   border-radius: 12px;
   padding: 16px;
+  background-color: #f9f9fb; /* 背景色を添付画像に合わせる */
 }
 
 .entryHeader {
@@ -126,4 +127,97 @@
 
 .addRecordButton:hover {
   background-color: #edf2f7;
+}
+
+/* 編集ボタンのスタイルを更新（3行日記と同様の丸みを帯びたデザイン） */
+.editButton {
+  padding: 4px 12px;
+  background-color: #e2e8f0;
+  border: none;
+  border-radius: 20px; /* 丸みを増加 */
+  color: #4a5568;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.editButton:hover {
+  background-color: #cbd5e0;
+}
+
+/* 活動項目（3行の日記内容）の背景色も変更して見やすくする
+.activityItem {
+  padding: 6px 12px;
+  color: #4a5568;
+  border-radius: 6px;
+  margin-bottom: 4px;
+} */
+
+/* モーダル内のコンテンツスタイル調整 */
+
+/* 活動内容の表示スタイル */
+.activityItem {
+  padding: 4px 0;
+  color: #333333;
+  background: transparent; /* 背景色をなしに */
+  border: none; /* 枠線なし */
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* エントリーの時間表示 */
+.entryTime {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #666666; /* 薄めのグレー */
+}
+
+/* タグの表示スタイル */
+.entryTag {
+  padding: 3px 10px;
+  font-size: 12px;
+  border-radius: 9999px;
+  background-color: #f0f7ff; /* 非常に薄い青色 */
+  color: #0284c7;
+  border: none; /* 枠線なし */
+}
+
+/* 編集ボタンのスタイル */
+.editButton {
+  padding: 3px 10px;
+  background-color: #f9f9fb; /* 非常に薄いグレー */
+  color: #475569;
+  border: none; /* 枠線なし */
+  border-radius: 9999px;
+  font-size: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* エントリーカードのヘッダーとボディの間隔 */
+.entryHeader {
+  margin-bottom: 10px;
+}
+
+/* エントリーがない場合のメッセージ */
+.noEntriesMessage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  text-align: center;
+  background-color: #f9f9fb; /* 非常に薄いグレー */
+  border-radius: 8px;
+  border: none; /* 枠線なし */
+  margin: 1rem 0;
+  min-height: 120px;
 }
