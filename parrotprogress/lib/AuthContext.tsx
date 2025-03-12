@@ -8,7 +8,6 @@ type AuthContextType = {
   session: Session | null;
   user: User | null;
   isLoading: boolean;
-  // 戻り値の型を Supabase の AuthResponse に合わせる
   signIn: (email: string, password: string) => Promise<AuthResponse>;
   signOut: () => Promise<void>;
 };
@@ -21,54 +20,104 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // 初期セッションの取得
-    const getInitialSession = async () => {
+    // 初期セッションの取得とリスナー設定を分離せず、一度に行う
+    const setupAuth = async () => {
       try {
+        console.log('AuthContext: 認証設定開始');
+        setIsLoading(true);
+        
+        // 既存のセッションを取得
         const { data, error } = await supabase.auth.getSession();
         
         if (error) {
-          throw error;
+          console.error('AuthContext: セッション取得エラー:', error);
+        } else {
+          console.log('AuthContext: セッション取得結果:', {
+            hasSession: !!data.session,
+            userId: data.session?.user?.id || 'なし'
+          });
+          
+          // 既存のセッションがあれば状態を更新
+          if (data.session) {
+            setSession(data.session);
+            setUser(data.session.user);
+            console.log('AuthContext: ユーザー情報設定', data.session.user.id);
+          }
         }
-        
-        setSession(data.session);
-        setUser(data.session?.user || null);
       } catch (error) {
-        console.error('セッション取得エラー:', error);
+        console.error('AuthContext: 初期セッション取得エラー:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    getInitialSession();
+    // 認証設定を実行
+    setupAuth();
 
-    // 認証状態の変更を監視
+    // 認証状態変更の監視
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
-        console.log('Auth state changed:', event);
-        setSession(currentSession);
-        setUser(currentSession?.user || null);
-        setIsLoading(false);
+        console.log('AuthContext: 認証状態変更イベント:', event, {
+          hasSession: !!currentSession,
+          userId: currentSession?.user?.id || 'なし'
+        });
+        
+        // イベントに応じて状態を更新
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          setSession(currentSession);
+          setUser(currentSession?.user || null);
+        } else if (event === 'SIGNED_OUT') {
+          setSession(null);
+          setUser(null);
+        }
       }
     );
 
+    // クリーンアップ
     return () => {
-      authListener?.subscription.unsubscribe();
+      authListener.subscription.unsubscribe();
     };
   }, []);
 
-  // ログイン関数 - 戻り値の型を修正
+  // ログイン関数
   const signIn = async (email: string, password: string) => {
     setIsLoading(true);
-    const response = await supabase.auth.signInWithPassword({ email, password });
-    setIsLoading(false);
-    return response;
+    try {
+      console.log('AuthContext: ログイン試行', email);
+      const response = await supabase.auth.signInWithPassword({ email, password });
+      
+      if (response.error) {
+        console.error('AuthContext: ログインエラー:', response.error);
+      } else {
+        console.log('AuthContext: ログイン成功:', response.data.user?.id);
+      }
+      
+      return response;
+    } catch (error) {
+      console.error('AuthContext: ログイン例外:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // ログアウト関数
   const signOut = async () => {
     setIsLoading(true);
-    await supabase.auth.signOut();
-    setIsLoading(false);
+    try {
+      console.log('AuthContext: ログアウト試行');
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('AuthContext: ログアウトエラー:', error);
+      } else {
+        console.log('AuthContext: ログアウト成功');
+      }
+    } catch (error) {
+      console.error('AuthContext: ログアウト例外:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const value = {

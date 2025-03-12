@@ -67,6 +67,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
   const CELL_GAP = 8;  // セル間のギャップ
   const TOTAL_CELL_WIDTH = CELL_WIDTH + CELL_GAP; // セル幅 + ギャップ
   const WEEKDAY_LABEL_WIDTH = 50; // 曜日ラベルの幅
+  const MAX_AUTH_RETRIES = 3;
   //#endregion
 
   //#region refs
@@ -99,6 +100,9 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
   const [modalEntries, setModalEntries] = useState<ModalDiaryEntry[]>([]);
   // データ更新トリガー
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const [authRetryCount, setAuthRetryCount] = useState(0);
+
   //#endregion
 
   // データを再取得する関数
@@ -153,16 +157,17 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
   useEffect(() => {
     const fetchDiaryEntries = async () => {
       try {
-        // 認証のロード中は何もしない
+        // authLoadingの場合は単に戻るだけではなく、ローディング状態を設定
         if (authLoading) {
+          setLoading(true);
           return;
         }
         
         setLoading(true);
         
-        if (!user || !session) {
-          console.log('認証情報を待機中...');
-          // 空のデータを設定して表示を継続
+        // ユーザー認証のより堅牢なチェック
+        if (!user?.id || !session?.access_token) {
+          console.log('認証情報を待機中またはログインしていません');
           setEntriesByDate({});
           setLoading(false);
           return;
@@ -170,7 +175,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
           
         const userId = user.id;
         console.log('認証されたユーザーID:', userId);
-        
+
         // 日付範囲の設定
         const today = new Date();
         const sixMonthsAgo = new Date(today);
@@ -232,7 +237,10 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
       }
     };
     
-    fetchDiaryEntries();
+    // 認証ロード中でない場合「または」有効なユーザーがいる場合のみデータ取得を試みる
+    if (!authLoading || user?.id) {
+      fetchDiaryEntries();
+    }
   }, [user, session, authLoading, refreshTrigger]); // 認証情報が変わるか、リフレッシュトリガーが変わったときに再取得
   //#endregion
 
@@ -243,6 +251,20 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
       generateCalendarGrid();
     }
   }, [currentOffset, entriesByDate, loading, columnCount]);
+
+  // 認証リトライを処理するuseEffectを追加
+  useEffect(() => {
+    // コンポーネントマウント後も認証ロード中の場合、リトライを設定
+    if (authLoading && authRetryCount < MAX_AUTH_RETRIES) {
+      const timer = setTimeout(() => {
+        console.log(`認証リトライ ${authRetryCount + 1}/${MAX_AUTH_RETRIES}`);
+        setAuthRetryCount(prev => prev + 1);
+        setRefreshTrigger(prev => prev + 1);
+      }, 2000); // リトライ間隔は2秒
+      
+      return () => clearTimeout(timer);
+    }
+  }, [authLoading, authRetryCount]);
     
   // カレンダーグリッドの生成
   const generateCalendarGrid = () => {
