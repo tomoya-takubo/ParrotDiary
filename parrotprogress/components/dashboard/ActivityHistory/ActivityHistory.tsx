@@ -183,9 +183,13 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
           .from('diary_entries')
           .select('*')
           .eq('user_id', userId)
-          .gte('recorded_at', formatDateString(sixMonthsAgo))
-          .lte('recorded_at', formatDateString(today))
+          .gte('recorded_at', formatDateString(sixMonthsAgo) + ' 00:00:00')  // 時刻部分を追加
+          .lte('recorded_at', formatDateString(today) + ' 23:59:59')  // 1日の終わりまで含める
           .order('recorded_at', { ascending: false });
+
+          // デバッグ出力
+          console.log('取得したデータ:', data);
+          console.log('今日の日付:', formatDateString(today));
         
         if (error) {
           console.error('データ取得エラー:', error);
@@ -211,6 +215,11 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
         if (!data || data.length === 0) {
           console.log('データが見つかりませんでした');
         }
+
+        console.log('今日の日付（JST）:', formatDateString(today));
+        console.log('取得したエントリーの日付一覧:', data?.map(e => formatDateForComparison(e.recorded_at)));
+        console.log('タイムゾーン調整後の今日の日付:', formatDateForComparison(new Date().toISOString()));
+
       } catch (err) {
         console.error('日記エントリー取得中のエラー:', err);
         setError(`エラーが発生しました: ${(err as Error).message}`);
@@ -233,7 +242,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
   // カレンダーグリッドの生成
   const generateCalendarGrid = () => {
     const today = new Date();
-    const todayStr = formatDateString(today);
+    const todayStr = formatDateForComparison(today.toISOString());
     
     // 終了日は今日
     const endDate = new Date(today);
@@ -452,8 +461,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
                             // getLevelClassNameを使わず、直接条件分岐してクラス名を適用
                             className={`
                               ${styles.cell} 
-                              ${cell.isToday ? styles.cellToday : styles[`level${cell.level}`]}
-                              ${isGachaOpen ? styles.disabled : ''}
+                              ${styles[`level${cell.level}`]}
                             `}
                             onClick={() => handleCellClick(cell)}
                             disabled={isGachaOpen} 
