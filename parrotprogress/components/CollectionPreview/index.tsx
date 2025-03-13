@@ -56,7 +56,7 @@ export default function CollectionPreview() {
   
   // AuthContextからユーザー情報を取得
   const { user, session, isLoading: authLoading } = useAuth();
-  
+
   // 現在のユーザーを取得
   const getCurrentUser = async () => {
     try {
@@ -506,7 +506,7 @@ export default function CollectionPreview() {
         </button>
       </div>
       
-      {/* 未ログイン時のバナー - ダッシュボードからの場合は表示しない */}
+      {/* 未ログイン時のバナー */}
       {isAuthenticated === false && (
         <div className={styles.loginBanner}>
           <div className={styles.loginMessage}>

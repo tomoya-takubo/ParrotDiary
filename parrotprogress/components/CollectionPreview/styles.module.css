@@ -86,6 +86,16 @@
   grid-template-columns: repeat(auto-fit, 180px);
 }
 
+.parrotCard {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  width: 180px;  /* カードの幅を180pxに拡大 */
+  position: relative; /* .lockOverlay 用 */
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
 .parrotCard:hover {
   transform: translateY(-2px);
 }
@@ -191,12 +201,15 @@
 }
 
 .description {
-  color: #666;
+  color: #374151;  /* テキストの色を濃く */
   margin-bottom: 1.5rem;
+  line-height: 1.6;  /* 行間を広げて読みやすく */
+  font-size: 0.95rem;
 }
 
 .detailsSection {
-  background: #f8f9fa;
+  background: #f8f9fa;  /* 完全な不透明な背景に */
+  border: 1px solid #e5e7eb;  /* 境界線を追加 */
   padding: 1rem;
   border-radius: 0.5rem;
 }
@@ -315,15 +328,15 @@
 
 .filterHeader {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
   gap: 1rem;
-  flex-wrap: wrap;
+  align-items: center;
   margin-bottom: 1rem;
+  flex-wrap: wrap;
 }
 
 .searchBox {
-  flex: 0 0 300px;  /* 検索バーの幅を固定 */
+  flex: 1;  /* 検索ボックスを可能な限り広げる */
+  max-width: 300px;
 }
 
 .categories {
@@ -340,15 +353,6 @@
   margin-top: 1rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   width: 100%;
-}
-
-.parrotCard {
-  background: white;
-  border-radius: 0.75rem;
-  padding: 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  width: 180px;  /* カードの幅を180pxに拡大 */
-  position: relative; /* .lockOverlay 用 */
 }
 
 .rarityFilter {
@@ -408,7 +412,7 @@
   border-color: #8b5cf6;
 }
 
-/* レア度に応じたスタイル */
+/* レア度に応じたスタイル - ！重要！ このスタイルが適用されないと色分けされません */
 .rarityUR {
   background: linear-gradient(to right, rgba(255, 0, 0, 0.3), rgba(255, 128, 0, 0.3), rgba(255, 255, 0, 0.3), rgba(0, 255, 0, 0.3), rgba(0, 0, 255, 0.3), rgba(128, 0, 255, 0.3));
   border: 1px solid rgba(128, 0, 255, 0.3);
@@ -437,7 +441,7 @@
   opacity: 0.8;
 }
 
-/* バッジのスタイル */
+/* バッジのスタイル - ！重要！ このスタイルが適用されないとバッジの色が変わりません */
 .rarityBadgeUR {
   background-color: #FF6B00;  /* 鮮やかなオレンジ */
   color: white;
@@ -458,6 +462,7 @@
   color: white;
 }
 
+/* モーダルの背景色スタイル - ！重要！ このスタイルが適用されないとモーダルの色分けができません */
 .modalContentUR {
   background: linear-gradient(135deg, #fff, #fff),
               linear-gradient(135deg, rgba(255, 0, 0, 0.15), rgba(255, 128, 0, 0.15), rgba(255, 255, 0, 0.15), rgba(0, 255, 0, 0.15), rgba(0, 0, 255, 0.15), rgba(128, 0, 255, 0.15));
@@ -484,18 +489,6 @@
 
 .modalContentUnobtained {
   background: #fff;
-}
-
-.description {
-  color: #374151;  /* テキストの色を濃く */
-  margin-bottom: 1.5rem;
-  line-height: 1.6;  /* 行間を広げて読みやすく */
-  font-size: 0.95rem;
-}
-
-.detailsSection {
-  background: #f8f9fa;  /* 完全な不透明な背景に */
-  border: 1px solid #e5e7eb;  /* 境界線を追加 */
 }
 
 /* モーダルコンテンツ内の要素がより見やすくなるよう調整 */
@@ -557,8 +550,6 @@
   color: white;
   border-color: #10B981;
 }
-
-/* 新しく追加したスタイル */
 
 /* ローディング関連の改善スタイル */
 .loadingContainer {
