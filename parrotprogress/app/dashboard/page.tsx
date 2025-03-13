@@ -26,26 +26,71 @@ export default function Dashboard() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedDiaryEntries, setSelectedDiaryEntries] = useState<DiaryEntry[]>([]);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  
+  // チケット情報を格納するstate
+  const [ticketCount, setTicketCount] = useState<number>(0);
+  const [isLoadingTickets, setIsLoadingTickets] = useState<boolean>(true);
+  
+  // ユーザー情報を格納するstate
+  const [userStatus, setUserStatus] = useState<UserStatus>({
+    level: 1,
+    currentXP: 0,
+    nextLevelXP: 1000,
+    dailyXP: 0,
+    dailyGoalXP: 500,
+    totalDiaryEntries: 0,
+    streak: 0,
+    ranking: 'ブロンズ'
+  });
+  const [isLoadingUserStatus, setIsLoadingUserStatus] = useState<boolean>(true);
 
-// page.tsx の userStatus 定義部分に以下を追加
-const userStatus: UserStatus = {
-  level: 15,
-  currentXP: 2800,
-  nextLevelXP: 3500,
-  dailyXP: 280,
-  dailyGoalXP: 500,
-  totalDiaryEntries: 42, // 日記総記録数
-  streak: 15,
-  ranking: getRankFromStreak(15) // 連続ログイン日数からランクを決定
-};
-
-// ページの上部または別のファイルに追加する関数
-function getRankFromStreak(streak: number): string {
-  if (streak >= 60) return 'プラチナ';
-  if (streak >= 30) return 'ゴールド';
-  if (streak >= 10) return 'シルバー';
-  return 'ブロンズ';
-}
+  // レベルに基づいて必要なXPを計算する関数
+  const calculateRequiredXpForLevel = (level: number): number => {
+    // レベルごとの必要XPの計算式（例: 基本値 × レベル^1.5）
+    return Math.floor(1000 * Math.pow(level, 1.5));
+  };
+  
+  // 連続ログイン日数からランクを決定する関数
+  const getRankFromStreak = (streak: number): string => {
+    if (streak >= 60) return 'プラチナ';
+    if (streak >= 30) return 'ゴールド';
+    if (streak >= 10) return 'シルバー';
+    return 'ブロンズ';
+  };
+  
+  // 合計XPからレベル情報を計算する関数
+  const calculateLevelInfo = (totalXp: number, currentLevel: number): { 
+    level: number, 
+    currentXP: number, 
+    nextLevelXP: number 
+  } => {
+    // データベースのレベルをベースに計算
+    let level = currentLevel;
+    
+    // 累積XPの計算（現在のレベルまでに必要だったXP）
+    let accumulatedXp = 0;
+    for (let i = 1; i < level; i++) {
+      accumulatedXp += calculateRequiredXpForLevel(i);
+    }
+    
+    // 現在のレベルでの経験値
+    const currentLevelXp = totalXp - accumulatedXp;
+    
+    // 次のレベルに必要な経験値
+    const nextLevelRequiredXp = calculateRequiredXpForLevel(level);
+    
+    // もし現在の経験値が次のレベルに必要な経験値を超えていたら、
+    // データベースのレベルが最新でない可能性があるため、警告をログに出す
+    if (currentLevelXp >= nextLevelRequiredXp) {
+      console.warn('データベースのレベルが最新ではない可能性があります。レベルアップ処理が必要かもしれません。');
+    }
+    
+    return {
+      level,
+      currentXP: currentLevelXp,
+      nextLevelXP: nextLevelRequiredXp
+    };
+  };
   
   // タイマーオプション
   const timerOptions = [
@@ -56,6 +101,78 @@ function getRankFromStreak(streak: number): string {
     { time: 60, label: 'フル', gradient: 'linear-gradient(135deg, #e879f9, #d946ef)' }
   ];
   //#endregion
+
+  // ページ読み込み時にユーザー情報とチケット情報を取得
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        setIsLoadingUserStatus(true);
+        setIsLoadingTickets(true);
+        
+        // 現在ログイン中のユーザー情報を取得
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          console.error('ユーザーが認証されていません');
+          setIsLoadingUserStatus(false);
+          setIsLoadingTickets(false);
+          return;
+        }
+        
+        // ユーザーIDに基づいてユーザー情報を取得
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('level, total_xp, streak')
+          .eq('id', user.id)
+          .single();
+        
+        if (userError) {
+          console.error('ユーザー情報の取得に失敗しました:', userError);
+        } else if (userData) {
+          // 日記の総エントリー数を取得（実際のアプリではここでSupabaseから取得）
+          const mockTotalDiaryEntries = 42; // 仮の値
+          
+          // レベル情報を計算
+          const levelInfo = calculateLevelInfo(userData.total_xp, userData.level);
+          
+          // ユーザーステータスを更新
+          setUserStatus({
+            level: levelInfo.level,
+            currentXP: levelInfo.currentXP,
+            nextLevelXP: levelInfo.nextLevelXP,
+            dailyXP: 280, // 仮の値
+            dailyGoalXP: 500,
+            totalDiaryEntries: mockTotalDiaryEntries,
+            streak: userData.streak || 0,
+            ranking: getRankFromStreak(userData.streak || 0)
+          });
+        }
+        
+        // チケット情報を取得
+        const { data: ticketData, error: ticketError } = await supabase
+          .from('gacha_tickets')
+          .select('ticket_count')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (ticketError) {
+          console.error('チケット情報の取得に失敗しました:', ticketError);
+          setTicketCount(0);
+        } else if (ticketData) {
+          setTicketCount(ticketData.ticket_count);
+        } else {
+          setTicketCount(0);
+        }
+      } catch (error) {
+        console.error('データ取得中にエラーが発生しました:', error);
+      } finally {
+        setIsLoadingUserStatus(false);
+        setIsLoadingTickets(false);
+      }
+    };
+    
+    fetchUserData();
+  }, [supabase]);
 
   //#region Handlers
   /**
@@ -115,8 +232,44 @@ function getRankFromStreak(streak: number): string {
   //#endregion
 
   // ガチャを開始する関数
-  const startGacha = () => {
-    setShowGachaModal(true);
+  const startGacha = async () => {
+    // チケットが0枚の場合は処理を中断
+    if (ticketCount <= 0) {
+      alert('チケットがありません。活動を行ってチケットを獲得してください。');
+      return;
+    }
+    
+    try {
+      // 現在ログイン中のユーザー情報を取得
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        console.error('ユーザーが認証されていません');
+        return;
+      }
+      
+      // チケットを1枚消費（データベース更新）
+      const { error } = await supabase
+        .from('gacha_tickets')
+        .update({ 
+          ticket_count: ticketCount - 1,
+          last_updated: new Date().toISOString()
+        })
+        .eq('user_id', user.id);
+      
+      if (error) {
+        console.error('チケット消費の更新に失敗しました:', error);
+        return;
+      }
+      
+      // ローカルのチケットカウントを更新
+      setTicketCount(prevCount => Math.max(0, prevCount - 1));
+      
+      // ガチャモーダルを表示
+      setShowGachaModal(true);
+    } catch (error) {
+      console.error('ガチャ処理中にエラーが発生しました:', error);
+    }
   };
   
   // ガチャを閉じる関数
@@ -158,16 +311,30 @@ function getRankFromStreak(streak: number): string {
         {/* XPステータスバーとガチャボタン */}
         <div className={styles.statusCard}>
           <div className={styles.statusCardContent}>
-            {/* レベル進捗バー - Today's XPを削除し、バーを拡張 */}
+            {/* レベル進捗バー */}
             <div className={styles.levelProgress}>
               <div className={styles.levelInfo}>
-                <span>Level {userStatus.level}</span>
-                <span>{userStatus.currentXP} / {userStatus.nextLevelXP} XP</span>
+                <span>
+                  {isLoadingUserStatus 
+                    ? 'ロード中...' 
+                    : `Level ${userStatus.level}`
+                  }
+                </span>
+                <span>
+                  {isLoadingUserStatus 
+                    ? '' 
+                    : `${userStatus.currentXP} / ${userStatus.nextLevelXP} XP`
+                  }
+                </span>
               </div>
               <div className={styles.progressBarContainer}>
                 <div 
                   className={styles.progressBar}
-                  style={{ width: `${(userStatus.currentXP / userStatus.nextLevelXP) * 100}%` }}
+                  style={{ 
+                    width: isLoadingUserStatus 
+                      ? '0%' 
+                      : `${(userStatus.currentXP / userStatus.nextLevelXP) * 100}%` 
+                  }}
                 />
               </div>
             </div>
@@ -178,11 +345,13 @@ function getRankFromStreak(streak: number): string {
                 className={styles.gachaButton} 
                 onClick={startGacha}
                 // ガチャモーダルが開いているときはボタンを無効化
-                disabled={showGachaModal}
+                disabled={showGachaModal || isLoadingTickets}
               >
                 <div className={styles.ticketContainer}>
                   <span className={styles.ticketLabel}>チケット</span>
-                  <span className={styles.ticketCount}>3枚</span>
+                  <span className={styles.ticketCount}>
+                    {isLoadingTickets ? '読込中...' : `${ticketCount}枚`}
+                  </span>
                 </div>
                 <div className={styles.gachaButtonContent}>
                   <Gift size={24} />
@@ -200,22 +369,25 @@ function getRankFromStreak(streak: number): string {
               {
                 icon: Book,
                 title: '日記総記録数',
-                value: '42件',
+                value: isLoadingUserStatus ? '読込中...' : `${userStatus.totalDiaryEntries}件`,
                 subtext: '継続は力なり！',
                 gradient: 'linear-gradient(135deg, #60a5fa, #3b82f6)'
               },
               {
                 icon: Award,
                 title: '継続記録',
-                value: `${userStatus.streak}日連続`,
+                value: isLoadingUserStatus ? '読込中...' : `${userStatus.streak}日連続`,
                 subtext: '自己ベスト更新中！',
                 gradient: 'linear-gradient(135deg, #a78bfa, #8b5cf6)'
               },
               {
                 icon: Star,
                 title: 'ランク',
-                value: userStatus.ranking,
-                subtext: 'ゴールドまであと3日',
+                value: isLoadingUserStatus ? '読込中...' : userStatus.ranking,
+                subtext: userStatus.ranking === 'ブロンズ' ? 'シルバーまであと10日' : 
+                         userStatus.ranking === 'シルバー' ? 'ゴールドまであと30日' : 
+                         userStatus.ranking === 'ゴールド' ? 'プラチナまであと60日' : 
+                         '最高ランクです！',
                 gradient: 'linear-gradient(135deg, #fbbf24, #f59e0b)'
               }
             ].map((stat, index) => (
