@@ -185,17 +185,17 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
       setError('ガチャを利用するにはログインが必要です');
       return;
     }
-
+  
     try {
       console.log('チケット情報を取得中...');
       console.log('ユーザーID:', user.id);
-
+  
       const { data, error } = await supabase
         .from('gacha_tickets')
         .select('ticket_count, last_updated')
         .eq('user_id', user.id)
         .single();
-
+  
       if (error) {
         console.error('チケット情報取得エラー:', error);
         if (error.code === 'PGRST116') {
@@ -206,14 +206,17 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
         setError(`チケット情報の取得に失敗しました: ${error.message}`);
         return;
       }
-
+  
       console.log('取得したチケット情報:', data);
       if (data) {
+        // まずチケット数を状態に設定
         setTickets(data.ticket_count);
         
-        // チケットがあればガチャを開始
+        // チケットがある場合のみガチャを開始
         if (data.ticket_count > 0) {
-          startGachaAnimation();
+          console.log('ガチャを開始します。チケット数:', data.ticket_count);
+          // チケット数を直接引数として渡す
+          startGachaAnimation(data.ticket_count);
         } else {
           setError('ガチャチケットが不足しています');
         }
@@ -226,11 +229,11 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
       setError(`予期せぬエラーが発生しました: ${(err as Error).message}`);
     }
   };
-
+  
   // 初期チケットレコードを作成
   const createInitialTicketRecord = async () => {
     if (!user) return;
-
+  
     try {
       const { error } = await supabase
         .from('gacha_tickets')
@@ -241,22 +244,26 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
             last_updated: getJSTISOString()
           }
         ]);
-
+  
       if (error) {
         console.error('チケット初期化エラー:', error);
         setError(`チケットの初期化に失敗しました: ${error.message}`);
         return;
       }
-
+  
       console.log('チケットを初期化しました');
+      // まずチケット数を状態に設定
       setTickets(5);
-      startGachaAnimation();
+      
+      console.log('初期チケットで、ガチャを開始します');
+      // チケット数を直接引数として渡す
+      startGachaAnimation(5);
     } catch (err) {
       console.error('チケット初期化中のエラー:', err);
       setError(`予期せぬエラーが発生しました: ${(err as Error).message}`);
     }
   };
-  //#endregion
+    //#endregion
 
   //#region 一匹のparrotのgifのURLを取得
   const getSingleGifUrl = (folder: string, fileName: string) => {
@@ -429,13 +436,19 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
    * ガチャアニメーションを開始する関数
    * パロットを抽選し、データベースに保存してアニメーションを表示
    */
-  const startGachaAnimation = async () => {
+  const startGachaAnimation = async (ticketCount?: number) => {
     if (!user) {
       setError('ガチャを実行するにはログインが必要です');
       return;
     }
     
-    if (tickets <= 0) {
+    // ticketCountが渡されていればそれを使い、そうでなければstateのticketsを使う
+    const currentTickets = ticketCount !== undefined ? ticketCount : tickets;
+    console.log('ガチャアニメーション開始。現在のチケット数:', currentTickets);
+    
+    // 念のためもう一度チケット数をチェック
+    if (currentTickets <= 0) {
+      console.error('チケット不足エラー。チケット数:', currentTickets);
       setError('ガチャチケットが不足しています');
       return;
     }
@@ -443,14 +456,14 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
     setError(null);
     setSpinning(true);
     setShowResult(false);
-
+  
     try {
       // 1. チケットを消費
       const ticketConsumed = await consumeTicket();
       if (!ticketConsumed) {
         throw new Error('チケットの消費に失敗しました');
       }
-      
+            
       // 2. ガチャを引く
       const { parrot, rarityType } = await pullGacha();
       
