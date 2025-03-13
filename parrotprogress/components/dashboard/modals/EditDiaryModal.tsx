@@ -221,7 +221,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
                 value={line1}
                 onChange={(e) => setLine1(e.target.value)}
                 className={styles.textInput}
-                placeholder="1行目: 今日あったことを書きましょう"
+                // placeholder="1行目: 今日あったことを書きましょう"
                 maxLength={50}
               />
               <span className={styles.charCount}>
@@ -237,7 +237,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
                 value={line2}
                 onChange={(e) => handleLine2Change(e.target.value)}
                 className={styles.textInput}
-                placeholder="2行目: 続きを書きましょう"
+                // placeholder="2行目: 続きを書きましょう"
                 maxLength={50}
                 disabled={!line1.trim()}
               />
@@ -254,7 +254,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
                 value={line3}
                 onChange={(e) => handleLine3Change(e.target.value)}
                 className={styles.textInput}
-                placeholder="3行目: まとめやポイントを書きましょう"
+                // placeholder="3行目: まとめやポイントを書きましょう"
                 maxLength={50}
                 disabled={!line1.trim() || !line2.trim()}
               />

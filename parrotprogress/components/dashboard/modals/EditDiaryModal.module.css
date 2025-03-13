@@ -15,7 +15,7 @@
 /* モーダルコンテナ */
 .modalContainer {
   position: relative;
-  background-color: #f8f9fa;
+  background-color: #fff;
   border-radius: 16px;
   padding: 24px;
   max-width: 800px;
