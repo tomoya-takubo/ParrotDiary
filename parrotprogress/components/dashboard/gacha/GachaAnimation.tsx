@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Sparkles } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import Image from 'next/image';
+import { useAuth } from '@/lib/AuthContext'; // 認証コンテキストをインポート
 
 //#region Supabase設定
 /**
@@ -22,7 +23,7 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
  * parrots テーブルの構造に合わせています
  */
 interface Parrot {
-  parrot_id: number;
+  parrot_id: string; // UUID型に変更
   name: string;
   category_id: number;
   rarity_id: number;
@@ -54,14 +55,20 @@ interface RarityConfig {
 }
 
 /**
+ * チケット情報の型定義
+ */
+interface TicketInfo {
+  ticket_count: number;
+  last_updated: string;
+}
+
+/**
  * コンポーネントのプロパティ型定義
  */
 interface GachaAnimationProps {
   isOpen: boolean;
   startGacha: () => void;
   onClose: () => void;
-  tickets?: number;
-  userId?: number; // ユーザーIDを追加（デフォルトは1）
 }
 
 /**
@@ -137,9 +144,10 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
   isOpen,
   startGacha,
   onClose,
-  tickets = 3,
-  userId = 1 // デフォルトユーザーID
 }) => {
+  // 認証コンテキストからユーザー情報を取得
+  const { user, session, isLoading: authLoading } = useAuth();
+
   //#region 状態管理
   const [showResult, setShowResult] = useState(false);
   const [spinning, setSpinning] = useState(false);
@@ -147,6 +155,8 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
   const [isMounted, setIsMounted] = useState(false);
   const [selectedParrot, setSelectedParrot] = useState<Parrot | null>(null);
   const [gifUrl, setGifUrl] = useState<string | null>(null);
+  const [tickets, setTickets] = useState<number>(0);
+  const [error, setError] = useState<string | null>(null);
   //#endregion
 
   //#region ライフサイクル管理
@@ -158,15 +168,94 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
   // isOpenが変更された時の処理
   useEffect(() => {
     if (isOpen) {
-      startGachaAnimation();
+      // ガチャを実行する前にチケット枚数を確認
+      fetchTickets();
     }
-  }, [isOpen]);
+  }, [isOpen, user]);
 
   useEffect(() => {
     const url = getSingleGifUrl('parrots', 'confusedparrot.gif');
     setGifUrl(url);
   }, []);
-  
+
+  // ユーザーのチケット情報を取得
+  const fetchTickets = async () => {
+    if (!user) {
+      console.error('ユーザーがログインしていません');
+      setError('ガチャを利用するにはログインが必要です');
+      return;
+    }
+
+    try {
+      console.log('チケット情報を取得中...');
+      console.log('ユーザーID:', user.id);
+
+      const { data, error } = await supabase
+        .from('gacha_tickets')
+        .select('ticket_count, last_updated')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) {
+        console.error('チケット情報取得エラー:', error);
+        if (error.code === 'PGRST116') {
+          // レコードがない場合は初期レコードを作成
+          await createInitialTicketRecord();
+          return;
+        }
+        setError(`チケット情報の取得に失敗しました: ${error.message}`);
+        return;
+      }
+
+      console.log('取得したチケット情報:', data);
+      if (data) {
+        setTickets(data.ticket_count);
+        
+        // チケットがあればガチャを開始
+        if (data.ticket_count > 0) {
+          startGachaAnimation();
+        } else {
+          setError('ガチャチケットが不足しています');
+        }
+      } else {
+        // レコードがない場合は初期レコードを作成
+        await createInitialTicketRecord();
+      }
+    } catch (err) {
+      console.error('チケット情報取得中のエラー:', err);
+      setError(`予期せぬエラーが発生しました: ${(err as Error).message}`);
+    }
+  };
+
+  // 初期チケットレコードを作成
+  const createInitialTicketRecord = async () => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('gacha_tickets')
+        .insert([
+          {
+            user_id: user.id,
+            ticket_count: 5, // 初期チケット数
+            last_updated: getJSTISOString()
+          }
+        ]);
+
+      if (error) {
+        console.error('チケット初期化エラー:', error);
+        setError(`チケットの初期化に失敗しました: ${error.message}`);
+        return;
+      }
+
+      console.log('チケットを初期化しました');
+      setTickets(5);
+      startGachaAnimation();
+    } catch (err) {
+      console.error('チケット初期化中のエラー:', err);
+      setError(`予期せぬエラーが発生しました: ${(err as Error).message}`);
+    }
+  };
   //#endregion
 
   //#region 一匹のparrotのgifのURLを取得
@@ -207,7 +296,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
       // エラー時はデフォルト値を返す
       return {
         parrot: {
-          parrot_id: 1,
+          parrot_id: "1", // 文字列型に変更
           name: "Unknown Parrot",
           category_id: 1,
           rarity_id: 1,
@@ -220,19 +309,56 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
   };
 
   /**
-   * 獲得したパロットをデータベースに登録する関数
-   * user_parrotsテーブルとlast_updatedテーブルを更新
+   * チケットを消費する関数
    */
-  const saveParrotToUser = async (parrot: Parrot) => {
+  const consumeTicket = async (): Promise<boolean> => {
+    if (!user) return false;
+    
     try {
+      // チケット数を1減らす
+      const { error } = await supabase
+        .from('gacha_tickets')
+        .update({ 
+          ticket_count: tickets - 1,
+          last_updated: getJSTISOString()
+        })
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('チケット消費エラー:', error);
+        return false;
+      }
+
+      console.log('チケットを消費しました。残り:', tickets - 1);
+      setTickets(prev => prev - 1);
+      return true;
+    } catch (err) {
+      console.error('チケット消費中のエラー:', err);
+      return false;
+    }
+  };
+
+  /**
+   * 獲得したパロットをデータベースに登録する関数
+   * user_parrotsテーブルとgacha_historyテーブルを更新
+   */
+  const saveParrotToUser = async (parrot: Parrot): Promise<boolean> => {
+    if (!user) return false;
+    
+    try {
+      console.log('パロット保存開始:', parrot);
+      console.log('ユーザーID:', user.id, '型:', typeof user.id);
+      console.log('パロットID:', parrot.parrot_id, '型:', typeof parrot.parrot_id);
+
       // 1. まず既存のエントリを確認
       const { data: existingParrots, error: fetchError } = await supabase
         .from('user_parrots')
         .select('*')
-        .eq('user_id', userId)
+        .eq('user_id', user.id)
         .eq('parrot_id', parrot.parrot_id);
 
       if (fetchError) {
+        console.error('既存パロット確認エラー詳細:', fetchError);
         throw new Error('既存パロット確認エラー: ' + fetchError.message);
       }
 
@@ -245,45 +371,57 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
             obtain_count: existingParrots[0].obtain_count + 1,
             obtained_at: getJSTISOString() // 最終取得日を更新
           })
-          .eq('user_id', userId)
+          .eq('user_id', user.id)
           .eq('parrot_id', parrot.parrot_id);
 
         if (updateError) {
+          console.error('パロット更新エラー詳細:', updateError);
           throw new Error('パロット更新エラー: ' + updateError.message);
         }
+        
+        console.log('既存パロットを更新しました:', parrot.name, '新しい取得数:', existingParrots[0].obtain_count + 1);
       } else {
         // 初めて獲得した場合は新規レコード作成
         const { error: insertError } = await supabase
           .from('user_parrots')
           .insert([{
-            user_id: userId,
+            user_id: user.id,
             parrot_id: parrot.parrot_id,
             obtained_at: getJSTISOString(),
             obtain_count: 1
           }]);
 
         if (insertError) {
+          console.error('パロット登録エラー詳細:', insertError);
           throw new Error('パロット登録エラー: ' + insertError.message);
         }
+        
+        console.log('新しいパロットを登録しました:', parrot.name);
       }
 
       // 3. ガチャ履歴テーブルに記録
+      // gacha_idは省略してサーバー側で自動生成
       const { error: historyError } = await supabase
-        .from('last_updated')
+        .from('gacha_history')
         .insert([{
-          gacha_id: 1, // ガチャID（適宜変更）
-          user_id: userId,
+          // gacha_idは省略（Supabase側で自動生成される）
+          user_id: user.id,
           parrot_id: parrot.parrot_id,
-          executed_at: new Date().toISOString()
+          executed_at: getJSTISOString()
         }]);
 
       if (historyError) {
+        console.error('ガチャ履歴登録エラー詳細:', historyError);
         throw new Error('ガチャ履歴登録エラー: ' + historyError.message);
       }
 
+      console.log('ガチャ履歴を登録しました:', parrot.name);
+      return true; // 成功を返す
+
     } catch (error) {
-      // エラーをログに記録するが、UXを妨げないよう処理は続行
+      // エラーをログに記録し、失敗を明示的に返す
       console.error('データベース操作エラー:', error);
+      return false;
     }
   };
 
@@ -292,24 +430,48 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
    * パロットを抽選し、データベースに保存してアニメーションを表示
    */
   const startGachaAnimation = async () => {
+    if (!user) {
+      setError('ガチャを実行するにはログインが必要です');
+      return;
+    }
+    
+    if (tickets <= 0) {
+      setError('ガチャチケットが不足しています');
+      return;
+    }
+    
+    setError(null);
     setSpinning(true);
     setShowResult(false);
 
     try {
-      // 1. ガチャを引く
+      // 1. チケットを消費
+      const ticketConsumed = await consumeTicket();
+      if (!ticketConsumed) {
+        throw new Error('チケットの消費に失敗しました');
+      }
+      
+      // 2. ガチャを引く
       const { parrot, rarityType } = await pullGacha();
       
-      // 2. 状態を更新
+      // 3. 状態を更新
       setSelectedParrot(parrot);
       setCurrentRarity(rarityType);
       
-      // 3. パロットをユーザーに登録
-      await saveParrotToUser(parrot);
+      // 4. パロットをユーザーに登録
+      const saveSuccess = await saveParrotToUser(parrot);
+      
+      if (!saveSuccess) {
+        console.warn('パロットの保存中にエラーが発生しましたが、演出は継続します');
+      }
 
-      // 4. アニメーション完了後に結果表示
+      // 5. アニメーション完了後に結果表示
       setTimeout(() => {
         setSpinning(false);
         setShowResult(true);
+        
+        // コールバック実行（チケット数更新のUI反映など）
+        startGacha();
       }, 3000);
     } catch (error) {
       console.error('ガチャ処理エラー:', error);
@@ -378,6 +540,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
     setSpinning(false);
     setCurrentRarity(null);
     setSelectedParrot(null);
+    setError(null);
     onClose();
   };
 
@@ -390,6 +553,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
     setSpinning(false);
     setCurrentRarity(null);
     setSelectedParrot(null);
+    setError(null);
     onClose();
   };
   //#endregion
@@ -401,7 +565,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
   return (
     <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
       <AnimatePresence>
-        {isOpen && currentRarity && (
+        {isOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -419,186 +583,208 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
               exit={{ scale: 0.5, opacity: 0 }}
               className="bg-white rounded-xl p-6 w-full max-w-md relative overflow-hidden shadow-2xl"
             >
-              {/* 背景のグラデーション */}
-              <motion.div
-                animate={{
-                  backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
-                }}
-                transition={{
-                  duration: 5,
-                  repeat: Infinity,
-                  ease: "linear"
-                }}
-                className="absolute inset-0 opacity-25"
-                style={{
-                  background: rarityConfigs[currentRarity].bgGradient,
-                  backgroundSize: '200% 100%',
-                }}
-              />
-
-              <div className="relative text-center z-10">
-                {/* スピン中の表示 */}
-                {!showResult ? (
-                  <div className="py-12">
-                    <motion.div
-                      animate={spinning ? {
-                        scale: [1, 1.2, 1],
-                      } : {}}
-                      transition={{
-                        duration: 0.8,
-                        repeat: Infinity,
-                        ease: "linear"
-                      }}
-                      className={`w-32 h-32 mx-auto bg-gradient-to-r ${rarityConfigs[currentRarity].colors} rounded-full flex items-center justify-center shadow-lg`}
-                    >
-                      {gifUrl && <Image src={gifUrl} alt="Party Parrot" width={400} height={400}/>}
-                    </motion.div>
-                    <motion.p
-                      animate={{
-                        opacity: [1, 0.5, 1]
-                      }}
-                      transition={{
-                        duration: 1,
-                        repeat: Infinity
-                      }}
-                      className="mt-4 text-gray-600 font-medium"
-                    >
-                      ✨ パロットを探しています... ✨
-                    </motion.p>
-                  </div>
-                ) : (
-                  // 結果表示
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 260,
-                      damping: 20
-                    }}
-                    className="py-8"
+              {error ? (
+                // エラー表示
+                <div className="py-8 text-center">
+                  <div className="text-red-500 text-xl mb-4">⚠️ {error}</div>
+                  <button
+                    onClick={handleCloseGacha}
+                    className="px-8 py-3 bg-gradient-to-r from-gray-400 to-gray-500 text-white rounded-lg hover:opacity-90 shadow-lg"
                   >
-                    {/* パーティクルエフェクト */}
-                    <Particles config={rarityConfigs[currentRarity]} />
-                    
-                    {/* パロット表示部分 */}
-                    <motion.div
-                      animate={{
-                        y: [0, -10, 0],
-                        scale: [1, 1.1, 1],
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                        ease: "easeInOut"
-                      }}
-                      className="relative"
-                    >
-                      <motion.div
-                        animate={{
-                          backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
-                        }}
-                        transition={{
-                          backgroundPosition: {
-                            duration: 5,
+                    閉じる
+                  </button>
+                </div>
+              ) : currentRarity ? (
+                // ガチャ結果表示
+                <>
+                  {/* 背景のグラデーション */}
+                  <motion.div
+                    animate={{
+                      backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+                    }}
+                    transition={{
+                      duration: 5,
+                      repeat: Infinity,
+                      ease: "linear"
+                    }}
+                    className="absolute inset-0 opacity-25"
+                    style={{
+                      background: rarityConfigs[currentRarity].bgGradient,
+                      backgroundSize: '200% 100%',
+                    }}
+                  />
+
+                  <div className="relative text-center z-10">
+                    {/* スピン中の表示 */}
+                    {!showResult ? (
+                      <div className="py-12">
+                        <motion.div
+                          animate={spinning ? {
+                            scale: [1, 1.2, 1],
+                          } : {}}
+                          transition={{
+                            duration: 0.8,
                             repeat: Infinity,
                             ease: "linear"
-                          }
-                        }}
-                        className={`w-48 h-48 mx-auto rounded-full flex items-center justify-center bg-gradient-to-r ${rarityConfigs[currentRarity].colors}`}
-                      >
-                        <div className="bg-white rounded-full p-2">
-                          {/* 実際のパロット画像がある場合はそれを表示 */}
-                          <img 
-                            src={selectedParrot?.image_url || "/api/placeholder/120/120"} 
-                            alt={selectedParrot?.name || "Rare Parrot"} 
-                            className="w-32 h-32" 
-                          />
-                        </div>
-                      </motion.div>
-                    </motion.div>
-
-                    {/* パロット情報表示 */}
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.3 }}
-                      className="mt-6"
-                    >
-                      {/* レアリティタイトル */}
+                          }}
+                          className={`w-32 h-32 mx-auto bg-gradient-to-r ${rarityConfigs[currentRarity].colors} rounded-full flex items-center justify-center shadow-lg`}
+                        >
+                          {gifUrl && <Image src={gifUrl} alt="Party Parrot" width={400} height={400}/>}
+                        </motion.div>
+                        <motion.p
+                          animate={{
+                            opacity: [1, 0.5, 1]
+                          }}
+                          transition={{
+                            duration: 1,
+                            repeat: Infinity
+                          }}
+                          className="mt-4 text-gray-600 font-medium"
+                        >
+                          ✨ パロットを探しています... ✨
+                        </motion.p>
+                      </div>
+                    ) : (
+                      // 結果表示
                       <motion.div
-                        animate={{
-                          scale: [1, 1.1, 1],
-                        }}
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
                         transition={{
-                          duration: 2,
-                          repeat: Infinity,
+                          type: "spring",
+                          stiffness: 260,
+                          damping: 20
                         }}
-                        className={`text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r ${rarityConfigs[currentRarity].colors}`}
+                        className="py-8"
                       >
-                        ✨ {rarityConfigs[currentRarity].title} ✨
-                      </motion.div>
-
-                      {/* パロット名 */}
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.4 }}
-                        className={`text-xl font-medium mb-4 bg-clip-text text-transparent bg-gradient-to-r ${rarityConfigs[currentRarity].colors}`}
-                      >
-                        {selectedParrot?.name || "不明なパロット"}
-                      </motion.div>
-
-                      {/* スター表示 */}
-                      <motion.div
-                        animate={{ scale: [1, 1.05, 1] }}
-                        transition={{ duration: 1, repeat: Infinity }}
-                        className="flex justify-center gap-2 mb-4"
-                      >
-                        {Array.from({ length: rarityConfigs[currentRarity].stars }).map((_, i) => (
+                        {/* パーティクルエフェクト */}
+                        <Particles config={rarityConfigs[currentRarity]} />
+                        
+                        {/* パロット表示部分 */}
+                        <motion.div
+                          animate={{
+                            y: [0, -10, 0],
+                            scale: [1, 1.1, 1],
+                          }}
+                          transition={{
+                            duration: 2,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                          }}
+                          className="relative"
+                        >
                           <motion.div
-                            key={i}
                             animate={{
-                              rotate: [0, 360],
-                              scale: [1, 1.2, 1],
+                              backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+                            }}
+                            transition={{
+                              backgroundPosition: {
+                                duration: 5,
+                                repeat: Infinity,
+                                ease: "linear"
+                              }
+                            }}
+                            className={`w-48 h-48 mx-auto rounded-full flex items-center justify-center bg-gradient-to-r ${rarityConfigs[currentRarity].colors}`}
+                          >
+                            <div className="bg-white rounded-full p-2">
+                              {/* 実際のパロット画像がある場合はそれを表示 */}
+                              <img 
+                                src={selectedParrot?.image_url || "/api/placeholder/120/120"} 
+                                alt={selectedParrot?.name || "Rare Parrot"} 
+                                className="w-32 h-32" 
+                              />
+                            </div>
+                          </motion.div>
+                        </motion.div>
+
+                        {/* パロット情報表示 */}
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.3 }}
+                          className="mt-6"
+                        >
+                          {/* レアリティタイトル */}
+                          <motion.div
+                            animate={{
+                              scale: [1, 1.1, 1],
                             }}
                             transition={{
                               duration: 2,
                               repeat: Infinity,
-                              delay: i * 0.2,
                             }}
+                            className={`text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r ${rarityConfigs[currentRarity].colors}`}
                           >
-                            <Star className="h-8 w-8 text-yellow-400 fill-current" />
+                            ✨ {rarityConfigs[currentRarity].title} ✨
                           </motion.div>
-                        ))}
-                      </motion.div>
 
-                      {/* パロット説明文（あれば表示） */}
-                      {selectedParrot?.description && (
-                        <motion.p
+                          {/* パロット名 */}
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.4 }}
+                            className={`text-xl font-medium mb-4 bg-clip-text text-transparent bg-gradient-to-r ${rarityConfigs[currentRarity].colors}`}
+                          >
+                            {selectedParrot?.name || "不明なパロット"}
+                          </motion.div>
+
+                          {/* スター表示 */}
+                          <motion.div
+                            animate={{ scale: [1, 1.05, 1] }}
+                            transition={{ duration: 1, repeat: Infinity }}
+                            className="flex justify-center gap-2 mb-4"
+                          >
+                          {Array.from({ length: rarityConfigs[currentRarity].stars }).map((_, i) => (
+                              <motion.div
+                                key={i}
+                                animate={{
+                                  rotate: [0, 360],
+                                  scale: [1, 1.2, 1],
+                                }}
+                                transition={{
+                                  duration: 2,
+                                  repeat: Infinity,
+                                  delay: i * 0.2,
+                                }}
+                              >
+                                <Star className="h-8 w-8 text-yellow-400 fill-current" />
+                              </motion.div>
+                            ))}
+                          </motion.div>
+
+                          {/* パロット説明文（あれば表示） */}
+                          {selectedParrot?.description && (
+                            <motion.p
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ delay: 0.5 }}
+                              className="text-gray-600 mt-2 mb-4"
+                            >
+                              {selectedParrot.description}
+                            </motion.p>
+                          )}
+                        </motion.div>
+
+                        {/* OKボタン */}
+                        <motion.button
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
-                          transition={{ delay: 0.5 }}
-                          className="text-gray-600 mt-2 mb-4"
+                          transition={{ delay: 0.6 }}
+                          onClick={closeGacha}
+                          className={`mt-6 px-8 py-3 bg-gradient-to-r ${rarityConfigs[currentRarity].colors} text-white rounded-lg hover:opacity-90 shadow-lg z-50 relative`}
                         >
-                          {selectedParrot.description}
-                        </motion.p>
-                      )}
-                    </motion.div>
-
-                    {/* OKボタン */}
-                    <motion.button
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.6 }}
-                      onClick={closeGacha}
-                      className={`mt-6 px-8 py-3 bg-gradient-to-r ${rarityConfigs[currentRarity].colors} text-white rounded-lg hover:opacity-90 shadow-lg z-50 relative`}
-                    >
-                      OK!
-                    </motion.button>
-                  </motion.div>
-                )}
-              </div>
+                          OK!
+                        </motion.button>
+                      </motion.div>
+                    )}
+                  </div>
+                </>
+              ) : (
+                // ロード中表示
+                <div className="py-8 text-center">
+                  <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                  <p className="text-gray-600">ガチャを準備中...</p>
+                </div>
+              )}
             </motion.div>
           </motion.div>
         )}

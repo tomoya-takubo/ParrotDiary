@@ -253,8 +253,6 @@ function getRankFromStreak(streak: number): string {
           isOpen={showGachaModal}
           startGacha={startGacha}
           onClose={closeGacha}
-          tickets={3}
-          userId={1} // 現在のログインユーザーID、認証システムと連携する場合は動的に変更
         />
         
       </div>

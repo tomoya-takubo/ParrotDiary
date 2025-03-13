@@ -1,4 +1,6 @@
 /* components/CollectionPreview/styles.module.css */
+/* 既存のスタイルと新しいスタイルを統合したもの */
+
 .container {
   padding: 1.5rem;
   width: 100%;
@@ -8,10 +10,39 @@
   min-height: 100vh; /* 最低でも画面の高さ分は確保 */
 }
 
+/* タイトルセクション - ダッシュボードボタン用に変更 */
+.titleSection {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
 .title {
   font-size: 1.5rem;
   font-weight: bold;
-  margin-bottom: 1.5rem;
+  margin: 0;
+}
+
+.backToDashboardButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #3B82F6;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.backToDashboardButton:hover {
+  background-color: #2563EB;
+  transform: translateY(-1px);
 }
 
 .categories {
@@ -287,6 +318,8 @@
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
 }
 
 .searchBox {
@@ -315,14 +348,7 @@
   padding: 1rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   width: 180px;  /* カードの幅を180pxに拡大 */
-}
-
-/* components/CollectionPreview/styles.module.css に追加 */
-.filterHeader {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  margin-bottom: 1rem;
+  position: relative; /* .lockOverlay 用 */
 }
 
 .rarityFilter {
@@ -352,7 +378,6 @@
   border-color: #8b5cf6;
 }
 
-/* components/CollectionPreview/styles.module.css に追加 */
 .sortButtons {
   display: flex;
   gap: 0.5rem;
@@ -381,21 +406,6 @@
   background: #8b5cf6;
   color: white;
   border-color: #8b5cf6;
-}
-
-/* filterHeaderのスタイルを調整 */
-.filterHeader {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-}
-
-/* 既存の検索ボックスのスタイルを調整 */
-.searchBox {
-  flex: 1;  /* 検索ボックスを可能な限り広げる */
-  max-width: 300px;
 }
 
 /* レア度に応じたスタイル */
@@ -518,7 +528,7 @@
   }
 }
 
-/* #region 獲得済みフィルター用のスタイル */
+/* 獲得済みフィルター用のスタイル */
 .obtainedFilter {
   display: flex;
   align-items: center;
@@ -547,4 +557,221 @@
   color: white;
   border-color: #10B981;
 }
-/* #endregion */
+
+/* 新しく追加したスタイル */
+
+/* ローディング関連の改善スタイル */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  width: 100%;
+  text-align: center;
+  padding: 2rem;
+  background: linear-gradient(to bottom, #EFF6FF, #F5F3FF);
+}
+
+.loadingSpinnerWrapper {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin-bottom: 1.5rem;
+}
+
+.loadingSpinner {
+  width: 80px;
+  height: 80px;
+  border: 5px solid rgba(139, 92, 246, 0.3);
+  border-radius: 50%;
+  border-top-color: #8B5CF6;
+  animation: spin 1.2s ease-in-out infinite;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.loadingIconContainer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loadingIcon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.loadingText {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #6366F1;
+  margin-bottom: 0.5rem;
+}
+
+.loadingSubtext {
+  color: #6B7280;
+  font-size: 0.9rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* エラー表示関連のスタイル */
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  width: 100%;
+  text-align: center;
+  padding: 2rem;
+  background: #FEF2F2;
+  color: #B91C1C;
+  border-radius: 0.5rem;
+}
+
+.errorIcon {
+  color: #EF4444;
+  margin-bottom: 1rem;
+}
+
+.retryButton {
+  margin-top: 1.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #EF4444;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.retryButton:hover {
+  background-color: #DC2626;
+}
+
+/* ログイン促進バナー */
+.loginBanner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #EFF6FF, #F5F3FF);
+  border: 1px solid #E2E8F0;
+  padding: 1rem 1.5rem;
+  border-radius: 0.75rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.loginMessage {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.loginIcon {
+  color: #8B5CF6;
+}
+
+.loginTitle {
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin: 0 0 0.25rem 0;
+  color: #1F2937;
+}
+
+.loginDescription {
+  color: #6B7280;
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.loginButton {
+  background-color: #8B5CF6;
+  color: white;
+  font-weight: 500;
+  padding: 0.5rem 1.5rem;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.loginButton:hover {
+  background-color: #7C3AED;
+  transform: translateY(-1px);
+}
+
+/* 無効な状態のボタン */
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 未ログイン状態のパロットカード */
+.parrotCard.notLoggedIn {
+  position: relative;
+  cursor: pointer; /* 未ログイン時でもクリック可能に（ログイン促す） */
+  opacity: 0.7;
+}
+
+.lockOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 0.75rem;
+}
+
+.lockIcon {
+  color: rgba(255, 255, 255, 0.8);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+/* 検索結果なしの表示 */
+.noResults {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  text-align: center;
+  color: #6B7280;
+}
+
+.noResults p {
+  margin: 1rem 0;
+}
+
+.resetButton {
+  padding: 0.5rem 1rem;
+  background-color: #8B5CF6;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.resetButton:hover {
+  background-color: #7C3AED;
+}
