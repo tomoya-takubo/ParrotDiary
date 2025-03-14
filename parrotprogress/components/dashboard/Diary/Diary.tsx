@@ -1,5 +1,5 @@
 import { useAuth } from '@/lib/AuthContext'; // 認証コンテキストのインポート
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; // React等インポート
 import { Edit2, Edit3, Search, Plus, Calendar, Clock, Hash, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase'; // Supabaseクライアントのインポート
 import styles from './Diary.module.css';
