@@ -158,17 +158,220 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
       if (line2.trim()) activities.push(line2.trim());
       if (line3.trim()) activities.push(line3.trim());
       
-      // 更新後のエントリーデータを作成
-      const updatedEntry: ModalDiaryEntry = {
-        time: entry.time,
-        tags: selectedTags,
-        activities
+      // 現在時刻を取得し、日本時間に調整
+      const now = new Date();
+      const jstTime = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+      const isoString = jstTime.toISOString();
+      
+      // 日記エントリーデータの準備
+      const entryData = {
+        line1: line1.trim() || null,
+        line2: line2.trim() || null,
+        line3: line3.trim() || null,
+        user_id: user.id,
+        created_at: isoString,
+        updated_at: isoString,
+        recorded_at: isoString  // recorded_atカラムを追加
       };
 
-      // ここでDBへの保存処理を実装
-      // 例: await supabase.from('diary_entries').update({ ... }).eq('id', entryId);
-      console.log('保存するデータ:', updatedEntry);
+      // 既存エントリの場合はcreated_atのみ保持
+      if (date && entry.time) {
+        try {
+          // 日付が日本語フォーマット（年月日）を含む場合は変換
+          let normalizedDate = date;
+          if (date.includes('年')) {
+            // 例: 2025年3月14日 → 2025-03-14
+            const parts = date.match(/(\d+)年(\d+)月(\d+)日/);
+            if (parts && parts.length >= 4) {
+              const year = parts[1];
+              const month = parts[2].padStart(2, '0');
+              const day = parts[3].padStart(2, '0');
+              normalizedDate = `${year}-${month}-${day}`;
+            }
+          }
+          
+          // 時間が HH:MM 形式なら HH:MM:SS に変換
+          const formattedTime = entry.time.includes(':') && entry.time.split(':').length === 2
+            ? `${entry.time}:00`
+            : entry.time;
+              
+          // ISO 8601 形式の文字列を作成
+          const dateTimeString = `${normalizedDate}T${formattedTime}`;
+          console.log("Normalized datetime:", dateTimeString);
+          
+          // 日時を解析して ISOString に変換
+          const dateObj = new Date(dateTimeString);
+          if (!isNaN(dateObj.getTime())) { // 有効な日付かチェック
+            // 既存エントリの編集の場合、created_atは保持し、recorded_atも同じ値に
+            // JST (+9時間) を考慮
+            const adjustedTime = new Date(dateObj.getTime() + 9 * 60 * 60 * 1000);
+            const isoString = adjustedTime.toISOString();
+            entryData.created_at = isoString;
+            entryData.recorded_at = isoString;
+          } else {
+            console.error("無効な日付フォーマット:", dateTimeString);
+          }
+        } catch (dateError) {
+          console.error("日時の変換エラー:", dateError);
+          // エラー時はデフォルト値のままとする
+        }
+      }
 
+      // 操作モードを判断（新規追加/更新）
+      const isUpdate = entry.activities.some(a => a !== '');
+      
+      let entryOperation;
+      
+      if (isUpdate) {
+        // 既存エントリの更新
+        console.log("更新モード - 既存エントリの更新");
+        entryOperation = supabase
+          .from('diary_entries')
+          .update({
+            line1: entryData.line1,
+            line2: entryData.line2,
+            line3: entryData.line3,
+            updated_at: entryData.updated_at
+            // created_atとrecorded_atは更新しない
+          })
+          .eq('user_id', user.id);
+          
+        if (date) {
+          // 日付検索の場合、日本語フォーマットも考慮
+          let searchDate = date;
+          if (date.includes('年')) {
+            const parts = date.match(/(\d+)年(\d+)月(\d+)日/);
+            if (parts && parts.length >= 4) {
+              const year = parts[1];
+              const month = parts[2].padStart(2, '0');
+              const day = parts[3].padStart(2, '0');
+              searchDate = `${year}-${month}-${day}`;
+            }
+          }
+          console.log(`日付検索: ${searchDate}`);
+          // created_at または recorded_at で検索
+          entryOperation = entryOperation.or(`created_at.like.${searchDate}%,recorded_at.like.${searchDate}%`);
+        }
+      } else {
+        // 新規エントリの作成
+        console.log("作成モード - 新規エントリ");
+        entryOperation = supabase
+          .from('diary_entries')
+          .insert(entryData);
+      }
+      
+      const { data, error } = await entryOperation.select('entry_id');
+      console.log("DB操作結果:", data, error);
+
+      if (error) {
+        console.error("DB操作エラー詳細:", error);
+        throw error;
+      }
+      
+      // データがないか、entry_idがない場合はエラー
+      if (!data || !Array.isArray(data) || data.length === 0 || !data[0].entry_id) {
+        console.error('エントリID取得失敗:', data);
+        throw new Error('日記エントリーの保存に失敗しました');
+      }
+      
+      // エントリIDを取得
+      const entryId = data[0].entry_id;
+      console.log("取得したエントリID:", entryId);
+
+      // 2. タグの処理
+      for (const tagName of selectedTags) {
+        try {
+          // タグが存在するか確認
+          const { data: existingTags, error: tagError } = await supabase
+            .from('tags')
+            .select('tag_id, nameusage_count')
+            .eq('name', tagName)
+            .maybeSingle();
+
+          if (tagError) throw tagError;
+
+          let tagId: string = '';
+
+          if (existingTags) {
+            if (typeof existingTags.tag_id === 'string') {
+              tagId = existingTags.tag_id;
+            } else if (existingTags.tag_id !== null && existingTags.tag_id !== undefined) {
+              // nullやundefinedでなければ文字列に変換
+              tagId = String(existingTags.tag_id);
+            }
+            
+            // nameusage_countの安全な取り出し
+            const currentCount = typeof existingTags.nameusage_count === 'number' 
+              ? existingTags.nameusage_count 
+              : 0;
+            
+            const { error: updateError } = await supabase
+              .from('tags')
+              .update({ 
+                nameusage_count: currentCount + 1,
+                last_used_at: entryData.updated_at
+              })
+              .eq('tag_id', tagId);
+
+            if (updateError) throw updateError;
+          } else {
+            // 新しいタグを作成
+            const { data: newTag, error: createError } = await supabase
+              .from('tags')
+              .insert({
+                name: tagName,
+                nameusage_count: 1,
+                last_used_at: entryData.updated_at,
+                created_at: entryData.updated_at,
+                created_by: user.id
+              })
+              .select('tag_id');
+
+            if (createError) throw createError;
+            
+            if (newTag && newTag.length > 0 && newTag[0].tag_id) {
+              tagId = String(newTag[0].tag_id);
+            } else {
+              console.error('新規タグID取得失敗');
+              continue; // このタグの処理をスキップ
+            }
+          }
+
+          // タグの使用履歴を記録
+          if (tagId) {
+            // 既存履歴を確認
+            const { data: existingHistory, error: historyCheckError } = await supabase
+              .from('tag_usage_histories')
+              .select('*')
+              .eq('tag_id', tagId)
+              .eq('entry_id', entryId)
+              .eq('user_id', user.id)
+              .maybeSingle();
+
+            if (historyCheckError) throw historyCheckError;
+
+            // 履歴がなければ新規追加
+            if (!existingHistory) {
+              const { error: historyError } = await supabase
+                .from('tag_usage_histories')
+                .insert({
+                  tag_id: tagId,
+                  user_id: user.id,
+                  entry_id: entryId,
+                  used_at: entryData.updated_at
+                });
+
+              if (historyError) throw historyError;
+            }
+          }
+        } catch (tagProcessError) {
+          console.error('タグ処理エラー:', tagProcessError);
+          // タグ処理のエラーは無視して次のタグに進む
+          continue;
+        }
+      }
+
+      console.log('保存完了:', entryId);
       // 保存完了を親コンポーネントに通知
       onSave();
     } catch (err) {

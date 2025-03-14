@@ -10,7 +10,6 @@ type DiaryEntryType = {
   entry_id: number;
   user_id: string;
   recorded_at: string;
-  type_id: number; // 1: regular（通常）のみに簡素化
   line1: string | null;
   line2: string | null;
   line3: string | null;
@@ -395,30 +394,54 @@ const Diary: React.FC = () => {
           
           console.log('取得した日記エントリー:', diaryData?.length || 0);
           
-          // データ処理 - 明示的に型アサーションを追加
-          const entriesWithTags = diaryData ? diaryData.map((entry: any) => {
-            const randomTags = (entry.entry_id || 0) % 2 === 0 
-              ? ['英語学習', '集中できた'] 
-              : ['プログラミング'];
-            
-            // ポモドーロ関連フィールドを除外
-            return { 
-              entry_id: entry.entry_id,
-              user_id: entry.user_id,
-              recorded_at: entry.recorded_at,
-              type_id: entry.type_id,
-              line1: entry.line1,
-              line2: entry.line2,
-              line3: entry.line3,
-              created_at: entry.created_at,
-              updated_at: entry.updated_at,
-              tags: randomTags
-            } as DiaryEntryType;
-          }) : [];
+          // 各エントリーについてタグ情報を取得
+          const entriesWithTags = [];
+          
+          if (diaryData && diaryData.length > 0) {
+            for (const entry of diaryData) {
+              // タグ情報の取得（2つの別々のクエリに分割）
+              let tags: string[] = [];
+
+              try {
+                // まずタグの使用履歴からタグIDを取得
+                const { data: tagUsages, error: tagUsageError } = await supabase
+                  .from('tag_usage_histories')
+                  .select('tag_id')
+                  .eq('entry_id', entry.entry_id as string)
+                  .eq('user_id', authUser.id);
+                
+                if (tagUsageError) {
+                  console.error('タグ使用履歴取得エラー:', tagUsageError);
+                } else if (tagUsages && tagUsages.length > 0) {
+                  // タグIDの配列を作成
+                  const tagIds = tagUsages.map(usage => usage.tag_id).filter(Boolean);
+                  
+                  if (tagIds.length > 0) {
+                    // タグIDを使ってタグ情報を取得
+                    const { data: tagData, error: tagError } = await supabase
+                      .from('tags')
+                      .select('name')
+                      .in('tag_id', tagIds);
+                    
+                    if (tagError) {
+                      console.error('タグデータ取得エラー:', tagError);
+                    } else if (tagData) {
+                      // タグ名を抽出
+                      tags = tagData.map(tag => tag.name as string).filter(Boolean);                    }
+                  }
+                }
+              } catch (err) {
+                console.error('タグ処理エラー:', err);
+              }
+              // 日記エントリーとタグを結合
+              entriesWithTags.push({
+                ...entry,
+                tags
+              } as DiaryEntryType);
+            }
+          }
           
           setDiaryEntries(entriesWithTags);
-          
-          // ポモドーロセッション取得部分を削除
           
         } catch (err: any) {
           console.error('データ取得エラー:', err);
@@ -438,11 +461,18 @@ const Diary: React.FC = () => {
   }, [authUser, authLoading]);
 
   // エントリー更新関数
-  const updateDiaryEntry = async (entryId: number, line1: string, line2: string, line3: string) => {
+  const updateDiaryEntry = async (
+    entryId: number, 
+    line1: string, 
+    line2: string, 
+    line3: string
+  ): Promise<boolean> => {
+    if (!authUser) return false;  // 早期リターンで安全に
+    
     try {
       const { data: entryData, error: entryError } = await supabase
         .from('diary_entries')
-        .select('user_id')
+        .select('user_id, created_at, recorded_at')
         .eq('entry_id', entryId)
         .single();
 
@@ -453,9 +483,126 @@ const Diary: React.FC = () => {
         return false;
       }
 
-      // 更新処理...
+      // 現在時刻を取得し、日本時間に調整
+      const now = new Date();
+      const jstTime = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+      const isoString = jstTime.toISOString();
 
-      return true;
+      // 更新データ（created_atは変更せず、updated_atのみ更新）
+      const updateData = {
+        line1: line1 || null,
+        line2: line2 || null,
+        line3: line3 || null,
+        updated_at: isoString
+      };
+
+      const { data, error } = await supabase
+        .from('diary_entries')
+        .update(updateData)
+        .eq('entry_id', entryId)
+        .select();
+
+      if (error) throw error;
+
+      // 画面の日記データを更新
+      if (data && data.length > 0) {
+        const updatedEntry = {
+          ...(data[0] as any),
+          tags: selectedTags
+        } as DiaryEntryType;
+        
+        // タグの処理
+        if (selectedTags.length > 0) {
+          // タグごとに処理
+          for (const tagName of selectedTags) {
+            try {
+              // タグが存在するか確認
+              const { data: existingTags, error: tagError } = await supabase
+                .from('tags')
+                .select('tag_id, nameusage_count')
+                .eq('name', tagName)
+                .maybeSingle();
+
+              if (tagError) throw tagError;
+
+              let tagId;
+              
+              if (existingTags && existingTags.tag_id) {
+                // 既存のタグ - 使用回数を更新
+                tagId = existingTags.tag_id;
+                // nameusage_countがnullや数値でない場合は0として扱う
+                const currentCount = typeof existingTags.nameusage_count === 'number' ? 
+                  existingTags.nameusage_count : 0;
+                
+                const { error: updateError } = await supabase
+                  .from('tags')
+                  .update({ 
+                    nameusage_count: currentCount + 1,
+                    last_used_at: isoString
+                  })
+                  .eq('tag_id', tagId);
+
+                if (updateError) throw updateError;
+              } else {
+                // 新しいタグを作成
+                const { data: newTag, error: createError } = await supabase
+                  .from('tags')
+                  .insert({
+                    name: tagName,
+                    nameusage_count: 1,
+                    last_used_at: isoString,
+                    created_at: isoString,
+                    created_by: authUser?.id
+                  })
+                  .select('tag_id');
+
+                if (createError) throw createError;
+                
+                if (!newTag || !Array.isArray(newTag) || newTag.length === 0 || !newTag[0].tag_id) {
+                  console.error('新規タグID取得失敗');
+                  continue;
+                }
+                
+                tagId = newTag?.[0]?.tag_id || '';
+              }
+
+              // タグの使用履歴を確認（既に存在するか）
+              const { data: existingHistory, error: historyCheckError } = await supabase
+                .from('tag_usage_histories')
+                .select('*')
+                .eq('tag_id', tagId)
+                .eq('entry_id', entryId)
+                .eq('user_id', authUser?.id)
+                .maybeSingle();
+
+              if (historyCheckError) throw historyCheckError;
+
+              // 履歴がなければ新規追加
+              if (!existingHistory) {
+                const { error: historyError } = await supabase
+                  .from('tag_usage_histories')
+                  .insert({
+                    tag_id: tagId,
+                    user_id: authUser?.id,
+                    entry_id: entryId,
+                    used_at: isoString
+                  });
+
+                if (historyError) throw historyError;
+              }
+            } catch (tagError) {
+              console.error('タグ処理エラー:', tagError);
+            }
+          }
+        }
+
+        setDiaryEntries(prev => 
+          prev.map(entry => entry.entry_id === entryId ? updatedEntry : entry)
+        );
+        return true;
+      }
+
+      return false;
     } catch (err) {
       console.error('日記の更新エラー:', err);
       setError('日記の更新に失敗しました。');
@@ -469,36 +616,115 @@ const Diary: React.FC = () => {
       console.log('ユーザーが認証されていません');
       return false;
     }
-  
+
     console.log("authUser.id:", authUser.id, "Type:", typeof authUser.id);
-  
+
     try {
+      // 現在時刻を取得し、日本時間に調整
+      const now = new Date();
+      const jstTime = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+      const isoString = jstTime.toISOString();
+      
+      // 新規エントリーデータを作成（タイムゾーン調整済み）
       const newEntry = {
         user_id: authUser.id,
-        recorded_at: new Date(new Date().getTime() + 9 * 60 * 60 * 1000).toISOString(),
-        type_id: typeId,
+        recorded_at: isoString,  // 日本時間で記録
+        created_at: isoString,   // 日本時間で記録
+        updated_at: isoString,   // 日本時間で記録
         line1: line1 || null,
         line2: line2 || null,
         line3: line3 || null,
       };
-  
+
       console.log("送信データ:", newEntry);
-  
+
       const { data, error } = await supabase
         .from('diary_entries')
         .insert([newEntry])
         .select();
-  
+
       if (error) throw error;
-  
+
       if (data && data.length > 0) {
         // 型アサーションを使用
-        const newEntry = {
+        const newEntryWithTags = {
           ...(data[0] as any),
           tags: selectedTags
         } as DiaryEntryType;
         
-        setDiaryEntries(prev => [newEntry, ...prev]);
+        // タグの処理（selectedTagsがある場合）
+        if (selectedTags.length > 0 && data[0].entry_id) {
+          // タグごとに処理
+          for (const tagName of selectedTags) {
+            try {
+              // タグが存在するか確認
+              const { data: existingTags, error: tagError } = await supabase
+                .from('tags')
+                .select('tag_id, nameusage_count')
+                .eq('name', tagName)
+                .maybeSingle();
+
+              if (tagError) throw tagError;
+
+              let tagId;
+              
+              if (existingTags && existingTags.tag_id) {
+                // 既存のタグ - 使用回数を更新
+                tagId = existingTags.tag_id;
+                // nameusage_countがnullや数値でない場合は0として扱う
+                const currentCount = typeof existingTags.nameusage_count === 'number' ? 
+                  existingTags.nameusage_count : 0;
+                
+                const { error: updateError } = await supabase
+                  .from('tags')
+                  .update({ 
+                    nameusage_count: currentCount + 1,
+                    last_used_at: isoString
+                  })
+                  .eq('tag_id', tagId);
+
+                if (updateError) throw updateError;
+              } else {
+                // 新しいタグを作成
+                const { data: newTag, error: createError } = await supabase
+                  .from('tags')
+                  .insert({
+                    name: tagName,
+                    nameusage_count: 1,
+                    last_used_at: isoString,
+                    created_at: isoString,
+                    created_by: authUser.id
+                  })
+                  .select('tag_id');
+
+                if (createError) throw createError;
+                
+                if (!newTag || !Array.isArray(newTag) || newTag.length === 0 || !newTag[0].tag_id) {
+                  console.error('新規タグID取得失敗');
+                  continue;
+                }
+                
+                tagId = newTag?.[0]?.tag_id || '';
+              }
+
+              // タグの使用履歴を記録
+              const { error: historyError } = await supabase
+                .from('tag_usage_histories')
+                .insert({
+                  tag_id: tagId,
+                  user_id: authUser.id,
+                  entry_id: data[0].entry_id,
+                  used_at: isoString
+                });
+
+              if (historyError) throw historyError;
+            } catch (tagError) {
+              console.error('タグ処理エラー:', tagError);
+            }
+          }
+        }
+        
+        setDiaryEntries(prev => [newEntryWithTags, ...prev]);
         return true;
       }
     } catch (err) {
@@ -568,16 +794,20 @@ const Diary: React.FC = () => {
       return;
     }
     
+    // 現在時刻を取得し、日本時間に調整
+    const now = new Date();
+    const jstTime = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+    const isoString = jstTime.toISOString();
+    
     const newEntry: DiaryEntryType = {
       entry_id: -1,
       user_id: authUser.id,
-      recorded_at: new Date().toISOString(),
-      type_id: 1,
+      recorded_at: isoString,  // 日本時間で記録
       line1: '',
       line2: '',
       line3: '',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      created_at: isoString,   // 日本時間で記録
+      updated_at: isoString    // 日本時間で記録
     };
     
     console.log('新規日記モーダルを開く:', newEntry);
@@ -623,7 +853,6 @@ const Diary: React.FC = () => {
         line1, 
         line2, 
         line3, 
-        modalState.entry.type_id
       );
     }
   };
