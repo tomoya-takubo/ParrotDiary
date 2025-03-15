@@ -1,0 +1,297 @@
+/* src/components/diary/diary.module.css */
+
+/* コンテナ */
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+  font-family: sans-serif;
+}
+
+/* タイトル */
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 24px;
+  color: #333;
+}
+
+/* 検索バー */
+.searchContainer {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.searchInput:focus {
+  border-color: #cbd5e0;
+}
+
+.searchIcon {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #a0aec0;
+}
+
+/* フィルターボタン */
+.filterButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: #4a5568;
+  cursor: pointer;
+  padding: 8px 0;
+  margin-bottom: 16px;
+}
+
+.filterButton:hover {
+  color: #2d3748;
+}
+
+.arrowIcon {
+  width: 16px;
+  height: 16px;
+}
+
+/* フィルターパネル */
+.filterPanel {
+  background-color: white;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+}
+
+.filterSection {
+  margin-bottom: 16px;
+}
+
+.filterSection:last-child {
+  margin-bottom: 0;
+}
+
+.filterHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.filterIcon {
+  color: #4a5568;
+}
+
+.filterLabel {
+  color: #4a5568;
+  font-size: 14px;
+}
+
+/* 日付範囲 */
+.dateRangeContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dateInput {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  font-size: 14px;
+}
+
+.dateSeparator {
+  color: #a0aec0;
+}
+
+/* タグリスト */
+.tagsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tagsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 192px;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.tagButton {
+  padding: 6px 12px;
+  border-radius: 20px;
+  background-color: #f7fafc;
+  color: #4a5568;
+  border: none;
+  font-size: 14px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.tagButton:hover {
+  background-color: #edf2f7;
+}
+
+.tagButtonSelected {
+  background-color: #ebf8ff;
+  color: #3182ce;
+}
+
+.showMoreButton {
+  text-align: left;
+  background: none;
+  border: none;
+  color: #3182ce;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.showMoreButton:hover {
+  color: #2c5282;
+  text-decoration: underline;
+}
+
+/* 検索結果カウント */
+.resultCount {
+  color: #4a5568;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+/* 日記エントリー */
+.entriesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.entryCard {
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.entryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.entryDate {
+  color: #4a5568;
+  font-size: 14px;
+}
+
+.entryTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.entryTag {
+  background-color: #ebf8ff;
+  color: #3182ce;
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+.entryContent {
+  color: #2d3748;
+}
+
+.entryContent p {
+  margin-bottom: 8px;
+}
+
+.entryContent p:last-child {
+  margin-bottom: 0;
+}
+
+/* ローディング & 結果無し */
+.loading, .noResults {
+  text-align: center;
+  padding: 32px;
+  color: #4a5568;
+}
+
+/* フィルターバッジとクリアボタン */
+.filterBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #3182ce;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+.clearFiltersButton {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background-color: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  color: #4a5568;
+  font-size: 14px;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+}
+
+.clearFiltersButton:hover {
+  background-color: #edf2f7;
+}
+
+/* エラーメッセージ */
+.errorMessage {
+  padding: 12px;
+  background-color: #fff5f5;
+  color: #e53e3e;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  border: 1px solid #fc8181;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 640px) {
+  .entryHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .dateRangeContainer {
+    flex-direction: column;
+  }
+
+  .searchInput {
+    font-size: 14px;
+    padding: 10px 14px;
+  }
+}

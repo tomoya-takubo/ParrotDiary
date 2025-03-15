@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react'; // React等インポート
 import { Edit2, Edit3, Search, Plus, Calendar, Clock, Hash, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase'; // Supabaseクライアントのインポート
 import styles from './Diary.module.css';
+import { useRouter } from 'next/navigation'; // Next.jsのルーターを使用
 
 //#region 型定義
 // 3行日記エントリーの型定義
@@ -337,6 +338,8 @@ const DiaryForm: React.FC<DiaryFormProps> = ({
  * 3行日記のメインコンポーネント
  */
 const Diary: React.FC = () => {
+
+  const router = useRouter();
 
   const { user: authUser, isLoading: authLoading } = useAuth();
 
@@ -919,7 +922,14 @@ const Diary: React.FC = () => {
           <span title="日記を検索">
             <Search 
               size={20} 
-              className={styles.diaryTool} 
+              className={styles.diaryTool}
+              onClick={() => {
+                if (authUser?.id) {
+                  router.push('/diary/search');
+                } else {
+                  console.log('ログインが必要です');
+                }
+              }} 
               style={!authUser?.id ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
             />
           </span>
