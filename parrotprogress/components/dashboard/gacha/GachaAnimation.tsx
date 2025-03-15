@@ -463,7 +463,10 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
       if (!ticketConsumed) {
         throw new Error('チケットの消費に失敗しました');
       }
-            
+
+      // チケット消費後、親コンポーネントのコールバックを呼び出して画面更新
+      startGacha(); // 親から渡されたupdateTicketCount関数
+
       // 2. ガチャを引く
       const { parrot, rarityType } = await pullGacha();
       

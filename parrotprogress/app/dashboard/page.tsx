@@ -240,27 +240,27 @@ export default function Dashboard() {
     }
     
     try {
-      // 現在ログイン中のユーザー情報を取得
-      const { data: { user } } = await supabase.auth.getUser();
+      // // 現在ログイン中のユーザー情報を取得
+      // const { data: { user } } = await supabase.auth.getUser();
       
-      if (!user) {
-        console.error('ユーザーが認証されていません');
-        return;
-      }
+      // if (!user) {
+      //   console.error('ユーザーが認証されていません');
+      //   return;
+      // }
       
-      // チケットを1枚消費（データベース更新）
-      const { error } = await supabase
-        .from('gacha_tickets')
-        .update({ 
-          ticket_count: ticketCount - 1,
-          last_updated: new Date().toISOString()
-        })
-        .eq('user_id', user.id);
+      // // チケットを1枚消費（データベース更新）
+      // const { error } = await supabase
+      //   .from('gacha_tickets')
+      //   .update({ 
+      //     ticket_count: ticketCount - 1,
+      //     last_updated: new Date().toISOString()
+      //   })
+      //   .eq('user_id', user.id);
       
-      if (error) {
-        console.error('チケット消費の更新に失敗しました:', error);
-        return;
-      }
+      // if (error) {
+      //   console.error('チケット消費の更新に失敗しました:', error);
+      //   return;
+      // }
       
       // ローカルのチケットカウントを更新
       setTicketCount(prevCount => Math.max(0, prevCount - 1));
@@ -269,6 +269,36 @@ export default function Dashboard() {
       setShowGachaModal(true);
     } catch (error) {
       console.error('ガチャ処理中にエラーが発生しました:', error);
+    }
+  };
+
+  // ガチャ完了後に画面のチケット数を更新する関数を追加
+  const updateTicketCount = async () => {
+    try {
+      // 現在ログイン中のユーザー情報を取得
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        console.error('ユーザーが認証されていません');
+        return;
+      }
+      
+      // 最新のチケット情報を取得
+      const { data, error } = await supabase
+        .from('gacha_tickets')
+        .select('ticket_count')
+        .eq('user_id', user.id)
+        .single();
+        
+      if (error) {
+        console.error('チケット情報の取得に失敗しました:', error);
+        return;
+      }
+      
+      // ローカルのチケットカウントを更新
+      setTicketCount(data ? data.ticket_count : 0);
+    } catch (error) {
+      console.error('チケット更新中にエラーが発生しました:', error);
     }
   };
   
@@ -423,7 +453,7 @@ export default function Dashboard() {
         {/* ガチャアニメーションコンポーネント */}
         <GachaAnimation
           isOpen={showGachaModal}
-          startGacha={startGacha}
+          startGacha={updateTicketCount}
           onClose={closeGacha}
         />
         
