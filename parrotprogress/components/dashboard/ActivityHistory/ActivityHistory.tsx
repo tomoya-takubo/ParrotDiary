@@ -33,6 +33,7 @@ type ModalDiaryEntry = {
   time: string;
   tags: string[];
   activities: string[];
+  created_at?: string;
 };
 
 // アクティビティレベルの型
@@ -368,10 +369,10 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
   const convertToModalEntry = (dbEntry: DBDiaryEntry): ModalDiaryEntry => {
     const recordedTime = new Date(dbEntry.recorded_at);
     
-    // 時間を整形
+    // 時間を整形（時分のみ）
     const hours = recordedTime.getHours().toString().padStart(2, '0');
     const minutes = recordedTime.getMinutes().toString().padStart(2, '0');
-    const timeStr = `${hours}:${minutes}`;
+    const timeStr = `${hours}:${minutes}`; // 秒は含めない
     
     // 活動内容を配列に変換
     const activities = [dbEntry.line1];
@@ -381,7 +382,8 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
     return {
       time: timeStr,
       tags: ['3行日記'], // 仮のタグ
-      activities
+      activities,
+      created_at: dbEntry.created_at // 実際のデータには秒情報を含む
     };
   };
   //#endregion
@@ -450,6 +452,14 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
     setIsEditModalOpen(false);
     setEditingEntry(null);
     refreshData(); // データを再取得して表示を更新
+  };
+
+  // 現在の日本時間をISO形式で取得する関数
+  const getJSTISOString = () => {
+    const now = new Date();
+    // 日本時間 = UTC + 9時間
+    // console.log("現在の日時：" + new Date(now.getTime() + (9 * 60 * 60 * 1000)).toISOString());
+    return new Date(now.getTime() + (9 * 60 * 60 * 1000)).toISOString();
   };
   //#endregion
 
@@ -546,7 +556,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
         date={selectedDate ? formatDisplayDate(selectedDate) : null}
         entries={modalEntries}
         onDataUpdated={refreshData}
-        isToday={selectedDate === formatDateForComparison(new Date().toISOString())}
+        isToday={selectedDate === formatDateForComparison(getJSTISOString())}
         onEditEntry={handleEditEntry}
       />
       

@@ -9,6 +9,7 @@ type ModalDiaryEntry = {
   time: string;
   tags: string[];
   activities: string[];
+  created_at?: string;
 };
 
 // タグの型定義
@@ -405,10 +406,10 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
         </div>
         <div className={styles.modalContent}>
           <div className={styles.entryTimestamp}>
-            {date ? `${date}の記録` : '新規記録'}
-            {entry.time && ` / ${entry.time}`}
-          </div>
-          
+          {date && entry.time 
+            ? `${date} ${entry.time} の記録` 
+            : `${new Date().toLocaleString('ja-JP')} の記録`}
+        </div>          
           {/* エラーメッセージ表示 */}
           {formError && (
             <div className={styles.errorText}>
