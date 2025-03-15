@@ -18,7 +18,7 @@ type DiaryEntryType = {
   created_at: string;
   updated_at: string;
   tags?: string[]; // フロントエンド用のタグ情報
-  parrot?: string; // パロットGIFのパス（将来的にはDBから取得）
+  parrots?: string[]; // パロットGIFのパス（将来的にはDBから取得）
 };
 
 // ユーザー情報の型定義
@@ -401,6 +401,16 @@ const Diary: React.FC = () => {
           
           // 各エントリーについてタグ情報を取得
           const entriesWithTags = [];
+
+          // サンプルパロットパスを配列で用意（将来的にはDBから取得）
+          const sampleParrots = [
+            '/gif/parrots/60fpsparrot.gif',
+            '/gif/parrots/60fpsparrot.gif',
+            '/gif/parrots/60fpsparrot.gif',
+            '/gif/parrots/60fpsparrot.gif',
+            '/gif/parrots/60fpsparrot.gif',
+          ];
+
           
           if (diaryData && diaryData.length > 0) {
             for (const entry of diaryData) {
@@ -442,7 +452,7 @@ const Diary: React.FC = () => {
               entriesWithTags.push({
                 ...entry,
                 tags,
-                parrot: defaultParrotPath // 現段階では全エントリーに同じパロットを設定
+                parrots: sampleParrots.slice(0, Math.floor(Math.random() * 6)) // 0~5匹をランダムに割り当て
               } as DiaryEntryType);
             }
           }
@@ -994,17 +1004,20 @@ const Diary: React.FC = () => {
                     <div className={styles.entryLine}>{entry.line1}</div>
                     {entry.line2 && <div className={styles.entryLine}>{entry.line2}</div>}
                     {entry.line3 && <div className={styles.entryLine}>{entry.line3}</div>}
-                    
-                    {/* パロットGIFの表示 - エントリーコンテンツの最後に表示 */}
-                    {entry.parrot && (
+
+                    {/* 複数パロットGIFの表示 */}
+                    {entry.parrots && entry.parrots.length > 0 && (
                       <div className={styles.parrotBottomRight}>
-                        <Image 
-                          src={entry.parrot}
-                          alt="Parrot"
-                          width={24}
-                          height={24}
-                          className={styles.parrotGif}
-                        />
+                        {entry.parrots.map((parrot, index) => (
+                          <Image 
+                            key={index}
+                            src={parrot}
+                            alt={`Parrot ${index + 1}`}
+                            width={24}
+                            height={24}
+                            className={styles.parrotGif}
+                          />
+                        ))}
                       </div>
                     )}
                   </div>

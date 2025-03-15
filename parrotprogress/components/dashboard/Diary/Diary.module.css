@@ -631,3 +631,55 @@
   background-color: #e0f2fe;
   border: 2px solid #3b82f6;
 }
+
+/* 複数パロット表示用のCSS */
+
+/* パロット右下配置用コンテナ - 複数パロット対応 */
+.parrotBottomRight {
+  position: absolute;
+  bottom: 18px;
+  right: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 5px;
+  /* max-width: 130px; 最大幅を制限 */
+  z-index: 2;
+  padding: 3px;
+}
+
+/* パロットGIF */
+.parrotGif {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.parrotGif:hover {
+  transform: scale(1.2);
+  z-index: 3; /* ホバー時に他のパロットより前面に */
+}
+
+/* 表示が多すぎる場合のオーバーレイ (任意) */
+.parrotOverflow {
+  position: relative;
+}
+
+.parrotCount {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(59, 130, 246, 0.8);
+  color: white;
+  font-size: 10px;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
