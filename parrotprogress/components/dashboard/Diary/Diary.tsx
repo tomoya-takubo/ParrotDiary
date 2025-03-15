@@ -2,8 +2,9 @@ import { useAuth } from '@/lib/AuthContext'; // 認証コンテキストのイ�
 import React, { useState, useEffect } from 'react'; // React等インポート
 import { Edit2, Edit3, Search, Plus, Calendar, Clock, Hash, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase'; // Supabaseクライアントのインポート
-import styles from './Diary.module.css';
+import styles from './Diary.module.css'; // スタイル
 import { useRouter } from 'next/navigation'; // Next.jsのルーターを使用
+import Image from 'next/image'; // Next.jsのImageコンポーネントをインポート
 
 //#region 型定義
 // 3行日記エントリーの型定義
@@ -17,6 +18,7 @@ type DiaryEntryType = {
   created_at: string;
   updated_at: string;
   tags?: string[]; // フロントエンド用のタグ情報
+  parrot?: string; // パロットGIFのパス（将来的にはDBから取得）
 };
 
 // ユーザー情報の型定義
@@ -338,12 +340,9 @@ const DiaryForm: React.FC<DiaryFormProps> = ({
  * 3行日記のメインコンポーネント
  */
 const Diary: React.FC = () => {
-
+  // 既存のstateとhooks
   const router = useRouter();
-
   const { user: authUser, isLoading: authLoading } = useAuth();
-
-  // 状態管理
   const [diaryEntries, setDiaryEntries] = useState<DiaryEntryType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -355,6 +354,9 @@ const Diary: React.FC = () => {
   const [currentTag, setCurrentTag] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
+  
+  // パロットのパス - 今は固定値ですが、将来的にはユーザーが選択できるようにする
+  const defaultParrotPath = '/gif/parrots/60fpsparrot.gif';
 
   // タグリストのデータ - allTags 定義を追加
   const allTags: TagType[] = [
@@ -436,10 +438,11 @@ const Diary: React.FC = () => {
               } catch (err) {
                 console.error('タグ処理エラー:', err);
               }
-              // 日記エントリーとタグを結合
+              // 日記エントリーとタグを結合し、仮のパロットパスを追加
               entriesWithTags.push({
                 ...entry,
-                tags
+                tags,
+                parrot: defaultParrotPath // 現段階では全エントリーに同じパロットを設定
               } as DiaryEntryType);
             }
           }
@@ -905,6 +908,7 @@ const Diary: React.FC = () => {
   }
 
   // メインのレンダリング
+  // メインのレンダリング
   return (
     <div className={styles.diaryContainer}>
       {/* ヘッダー */}
@@ -964,13 +968,13 @@ const Diary: React.FC = () => {
             </div>
           ) : (
             getFilteredEntries().map(entry => (
-              <div key={entry.entry_id} className={styles.diaryEntry}>
+              <div key={entry.entry_id} className={styles.diaryEntry} style={{ position: 'relative' }}>
                 <div className={styles.entryHeader}>
                   <div className={styles.entryTimestamp}>
                     記録時刻: {new Date(entry.recorded_at).toLocaleString('ja-JP')}
                   </div>
                   <div className={styles.entryTags}>
-                    {/* タイプタグを削除または単純化 */}
+                    {/* タグの表示 */}
                     {entry.tags?.map((tag, index) => (
                       <span key={index} className={styles.entryTag}>
                         #{tag}
@@ -990,6 +994,19 @@ const Diary: React.FC = () => {
                     <div className={styles.entryLine}>{entry.line1}</div>
                     {entry.line2 && <div className={styles.entryLine}>{entry.line2}</div>}
                     {entry.line3 && <div className={styles.entryLine}>{entry.line3}</div>}
+                    
+                    {/* パロットGIFの表示 - エントリーコンテンツの最後に表示 */}
+                    {entry.parrot && (
+                      <div className={styles.parrotBottomRight}>
+                        <Image 
+                          src={entry.parrot}
+                          alt="Parrot"
+                          width={24}
+                          height={24}
+                          className={styles.parrotGif}
+                        />
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className={styles.emptyEntry}>
@@ -1001,7 +1018,7 @@ const Diary: React.FC = () => {
           )}
         </div>
       </div>
-
+            
       {/* 編集/作成モーダル - ポモドーロ関連表示を削除 */}
       {modalState.isOpen && modalState.entry && (
         <div 

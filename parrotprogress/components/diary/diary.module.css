@@ -1,18 +1,31 @@
 /* src/components/diary/diary.module.css */
 
+/* 全画面グラデーション背景 */
+.pageBackground {
+  background: linear-gradient(to bottom, #EFF6FF, #F5F3FF);
+  min-height: 100vh;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -1;
+}
+
 /* コンテナ */
 .container {
   max-width: 800px;
   margin: 0 auto;
   padding: 24px;
   font-family: sans-serif;
+  position: relative;
+  min-height: 100vh; /* 最低でも画面の高さ分は確保 */
 }
 
 /* タイトル */
 .title {
   font-size: 24px;
   font-weight: bold;
-  margin-bottom: 24px;
+  /* margin-bottom: 24px; */
   color: #333;
 }
 
@@ -186,7 +199,7 @@
 }
 
 .entryCard {
-  background-color: #f8f9fa;
+  background-color: #fff;
   border-radius: 12px;
   padding: 16px;
 }
@@ -294,4 +307,27 @@
     font-size: 14px;
     padding: 10px 14px;
   }
+}
+
+.backToDashboardButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #3B82F6;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.titleSection {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
