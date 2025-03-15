@@ -322,11 +322,28 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
     if (!user) return false;
     
     try {
+      // まず最新のチケット情報を取得
+      const { data: currentTickets, error: fetchError } = await supabase
+      .from('gacha_tickets')
+      .select('ticket_count')
+      .eq('user_id', user.id)
+      .single();
+
+      if (fetchError) {
+      console.error('チケット情報の取得に失敗しました:', fetchError);
+      return false;
+      }
+
+      // 取得したチケット数を使用して更新
+      const newTicketCount = Math.max(0, currentTickets.ticket_count - 1);
+      console.log(`チケットを消費します。現在: ${currentTickets.ticket_count}枚 → 更新後: ${newTicketCount}枚`);
+
       // チケット数を1減らす
       const { error } = await supabase
         .from('gacha_tickets')
         .update({ 
-          ticket_count: tickets - 1,
+          // ticket_count: tickets - 1,
+          ticket_count: newTicketCount,
           last_updated: getJSTISOString()
         })
         .eq('user_id', user.id);
@@ -336,7 +353,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
         return false;
       }
 
-      console.log('チケットを消費しました。残り:', tickets - 1);
+      console.log(`チケットを消費しました。残り: ${newTicketCount}枚`);
       setTickets(prev => prev - 1);
       return true;
     } catch (err) {
