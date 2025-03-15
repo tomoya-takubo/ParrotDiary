@@ -514,8 +514,6 @@
   margin: 0 16px;
 }
 
-/* 既存のCSSをすべて保持した上で、パロット関連のスタイルを追加 */
-
 /* パロット右下配置用コンテナ */
 .parrotBottomRight {
   position: absolute;
