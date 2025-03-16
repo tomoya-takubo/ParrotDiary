@@ -311,11 +311,12 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
 
 // 日記エントリー保存時にパロット情報を保存する関数（修正版）
 export const saveEntryParrots = async (
-  entryId: string | number, // 文字列も受け入れるように変更
+  entryId: string | number,
   userId: string,
   parrotImageUrls: string[]
 ): Promise<boolean> => {
   console.log("saveEntryParrots関数開始:", { entryId, userId, parrotImageUrls });
+  
   if (!entryId || !userId || !parrotImageUrls.length) {
     console.log("早期リターン条件:", { 
       validEntryId: !!entryId, 
@@ -324,7 +325,7 @@ export const saveEntryParrots = async (
     });
     return false;
   }
-
+  
   try {
     console.log(`パロット保存開始: entryId=${entryId}, parrots=${parrotImageUrls.length}件`);
     
@@ -341,15 +342,18 @@ export const saveEntryParrots = async (
     
     console.log('既存パロット削除成功');
 
-    // パロットURLからIDを取得 - 正規化したURLで照合
+    // URL正規化の修正 - HTTPSなどで始まるURLは変更しない
     const normalizedUrls = parrotImageUrls.map(url => {
-      // URL正規化 - 先頭の/を確実に付ける
+      // URL正規化を改善 - すでにHTTPS/HTTPで始まる場合は変更しない
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        return url;
+      }
       return url.startsWith('/') ? url : `/${url}`;
     });
     
     console.log('正規化後のURL:', normalizedUrls);
 
-    // データベースから全パロットを取得（より確実に一致させるため）
+    // データベースから全パロットを取得
     const { data: allParrots, error: parrotError } = await supabase
       .from('parrots')
       .select('parrot_id, image_url');
@@ -367,10 +371,12 @@ export const saveEntryParrots = async (
       return false;
     }
     
-    // URLからIDへのマッピングを作成（部分一致もサポート）
+    // より柔軟なURL照合のために、URLからIDへのマッピングを作成
     const urlToIdMap: Record<string, string> = {};
     
     for (const url of normalizedUrls) {
+      if (!url) continue;
+      
       // 完全一致を試みる
       const exactMatch = allParrots.find(p => p.image_url === url);
       if (exactMatch && exactMatch.parrot_id) {
@@ -378,35 +384,32 @@ export const saveEntryParrots = async (
         continue;
       }
       
-      // パスの最後の部分での一致を試みる（ファイル名のみ）
-      const urlParts = url.split('/');
-      const fileName = urlParts[urlParts.length - 1];
+      // ファイル名だけでの一致を試みる
+      const urlFileName = getFileNameFromUrl(url);
       
-      const partialMatch = allParrots.find(p => {
-        if (!p.image_url || typeof p.image_url !== 'string') return false;
-        const dbParts = p.image_url.split('/');
-        return dbParts[dbParts.length - 1] === fileName;
+      const filenameMatch = allParrots.find(p => {
+        if (!p.image_url) return false;
+        return getFileNameFromUrl(p.image_url as string) === urlFileName;
       });
-            
-      if (partialMatch && partialMatch.parrot_id) {
-        urlToIdMap[url] = String(partialMatch.parrot_id);
-      } else {
-        console.warn(`パロットID未検出: URL=${url}`);
+      
+      if (filenameMatch && filenameMatch.parrot_id) {
+        urlToIdMap[url] = String(filenameMatch.parrot_id);
+        continue;
       }
+      
+      console.warn(`パロットID未検出: URL=${url}`);
     }
     
     console.log('URLからIDへのマッピング:', urlToIdMap);
     
     // 新しいパロット関連付けを追加
     const parrotInserts = normalizedUrls
-      .filter(url => urlToIdMap[url]) // 有効なURLのみフィルタリング
+      .filter(url => urlToIdMap[url])
       .map((url, index) => ({
         entry_id: entryId,
         parrot_id: urlToIdMap[url],
         position: index,
-        // 必要に応じて追加フィールド
-        user_id: userId,
-        created_at: new Date().toISOString()
+        user_id: userId
       }));
     
     console.log(`挿入するパロットデータ: ${parrotInserts.length}件`, parrotInserts);
@@ -415,7 +418,7 @@ export const saveEntryParrots = async (
       const { data: insertData, error: insertError } = await supabase
         .from('diary_parrot_icons')
         .insert(parrotInserts)
-        .select(); // 結果を返すことで挿入の成功を確認
+        .select();
       
       if (insertError) {
         console.error('パロット挿入エラー:', insertError);
@@ -435,10 +438,12 @@ export const saveEntryParrots = async (
 };
 
 // 日記エントリー読み込み時にパロット情報も取得する関数
-export const getEntryParrots = async (entryId: number): Promise<string[]> => {
+export const getEntryParrots = async (entryId: string | number): Promise<string[]> => {
   if (!entryId) return [];
   
   try {
+    console.log(`getEntryParrots: entryId=${entryId} の取得開始`);
+    
     // エントリーに関連付けられたパロットIDを取得
     const { data: iconData, error: iconError } = await supabase
       .from('diary_parrot_icons')
@@ -446,25 +451,40 @@ export const getEntryParrots = async (entryId: number): Promise<string[]> => {
       .eq('entry_id', entryId)
       .order('position', { ascending: true });
     
-    if (iconError) throw iconError;
+    if (iconError) {
+      console.error('パロットアイコン取得エラー:', iconError);
+      throw iconError;
+    }
+    
+    console.log(`パロットアイコン取得成功: ${iconData?.length || 0}件`);
     
     if (iconData && iconData.length > 0) {
-      // パロットIDからパロット情報を取得 - 型安全のために明示的にstring型に変換
+      // パロットIDからパロット情報を取得
       const parrotIds = iconData.map(icon => String(icon.parrot_id));
       
       const { data: parrotData, error: parrotError } = await supabase
         .from('parrots')
-        .select('image_url')  // テーブル構造に合わせて image_url を使用
+        .select('image_url')
         .in('parrot_id', parrotIds);
       
-      if (parrotError) throw parrotError;
+      if (parrotError) {
+        console.error('パロット情報取得エラー:', parrotError);
+        throw parrotError;
+      }
+      
+      console.log(`パロット情報取得成功: ${parrotData?.length || 0}件`);
       
       if (parrotData) {
-        // 型安全のために明示的にstring型に変換
-        return parrotData
-          .filter(parrot => parrot.image_url) // null/undefined をフィルタリング
+        // 型安全のために明示的にstring型に変換し、null値を除外
+        const imageUrls = parrotData
+          .filter(parrot => parrot.image_url)
           .map(parrot => String(parrot.image_url));
+          
+        console.log('取得したパロットURL:', imageUrls);
+        return imageUrls;
       }
+    } else {
+      console.log('このエントリーにはパロットがありません');
     }
     
     return [];
@@ -473,3 +493,12 @@ export const getEntryParrots = async (entryId: number): Promise<string[]> => {
     return [];
   }
 };
+
+// 追加: ファイル名を取得するヘルパー関数
+function getFileNameFromUrl(url: string): string {
+  if (!url) return '';
+  
+  // 最後のスラッシュ以降をファイル名として取得
+  const parts = url.split('/');
+  return parts[parts.length - 1];
+}

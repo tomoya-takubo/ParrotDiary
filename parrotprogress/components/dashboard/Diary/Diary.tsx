@@ -447,7 +447,12 @@ const Diary: React.FC = () => {
               let parrots: string[] = [];
 
               try {
-                parrots = await getEntryParrots(Number(entry.entry_id)) as string[];
+                // 型キャストに関する警告を避けるための修正
+                const parrotUrls = await getEntryParrots(entry.entry_id as string);
+                // 確実に配列として扱う
+                parrots = Array.isArray(parrotUrls) ? parrotUrls : [];
+                
+                console.log(`エントリー ${entry.entry_id} のパロット:`, parrots);
                 // まずタグの使用履歴からタグIDを取得
                 const { data: tagUsages, error: tagUsageError } = await supabase
                   .from('tag_usage_histories')
