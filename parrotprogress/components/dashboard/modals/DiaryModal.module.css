@@ -221,3 +221,26 @@
   margin: 1rem 0;
   min-height: 120px;
 }
+
+/* 既存のDiaryModal.module.cssに追加するスタイル */
+
+/* パロット表示のコンテナスタイル */
+.parrotContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 10px;
+  justify-content: flex-end; /* 右寄せ表示 */
+}
+
+.parrotGif {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+/* エントリーの内容部分のコンテナ化（パロット表示のため） */
+.entryContent {
+  position: relative;
+  width: 100%;
+}

@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Edit3, Calendar, Clock, Hash, Plus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import styles from './EditDiaryModal.module.css'; // 専用のスタイルシートを使用
+import Image from 'next/image'; // Imageコンポーネントをインポート
+// パロット関連のimport
+import { ParrotSelector, saveEntryParrots, getEntryParrots } from '@/components/dashboard/Diary/ParrotSelector';
 
 // ActivityHistoryで使用する日記エントリー型
 type ModalDiaryEntry = {
@@ -10,6 +13,8 @@ type ModalDiaryEntry = {
   tags: string[];
   activities: string[];
   created_at?: string;
+  entry_id?: number; // エントリーIDを追加
+  parrots?: string[]; // パロット情報を追加
 };
 
 // タグの型定義
@@ -60,6 +65,33 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  // パロット関連のstate追加
+  const [selectedParrots, setSelectedParrots] = useState<string[]>(entry.parrots || []);
+  
+  // パロット情報をロード（初期表示時）
+  useEffect(() => {
+    const loadParrots = async () => {
+      if (entry.entry_id && !entry.parrots) {
+        try {
+          // エントリーIDがあれば、そのエントリーに関連するパロットを取得
+          const parrotUrls = await getEntryParrots(entry.entry_id.toString());
+          setSelectedParrots(Array.isArray(parrotUrls) ? parrotUrls : []);
+        } catch (error) {
+          console.error('パロット取得エラー:', error);
+        }
+      } else if (entry.parrots) {
+        // パロット情報が既にある場合はそれを使用
+        setSelectedParrots(entry.parrots);
+      } else {
+        // どちらもない場合は空配列で初期化
+        setSelectedParrots([]);
+      }
+    };
+
+    if (isOpen) {
+      loadParrots();
+    }
+  }, [isOpen, entry]);
 
   // モーダル外クリックハンドラー
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -222,11 +254,12 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
       const isUpdate = entry.activities.some(a => a !== '');
       
       let entryOperation;
+      let entryId: string;
       
-      if (isUpdate) {
+      if (isUpdate && entry.entry_id) {
         // 既存エントリの更新
-        console.log("更新モード - 既存エントリの更新");
-        entryOperation = supabase
+        console.log("更新モード - 既存エントリの更新", entry.entry_id);
+        entryId = entry.entry_id.toString();        entryOperation = supabase
           .from('diary_entries')
           .update({
             line1: entryData.line1,
@@ -235,24 +268,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
             updated_at: entryData.updated_at
             // created_atとrecorded_atは更新しない
           })
-          .eq('user_id', user.id);
-          
-        if (date) {
-          // 日付検索の場合、日本語フォーマットも考慮
-          let searchDate = date;
-          if (date.includes('年')) {
-            const parts = date.match(/(\d+)年(\d+)月(\d+)日/);
-            if (parts && parts.length >= 4) {
-              const year = parts[1];
-              const month = parts[2].padStart(2, '0');
-              const day = parts[3].padStart(2, '0');
-              searchDate = `${year}-${month}-${day}`;
-            }
-          }
-          console.log(`日付検索: ${searchDate}`);
-          // created_at または recorded_at で検索
-          entryOperation = entryOperation.or(`created_at.like.${searchDate}%,recorded_at.like.${searchDate}%`);
-        }
+          .eq('entry_id', entryId);
       } else {
         // 新規エントリの作成
         console.log("作成モード - 新規エントリ");
@@ -275,9 +291,13 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
         throw new Error('日記エントリーの保存に失敗しました');
       }
       
-      // エントリIDを取得
-      const entryId = data[0].entry_id;
+      // エントリIDを取得（新規作成の場合）
+      entryId = data[0].entry_id as string;
       console.log("取得したエントリID:", entryId);
+
+      // パロット情報の保存
+      await saveEntryParrots(entryId.toString(), user.id, selectedParrots);
+      console.log("パロット情報を保存:", selectedParrots);
 
       // 2. タグの処理
       for (const tagName of selectedTags) {
@@ -425,7 +445,6 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
                 value={line1}
                 onChange={(e) => setLine1(e.target.value)}
                 className={styles.textInput}
-                // placeholder="1行目: 今日あったことを書きましょう"
                 maxLength={50}
               />
               <span className={styles.charCount}>
@@ -441,7 +460,6 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
                 value={line2}
                 onChange={(e) => handleLine2Change(e.target.value)}
                 className={styles.textInput}
-                // placeholder="2行目: 続きを書きましょう"
                 maxLength={50}
                 disabled={!line1.trim()}
               />
@@ -458,7 +476,6 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
                 value={line3}
                 onChange={(e) => handleLine3Change(e.target.value)}
                 className={styles.textInput}
-                // placeholder="3行目: まとめやポイントを書きましょう"
                 maxLength={50}
                 disabled={!line1.trim() || !line2.trim()}
               />
@@ -563,6 +580,21 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
             )}
           </div>
 
+          {/* パロット選択セクション */}
+          <div className={styles.modalParrotSection}>
+            <div className={styles.modalParrotTitle}>パロット</div>
+            
+            {/* パロットセレクターコンポーネント */}
+            {user && (
+              <ParrotSelector
+                userId={user.id}
+                selectedParrots={selectedParrots}
+                onParrotsChange={setSelectedParrots}
+                maxParrots={5}
+              />
+            )}
+          </div>
+
           {/* 記録ボタン */}
           <button
             onClick={handleSave}
@@ -570,7 +602,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
             disabled={isLoading || (!line1.trim() && !line2.trim() && !line3.trim())}
           >
             <Edit3 size={20} />
-            記録する
+            {isLoading ? '更新中...' : '記録する'}
           </button>
         </div>
       </div>

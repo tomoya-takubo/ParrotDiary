@@ -322,3 +322,94 @@
   background-color: #93c5fd;
   cursor: not-allowed;
 }
+
+/* 既存のEditDiaryModal.module.cssに追加するスタイル */
+
+/* パロットセクションのスタイル */
+.modalParrotSection {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 16px;
+}
+
+.modalParrotTitle {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+/* パロット選択エリアのスタイル */
+.parrotSelectorContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.parrotOption {
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 5px;
+  padding: 3px;
+  transition: all 0.2s ease;
+}
+
+.parrotOption:hover {
+  background-color: #f0f0f0;
+}
+
+.parrotOptionSelected {
+  border-color: #3b82f6;
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+/* 選択済みパロット表示エリア */
+.selectedParrotsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.selectedParrotItem {
+  position: relative;
+  width: 40px;
+  height: 40px;
+}
+
+.removeParrotButton {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #e53e3e;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* パロット関連アニメーション */
+@keyframes parrotBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.parrotOption:hover {
+  animation: parrotBounce 0.5s ease;
+}
