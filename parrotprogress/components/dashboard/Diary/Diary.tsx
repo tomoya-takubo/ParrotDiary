@@ -88,6 +88,7 @@ const DiaryForm: React.FC<DiaryFormProps> = ({
   // パロット関連のプロパティ
   selectedParrots,
   onParrotsChange,
+  // 他のプロパティ
   onTagInput,
   onAddTag,
   onRemoveTag,
@@ -99,7 +100,6 @@ const DiaryForm: React.FC<DiaryFormProps> = ({
   const [line2, setLine2] = useState(entry.line2 || '');
   const [line3, setLine3] = useState(entry.line3 || '');
   const [formError, setFormError] = useState<string | null>(null);
-
   /**
    * 入力検証を行う関数
    */
@@ -330,38 +330,11 @@ const DiaryForm: React.FC<DiaryFormProps> = ({
         )}
       </div>
 
-      {/* パロット選択セクション（新規追加） */}
+      {/* パロット選択セクション（拡張版） */}
       <div className={styles.modalParrotSection}>
         <div className={styles.modalParrotTitle}>パロット</div>
         
-        {/* 選択されたパロットのプレビュー */}
-        <div className={styles.selectedParrotsPreview}>
-          {selectedParrots.map((parrot, index) => (
-            <div key={index} className={styles.selectedParrotItem}>
-              <Image
-                src={parrot}
-                alt={`Selected Parrot ${index + 1}`}
-                width={24}
-                height={24}
-                className={styles.parrotGif}
-              />
-              <button
-                onClick={() => onParrotsChange(selectedParrots.filter((_, i) => i !== index))}
-                className={styles.removeParrotButton}
-                aria-label="Remove parrot"
-              >
-                <X size={10} />
-              </button>
-            </div>
-          ))}
-          {selectedParrots.length < 5 && (
-            <div className={styles.addParrotButton}>
-              +
-            </div>
-          )}
-        </div>
-        
-        {/* パロット選択コンポーネント */}
+        {/* ParrotSelector コンポーネントを使用 */}
         {authUser && (
           <ParrotSelector
             userId={authUser.id}

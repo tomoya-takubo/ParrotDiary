@@ -782,3 +782,54 @@
 .addParrotButton:hover {
   background-color: #e2e8f0;
 }
+
+/* Diary.module.cssに追加するスタイル */
+
+/* モーダル内のパロット選択UI用コンテナ */
+.modalParrotSelector {
+  position: absolute;
+  top: 16px;
+  right: 50px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+}
+
+/* モーダルのクローズボタンの調整（パロット選択UIと被らないように） */
+.closeButton {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 6; /* パロット選択UIより手前に */
+}
+
+/* モーダル内のパロット選択UI用スタイル - 小さめのサイズに調整 */
+.modalParrotSelector .selectedParrotsPreview {
+  display: flex;
+  flex-direction: row-reverse; /* 右から左へ並べる */
+  gap: 6px;
+}
+
+.modalParrotSelector .selectedParrotItem {
+  width: 24px;
+  height: 24px;
+}
+
+.modalParrotSelector .addParrotButton {
+  width: 24px;
+  height: 24px;
+}
+
+.modalParrotSelector .parrotDropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: auto;
+  width: 300px;
+  margin-top: 5px;
+}
+
+/* パロット選択UIがモーダルの内容と重ならないようにするための余白調整 */
+.modalHeader {
+  margin-top: 10px;
+}
