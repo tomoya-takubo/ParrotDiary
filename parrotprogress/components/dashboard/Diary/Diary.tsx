@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'; // Supabaseクライアントのイ�
 import styles from './Diary.module.css'; // スタイル
 import { useRouter } from 'next/navigation'; // Next.jsのルーターを使用
 import Image from 'next/image'; // Next.jsのImageコンポーネントをインポート
+import { ParrotSelector, saveEntryParrots, getEntryParrots } from './ParrotSelector'; // 追加
 
 //#region 型定義
 // 3行日記エントリーの型定義
@@ -61,6 +62,9 @@ interface DiaryFormProps {
   showTagSuggestions: boolean;
   allTags: TagType[];
   frequentTags: TagType[];
+  // パロット関連のプロパティを追加
+  selectedParrots: string[];
+  onParrotsChange: (parrots: string[]) => void;
   onTagInput: (value: string) => void;
   onAddTag: (tagName: string) => void;
   onRemoveTag: (tagToRemove: string) => void;
@@ -81,12 +85,16 @@ const DiaryForm: React.FC<DiaryFormProps> = ({
   showTagSuggestions,
   allTags,
   frequentTags,
+  // パロット関連のプロパティ
+  selectedParrots,
+  onParrotsChange,
   onTagInput,
   onAddTag,
   onRemoveTag,
   onSave,
   onCancel
 }) => {
+  const { user: authUser } = useAuth();
   const [line1, setLine1] = useState(entry.line1 || '');
   const [line2, setLine2] = useState(entry.line2 || '');
   const [line3, setLine3] = useState(entry.line3 || '');
@@ -322,6 +330,48 @@ const DiaryForm: React.FC<DiaryFormProps> = ({
         )}
       </div>
 
+      {/* パロット選択セクション（新規追加） */}
+      <div className={styles.modalParrotSection}>
+        <div className={styles.modalParrotTitle}>パロット</div>
+        
+        {/* 選択されたパロットのプレビュー */}
+        <div className={styles.selectedParrotsPreview}>
+          {selectedParrots.map((parrot, index) => (
+            <div key={index} className={styles.selectedParrotItem}>
+              <Image
+                src={parrot}
+                alt={`Selected Parrot ${index + 1}`}
+                width={24}
+                height={24}
+                className={styles.parrotGif}
+              />
+              <button
+                onClick={() => onParrotsChange(selectedParrots.filter((_, i) => i !== index))}
+                className={styles.removeParrotButton}
+                aria-label="Remove parrot"
+              >
+                <X size={10} />
+              </button>
+            </div>
+          ))}
+          {selectedParrots.length < 5 && (
+            <div className={styles.addParrotButton}>
+              +
+            </div>
+          )}
+        </div>
+        
+        {/* パロット選択コンポーネント */}
+        {authUser && (
+          <ParrotSelector
+            userId={authUser.id}
+            selectedParrots={selectedParrots}
+            onParrotsChange={onParrotsChange}
+            maxParrots={5}
+          />
+        )}
+      </div>
+
       {/* 記録ボタン */}
       <button
         onClick={handleSubmit}
@@ -354,7 +404,9 @@ const Diary: React.FC = () => {
   const [currentTag, setCurrentTag] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
-  
+  // パロット関連のstate追加
+  const [selectedParrots, setSelectedParrots] = useState<string[]>([]);
+
   // パロットのパス - 今は固定値ですが、将来的にはユーザーが選択できるようにする
   const defaultParrotPath = '/gif/parrots/60fpsparrot.gif';
 
@@ -411,13 +463,18 @@ const Diary: React.FC = () => {
             '/gif/parrots/60fpsparrot.gif',
           ];
 
-          
+          // 各エントリーについてタグとパロット情報を取得
+          const entriesWithTagsAndParrots = [];
+
           if (diaryData && diaryData.length > 0) {
             for (const entry of diaryData) {
               // タグ情報の取得（2つの別々のクエリに分割）
               let tags: string[] = [];
+              // パロット情報取得（新規追加）
+              let parrots: string[] = [];
 
               try {
+                parrots = await getEntryParrots(Number(entry.entry_id)) as string[];
                 // まずタグの使用履歴からタグIDを取得
                 const { data: tagUsages, error: tagUsageError } = await supabase
                   .from('tag_usage_histories')
@@ -446,18 +503,18 @@ const Diary: React.FC = () => {
                   }
                 }
               } catch (err) {
-                console.error('タグ処理エラー:', err);
+                console.error('パロット取得エラー:', err);
               }
               // 日記エントリーとタグを結合し、仮のパロットパスを追加
-              entriesWithTags.push({
+              entriesWithTagsAndParrots.push({
                 ...entry,
                 tags,
-                parrots: sampleParrots.slice(0, Math.floor(Math.random() * 6)) // 0~5匹をランダムに割り当て
+                parrots,
               } as DiaryEntryType);
             }
           }
           
-          setDiaryEntries(entriesWithTags);
+          setDiaryEntries(entriesWithTagsAndParrots);
           
         } catch (err: any) {
           console.error('データ取得エラー:', err);
@@ -476,7 +533,37 @@ const Diary: React.FC = () => {
     handleAuth();
   }, [authUser, authLoading]);
 
-  // エントリー更新関数
+    // 編集モーダルを開く - パロット情報も読み込む
+    const openEditModal = (entry: DiaryEntryType) => {
+      setModalState({
+        isOpen: true,
+        mode: 'edit',
+        entry
+      });
+      
+      if (entry.tags) {
+        setSelectedTags(entry.tags);
+      } else {
+        setSelectedTags([]);
+      }
+      
+      if (entry.parrots) {
+        setSelectedParrots(entry.parrots);
+      } else {
+        setSelectedParrots([]);
+      }
+    };
+    
+    // モーダルを閉じる
+    const closeModal = () => {
+      setModalState(prev => ({ ...prev, isOpen: false }));
+      setCurrentTag('');
+      setShowTagSuggestions(false);
+      // パロット選択状態をリセット
+      setSelectedParrots([]);
+    };
+  
+  // エントリー更新時にパロット情報も保存
   const updateDiaryEntry = async (
     entryId: number, 
     line1: string, 
@@ -520,11 +607,15 @@ const Diary: React.FC = () => {
 
       if (error) throw error;
 
+      // パロット情報を保存
+      await saveEntryParrots(entryId, authUser.id, selectedParrots);
+
       // 画面の日記データを更新
       if (data && data.length > 0) {
         const updatedEntry = {
           ...(data[0] as any),
-          tags: selectedTags
+          tags: selectedTags,
+          parrots: selectedParrots,
         } as DiaryEntryType;
         
         // タグの処理
@@ -661,13 +752,9 @@ const Diary: React.FC = () => {
 
       if (error) throw error;
 
-      if (data && data.length > 0) {
-        // 型アサーションを使用
-        const newEntryWithTags = {
-          ...(data[0] as any),
-          tags: selectedTags
-        } as DiaryEntryType;
-        
+      if (data && data.length > 0 && data[0].entry_id) {
+        // パロット情報を保存
+        await saveEntryParrots(Number(data[0].entry_id), authUser.id, selectedParrots);
         // タグの処理（selectedTagsがある場合）
         if (selectedTags.length > 0 && data[0].entry_id) {
           // タグごとに処理
@@ -740,7 +827,14 @@ const Diary: React.FC = () => {
           }
         }
         
-        setDiaryEntries(prev => [newEntryWithTags, ...prev]);
+        // 画面の日記データを更新
+        const newEntryWithTagsAndParrots = {
+          ...(data[0] as any),
+          tags: selectedTags,
+          parrots: selectedParrots
+        } as DiaryEntryType;
+        
+        setDiaryEntries(prev => [newEntryWithTagsAndParrots, ...prev]);
         return true;
       }
     } catch (err) {
@@ -787,19 +881,19 @@ const Diary: React.FC = () => {
   /**
    * 編集モーダルを開く
    */
-  const openEditModal = (entry: DiaryEntryType) => {
-    setModalState({
-      isOpen: true,
-      mode: 'edit',
-      entry
-    });
+  // const openEditModal = (entry: DiaryEntryType) => {
+  //   setModalState({
+  //     isOpen: true,
+  //     mode: 'edit',
+  //     entry
+  //   });
     
-    if (entry.tags) {
-      setSelectedTags(entry.tags);
-    } else {
-      setSelectedTags([]);
-    }
-  };
+  //   if (entry.tags) {
+  //     setSelectedTags(entry.tags);
+  //   } else {
+  //     setSelectedTags([]);
+  //   }
+  // };
 
   /**
    * 新規作成モーダルを開く
@@ -835,16 +929,17 @@ const Diary: React.FC = () => {
     });
     
     setSelectedTags([]);
+    setSelectedParrots([]);
   };
 
   /**
    * モーダルを閉じる
    */
-  const closeModal = () => {
-    setModalState(prev => ({ ...prev, isOpen: false }));
-    setCurrentTag('');
-    setShowTagSuggestions(false);
-  };
+  // const closeModal = () => {
+  //   setModalState(prev => ({ ...prev, isOpen: false }));
+  //   setCurrentTag('');
+  //   setShowTagSuggestions(false);
+  // };
 
   /**
    * 日記の保存処理
@@ -1062,6 +1157,7 @@ const Diary: React.FC = () => {
               </div>
               
               {/* 3行日記フォームコンポーネント */}
+              {/* 3行日記フォームコンポーネント */}
               <DiaryForm 
                 entry={modalState.entry}
                 selectedTags={selectedTags}
@@ -1069,6 +1165,8 @@ const Diary: React.FC = () => {
                 showTagSuggestions={showTagSuggestions}
                 allTags={allTags}
                 frequentTags={frequentTags}
+                selectedParrots={selectedParrots} // 追加
+                onParrotsChange={setSelectedParrots} // 追加
                 onTagInput={(value: string) => {
                   setCurrentTag(value);
                   setShowTagSuggestions(value.length > 0);
