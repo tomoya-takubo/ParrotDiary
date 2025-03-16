@@ -986,7 +986,6 @@ const Diary: React.FC = () => {
   }
 
   // メインのレンダリング
-  // メインのレンダリング
   return (
     <div className={styles.diaryContainer}>
       {/* ヘッダー */}
@@ -1129,7 +1128,6 @@ const Diary: React.FC = () => {
                 {new Date(modalState.entry.recorded_at).toLocaleString('ja-JP')} の記録
               </div>
               
-              {/* 3行日記フォームコンポーネント */}
               {/* 3行日記フォームコンポーネント */}
               <DiaryForm 
                 entry={modalState.entry}

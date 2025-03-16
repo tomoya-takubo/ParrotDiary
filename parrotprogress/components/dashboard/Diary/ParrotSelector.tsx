@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { X, Search, Plus } from 'lucide-react';
+import { X, Search, Plus, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './ParrotSelector.module.css';
 
@@ -8,7 +8,7 @@ import styles from './ParrotSelector.module.css';
 type ParrotType = {
   parrot_id: string;
   name?: string;
-  image_url?: string;  // テーブルに合わせて image_url を使用
+  image_url?: string;
   description?: string;
   category_id?: string;
   rarity_id?: string;
@@ -20,18 +20,31 @@ interface ParrotSelectorProps {
   selectedParrots: string[];
   onParrotsChange: (parrots: string[]) => void;
   maxParrots?: number;
+  compact?: boolean; // コンパクト表示モード
 }
 
 export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
   userId,
   selectedParrots,
   onParrotsChange,
-  maxParrots = 5
+  maxParrots = 5,
+  compact = false
 }) => {
   const [availableParrots, setAvailableParrots] = useState<ParrotType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showParrotDropdown, setShowParrotDropdown] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // カテゴリーリスト（例）
+  const categories = [
+    { id: 'all', name: 'すべて' },
+    { id: 'common', name: '一般' },
+    { id: 'rare', name: 'レア' },
+    { id: 'epic', name: 'エピック' },
+    { id: 'legendary', name: '伝説' }
+  ];
 
   // ユーザーが獲得済みのパロットを取得
   useEffect(() => {
@@ -53,7 +66,6 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
           const parrotIds = userParrotData.map(record => String(record.parrot_id));
           
           // パロット情報を取得
-          // テーブル構造に合わせてカラム名を修正
           const { data: parrotData, error: parrotError } = await supabase
             .from('parrots')
             .select('parrot_id, name, image_url, description, category_id, rarity_id, display_order')
@@ -81,8 +93,8 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
               name: 'デフォルトパロット',
               image_url: '/gif/parrots/60fpsparrot.gif',
               description: 'デフォルトパロット',
-              category_id: 'default',
-              rarity_id: 'default',
+              category_id: 'common',
+              rarity_id: 'common',
               display_order: 1
             }
           ]);
@@ -96,8 +108,8 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
             name: 'デフォルトパロット',
             image_url: '/gif/parrots/60fpsparrot.gif',
             description: 'デフォルトパロット',
-            category_id: 'default',
-            rarity_id: 'default',
+            category_id: 'common',
+            rarity_id: 'common',
             display_order: 1
           }
         ]);
@@ -150,12 +162,31 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
     onParrotsChange(selectedParrots.filter(p => p !== parrotImageUrl));
   };
 
+  // パロットをフィルタリングする関数
+  const filteredParrots = availableParrots.filter(parrot => {
+    // 検索条件とカテゴリーでフィルタリング
+    const matchesSearch = !searchTerm || 
+      (parrot.name && parrot.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (parrot.description && parrot.description.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+    const matchesCategory = !selectedCategory || 
+      selectedCategory === 'all' || 
+      parrot.category_id === selectedCategory;
+      
+    return matchesSearch && matchesCategory;
+  });
+
   if (isLoading) {
     return <div className={styles.parrotSelectorLoading}>Loading...</div>;
   }
 
+  // コンパクトモード用のCSSクラス
+  const containerClass = compact 
+    ? `${styles.parrotSelectorContainer} ${styles.compactSelector}` 
+    : styles.parrotSelectorContainer;
+
   return (
-    <div className={styles.parrotSelectorContainer}>
+    <div className={containerClass}>
       <div className={styles.selectedParrotsPreview}>
         {/* 選択中のパロットを表示 */}
         {selectedParrots.map((parrotImageUrl, index) => (
@@ -163,8 +194,8 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
             <Image
               src={parrotImageUrl}
               alt={`Selected Parrot ${index + 1}`}
-              width={24}
-              height={24}
+              width={compact ? 20 : 24}
+              height={compact ? 20 : 24}
               className={styles.parrotGif}
             />
             <button
@@ -172,7 +203,7 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
               className={styles.removeParrotButton}
               aria-label="Remove parrot"
             >
-              <X size={10} />
+              <X size={compact ? 8 : 10} />
             </button>
           </div>
         ))}
@@ -184,7 +215,7 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
             onClick={handleAddButtonClick}
             title="パロットを追加"
           >
-            <Plus size={14} />
+            <Plus size={compact ? 12 : 14} />
           </div>
         )}
       </div>
@@ -203,12 +234,41 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
                 <X size={16} />
               </button>
             </div>
+          
+            {/* 検索フィールド */}
+            <div className={styles.searchContainer}>
+              <Search size={14} className={styles.searchIcon} />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="パロットを検索..."
+                className={styles.searchInput}
+              />
+            </div>
+
+            {/* カテゴリー選択 */}
+            <div className={styles.parrotTypeSelector}>
+              {categories.map(category => (
+                <button
+                  key={category.id}
+                  className={`${styles.parrotTypeButton} ${
+                    selectedCategory === category.id ? styles.parrotTypeButtonActive : ''
+                  }`}
+                  onClick={() => setSelectedCategory(
+                    selectedCategory === category.id ? null : category.id
+                  )}
+                >
+                  {category.name}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* パロットグリッド */}
           <div className={styles.parrotGrid}>
-            {availableParrots.length > 0 ? (
-              availableParrots.map((parrot) => (
+            {filteredParrots.length > 0 ? (
+              filteredParrots.map((parrot) => (
                 <div
                   key={parrot.parrot_id}
                   className={`${styles.parrotGridItem} ${
@@ -236,7 +296,10 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
               ))
             ) : (
               <div className={styles.noParrotsMessage}>
-                パロットがありません
+                {searchTerm ? 
+                  '検索条件に一致するパロットがありません' : 
+                  'パロットがありません'
+                }
               </div>
             )}
           </div>

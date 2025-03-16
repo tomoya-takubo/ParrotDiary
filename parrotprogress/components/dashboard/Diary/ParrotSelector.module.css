@@ -1,4 +1,4 @@
-/* 簡略化したParrotSelector.module.css */
+/* ParrotSelector.module.css (拡張版) */
 
 /* 選択されたパロットのプレビュー */
 .selectedParrotsPreview {
@@ -68,26 +68,20 @@
   position: relative;
 }
 
-/* パロット選択ドロップダウン */
-.parrotDropdown {
-  position: absolute;
-  z-index: 10;
-  top: 100%;
-  left: 0;
-  right: 0;
-  margin-top: 8px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+/* パロット選択モーダル */
+.parrotSelectorModal {
+  margin-top: 12px;
   border: 1px solid #e2e8f0;
-  animation: fadeIn 0.2s ease-out;
-  max-width: 500px; /* 幅を制限 */
+  border-radius: 8px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  animation: slideDown 0.2s ease-out;
 }
 
-@keyframes fadeIn {
+@keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateY(-5px);
+    transform: translateY(-10px);
   }
   to {
     opacity: 1;
@@ -95,20 +89,21 @@
   }
 }
 
-.dropdownHeader {
+.parrotSelectorHeader {
   padding: 12px;
   border-bottom: 1px solid #e2e8f0;
 }
 
-.dropdownTitle {
+.parrotSelectorTitle {
   font-size: 14px;
   color: #1e293b;
+  margin-bottom: 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.closeDropdownButton {
+.toggleSelectorButton {
   background: none;
   border: none;
   color: #64748b;
@@ -120,19 +115,76 @@
   border-radius: 4px;
 }
 
-.closeDropdownButton:hover {
+.toggleSelectorButton:hover {
   background-color: #f1f5f9;
-  color: #ef4444;
+  color: #3b82f6;
+}
+
+/* 検索入力 */
+.searchContainer {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px 12px 8px 32px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.searchIcon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+}
+
+/* カテゴリー選択 */
+.parrotTypeSelector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.parrotTypeButton {
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: none;
+  background-color: #f1f5f9;
+  color: #64748b;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.parrotTypeButton:hover {
+  background-color: #e2e8f0;
+}
+
+.parrotTypeButtonActive {
+  background-color: #3b82f6;
+  color: white;
 }
 
 /* パロットグリッド */
 .parrotGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-  gap: 10px;
-  padding: 12px;
-  max-height: 250px;
+  gap: 12px;
+  max-height: 125px;
   overflow-y: auto;
+  padding: 12px;
+  border-radius: 0 0 8px 8px;
 }
 
 /* パロットグリッドアイテム */
@@ -211,14 +263,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 60px;
+  height: 100px;
   color: #64748b;
   font-size: 14px;
+  background-color: #f8fafc;
+  border-radius: 8px;
 }
 
 /* パロットがない場合のメッセージ */
 .noParrotsMessage {
-  padding: 20px;
+  padding: 24px;
   text-align: center;
   color: #64748b;
   font-size: 14px;
@@ -232,12 +286,16 @@
   object-fit: contain;
 }
 
-/* モバイル向け調整 */
+.dropdownTitle {
+  font-size: 14px;
+  color: #1e293b;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* モバイル向けスタイル調整 */
 @media (max-width: 640px) {
-  .parrotDropdown {
-    max-width: 100%;
-  }
-  
   .parrotGrid {
     grid-template-columns: repeat(4, 1fr);
   }
@@ -246,5 +304,11 @@
 @media (max-width: 480px) {
   .parrotGrid {
     grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .parrotTypeSelector {
+    overflow-x: auto;
+    padding-bottom: 4px;
+    margin-bottom: 8px;
   }
 }
