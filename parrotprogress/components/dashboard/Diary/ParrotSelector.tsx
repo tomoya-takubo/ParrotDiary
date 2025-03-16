@@ -309,56 +309,122 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
   );
 };
 
-// 日記エントリー保存時にパロット情報も保存する関数
+// 日記エントリー保存時にパロット情報を保存する関数（修正版）
 export const saveEntryParrots = async (
-  entryId: number,
+  entryId: string | number, // 文字列も受け入れるように変更
   userId: string,
   parrotImageUrls: string[]
 ): Promise<boolean> => {
-  if (!entryId || !userId || !parrotImageUrls.length) return false;
+  console.log("saveEntryParrots関数開始:", { entryId, userId, parrotImageUrls });
+  if (!entryId || !userId || !parrotImageUrls.length) {
+    console.log("早期リターン条件:", { 
+      validEntryId: !!entryId, 
+      validUserId: !!userId, 
+      hasParrots: parrotImageUrls.length > 0 
+    });
+    return false;
+  }
 
   try {
+    console.log(`パロット保存開始: entryId=${entryId}, parrots=${parrotImageUrls.length}件`);
+    
     // まず既存のパロット関連付けを削除
     const { error: deleteError } = await supabase
       .from('diary_parrot_icons')
       .delete()
       .eq('entry_id', entryId);
     
-    if (deleteError) throw deleteError;
+    if (deleteError) {
+      console.error('既存パロット削除エラー:', deleteError);
+      throw deleteError;
+    }
+    
+    console.log('既存パロット削除成功');
 
-    // パロットURLからIDを取得 - image_url を使用
-    const { data: parrotData, error: parrotError } = await supabase
+    // パロットURLからIDを取得 - 正規化したURLで照合
+    const normalizedUrls = parrotImageUrls.map(url => {
+      // URL正規化 - 先頭の/を確実に付ける
+      return url.startsWith('/') ? url : `/${url}`;
+    });
+    
+    console.log('正規化後のURL:', normalizedUrls);
+
+    // データベースから全パロットを取得（より確実に一致させるため）
+    const { data: allParrots, error: parrotError } = await supabase
       .from('parrots')
-      .select('parrot_id, image_url')
-      .in('image_url', parrotImageUrls);
+      .select('parrot_id, image_url');
     
-    if (parrotError) throw parrotError;
+    if (parrotError) {
+      console.error('パロットデータ取得エラー:', parrotError);
+      throw parrotError;
+    }
+
+    console.log(`パロットデータ取得成功: ${allParrots?.length || 0}件`);
     
-    if (parrotData && parrotData.length > 0) {
-      // パロットURLからIDへのマッピングを作成 - 型安全のために明示的に変換
-      const urlToIdMap: Record<string, string> = {};
-      parrotData.forEach(parrot => {
-        if (parrot && parrot.image_url && parrot.parrot_id) {
-          urlToIdMap[String(parrot.image_url)] = String(parrot.parrot_id);
-        }
-      });
-      
-      // 新しいパロット関連付けを追加
-      const parrotInserts = parrotImageUrls
-        .filter(url => urlToIdMap[url]) // 有効なURLのみフィルタリング
-        .map((url, index) => ({
-          entry_id: entryId,
-          parrot_id: urlToIdMap[url],
-          position: index
-        }));
-      
-      if (parrotInserts.length > 0) {
-        const { error: insertError } = await supabase
-          .from('diary_parrot_icons')
-          .insert(parrotInserts);
-        
-        if (insertError) throw insertError;
+    // パロットが見つからない場合のデフォルト値
+    if (!allParrots || allParrots.length === 0) {
+      console.warn('パロットデータが見つかりませんでした');
+      return false;
+    }
+    
+    // URLからIDへのマッピングを作成（部分一致もサポート）
+    const urlToIdMap: Record<string, string> = {};
+    
+    for (const url of normalizedUrls) {
+      // 完全一致を試みる
+      const exactMatch = allParrots.find(p => p.image_url === url);
+      if (exactMatch && exactMatch.parrot_id) {
+        urlToIdMap[url] = String(exactMatch.parrot_id);
+        continue;
       }
+      
+      // パスの最後の部分での一致を試みる（ファイル名のみ）
+      const urlParts = url.split('/');
+      const fileName = urlParts[urlParts.length - 1];
+      
+      const partialMatch = allParrots.find(p => {
+        if (!p.image_url || typeof p.image_url !== 'string') return false;
+        const dbParts = p.image_url.split('/');
+        return dbParts[dbParts.length - 1] === fileName;
+      });
+            
+      if (partialMatch && partialMatch.parrot_id) {
+        urlToIdMap[url] = String(partialMatch.parrot_id);
+      } else {
+        console.warn(`パロットID未検出: URL=${url}`);
+      }
+    }
+    
+    console.log('URLからIDへのマッピング:', urlToIdMap);
+    
+    // 新しいパロット関連付けを追加
+    const parrotInserts = normalizedUrls
+      .filter(url => urlToIdMap[url]) // 有効なURLのみフィルタリング
+      .map((url, index) => ({
+        entry_id: entryId,
+        parrot_id: urlToIdMap[url],
+        position: index,
+        // 必要に応じて追加フィールド
+        user_id: userId,
+        created_at: new Date().toISOString()
+      }));
+    
+    console.log(`挿入するパロットデータ: ${parrotInserts.length}件`, parrotInserts);
+    
+    if (parrotInserts.length > 0) {
+      const { data: insertData, error: insertError } = await supabase
+        .from('diary_parrot_icons')
+        .insert(parrotInserts)
+        .select(); // 結果を返すことで挿入の成功を確認
+      
+      if (insertError) {
+        console.error('パロット挿入エラー:', insertError);
+        throw insertError;
+      }
+      
+      console.log(`パロット挿入成功: ${insertData?.length || 0}件`);
+    } else {
+      console.warn('挿入するパロットデータがありません');
     }
     
     return true;

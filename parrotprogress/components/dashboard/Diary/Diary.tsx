@@ -725,9 +725,15 @@ const Diary: React.FC = () => {
 
       if (error) throw error;
 
+      console.log("日記エントリーの作成結果:", data); // 追加
+
       if (data && data.length > 0 && data[0].entry_id) {
+        console.log("エントリー作成成功:", data[0].entry_id);
+        console.log("保存するパロット:", selectedParrots);
         // パロット情報を保存
-        await saveEntryParrots(Number(data[0].entry_id), authUser.id, selectedParrots);
+        const saveResult = await saveEntryParrots(data[0].entry_id as string, authUser.id, selectedParrots);
+        console.log("パロット保存結果:", saveResult);
+      
         // タグの処理（selectedTagsがある場合）
         if (selectedTags.length > 0 && data[0].entry_id) {
           // タグごとに処理
