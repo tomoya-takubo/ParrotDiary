@@ -520,8 +520,8 @@
 /* パロット右下配置用コンテナ */
 .parrotBottomRight {
   position: absolute;
-  bottom: 18px;
-  right: 18px;
+  bottom: 4px;
+  right: 4px;
   display: flex;
   align-items: center;
   z-index: 2;
@@ -690,21 +690,19 @@
 /* パロット表示用のスタイル */   
 .parrotBottomRight {
   position: absolute;
-  bottom: -2px;
-  right: 6px;
+  bottom: 0px; /* -2pxから12pxに変更 */
+  right: 0px; /* 6pxから16pxに変更 */
   display: flex;
-  flex-wrap: wrap;
   justify-content: flex-end;
+  align-items: center;
   gap: 10px;
-  /* max-width: 130px; */
   z-index: 2;
-  padding: 0;
-  margin: 0;
+  padding: 6px; /* 0から6pxに変更 */
 }
 
 .parrotGif {
-  width: 32px;
-  height: 32px;
+  width: 42px; /* 32pxから42pxに変更 */
+  height: 42px; /* 32pxから42pxに変更 */
   object-fit: contain;
   border-radius: 4px;
   cursor: pointer;
@@ -832,4 +830,27 @@
 /* パロット選択UIがモーダルの内容と重ならないようにするための余白調整 */
 .modalHeader {
   margin-top: 10px;
+}
+
+/* 新しいパロットコンテナスタイル */
+.parrotContainer {
+  width: 50px;
+  height: 50px;
+  background-color: #FF9F43; /* オレンジ色の円 */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s;
+}
+
+.parrotContainer:hover {
+  transform: scale(1.1);
+}
+
+.parrotGif {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
 }

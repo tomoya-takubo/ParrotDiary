@@ -1083,18 +1083,19 @@ const Diary: React.FC = () => {
                     {entry.line2 && <div className={styles.entryLine}>{entry.line2}</div>}
                     {entry.line3 && <div className={styles.entryLine}>{entry.line3}</div>}
 
-                    {/* 複数パロットGIFの表示 */}
+                    {/* パロットGIFの表示 */}
                     {entry.parrots && entry.parrots.length > 0 && (
                       <div className={styles.parrotBottomRight}>
                         {entry.parrots.map((parrot, index) => (
-                          <Image 
-                            key={index}
-                            src={parrot}
-                            alt={`Parrot ${index + 1}`}
-                            width={24}
-                            height={24}
-                            className={styles.parrotGif}
-                          />
+                          <div key={index} className={styles.parrotContainer}>
+                            <Image 
+                              src={parrot}
+                              alt={`Parrot ${index + 1}`}
+                              width={32}
+                              height={32}
+                              className={styles.parrotGif}
+                            />
+                          </div>
                         ))}
                       </div>
                     )}
