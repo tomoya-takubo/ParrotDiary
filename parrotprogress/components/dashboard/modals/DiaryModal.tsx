@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { X, Calendar, Clock, Edit2 } from 'lucide-react';
 import styles from './DiaryModal.module.css';
-import Image from 'next/image'; // パロット表示のためにImageをインポート
-import { getEntryParrots } from '@/components/dashboard/Diary/ParrotSelector'; // パロット取得関数をインポート
+import Image from 'next/image';
+import { getEntryParrots } from '@/components/dashboard/Diary/ParrotSelector';
 
 // ActivityHistoryで使用する日記エントリー型
 type ActivityDiaryEntry = {
   time: string;
   tags: string[];
   activities: string[];
-  entry_id?: number | string; // パロット取得のためにentry_idを追加（文字列または数値型）
-  parrots?: string[]; // パロット情報を保持するプロパティを追加
+  entry_id?: number | string;
+  parrots?: string[];
 };
 
 // 修正したDiaryModalの型
@@ -21,7 +21,7 @@ type DiaryModalProps = {
   entries: ActivityDiaryEntry[];
   onDataUpdated: () => void;
   isToday: boolean;
-  onEditEntry?: (entry: ActivityDiaryEntry) => void; // 型を修正
+  onEditEntry?: (entry: ActivityDiaryEntry) => void;
 };
 
 const DiaryModal: React.FC<DiaryModalProps> = ({ 
@@ -35,43 +35,32 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
 }) => {
   // エントリーごとのパロット情報を管理する状態
   const [entriesWithParrots, setEntriesWithParrots] = useState<ActivityDiaryEntry[]>(entries);
-  // パロット取得中かどうかを管理する状態
-  const [isLoadingParrots, setIsLoadingParrots] = useState(false);
-
-  // エントリーが変更されたとき、パロット情報を取得する
+  
+  // モーダルが開いた時にパロット情報を取得
   useEffect(() => {
-    const fetchParrots = async () => {
-      if (!isOpen || entries.length === 0) return;
+    if (!isOpen) return;
 
-      setIsLoadingParrots(true);
+    const fetchParrots = async () => {
+      console.log("パロット情報取得開始:", entries.length, "件のエントリー");
+      
       try {
-        console.log("パロット情報取得開始:", entries.length, "件のエントリー");
-        
         const updatedEntries = await Promise.all(
-          entries.map(async (entry) => {
-            // すでにパロット情報がある場合はそのまま使用
-            if (entry.parrots && entry.parrots.length > 0) {
-              console.log("既存のパロット情報を使用:", entry.parrots);
-              return entry;
-            }
-            
-            // entry_idがある場合、パロット情報を取得
+          entries.map(async (entry, index) => {
+            // entry_idがある場合のみパロット情報を取得
             if (entry.entry_id) {
               try {
-                // entry_idを文字列に変換して渡す
                 const entryIdStr = String(entry.entry_id);
-                console.log("パロット取得:", entryIdStr);
                 
                 const parrotUrls = await getEntryParrots(entryIdStr);
-                console.log("取得したパロット:", parrotUrls);
                 
-                return {
-                  ...entry,
-                  parrots: Array.isArray(parrotUrls) ? parrotUrls : []
-                };
+                if (Array.isArray(parrotUrls) && parrotUrls.length > 0) {
+                  return {
+                    ...entry,
+                    parrots: parrotUrls
+                  };
+                }
               } catch (error) {
-                console.error('パロット取得エラー:', error, entry.entry_id);
-                return entry;
+                console.error(`パロット取得エラー:`, error);
               }
             }
             
@@ -79,29 +68,14 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
           })
         );
         
-        console.log("パロット取得完了:", updatedEntries);
         setEntriesWithParrots(updatedEntries);
       } catch (error) {
         console.error("パロット取得中にエラー発生:", error);
-      } finally {
-        setIsLoadingParrots(false);
       }
     };
 
-    if (isOpen) {
-      fetchParrots();
-    }
+    fetchParrots();
   }, [isOpen, entries]);
-
-  // デバッグ用：パロット状態が変わるたびにログ出力
-  useEffect(() => {
-    console.log("entriesWithParrots更新:", 
-      entriesWithParrots.map(e => ({
-        entry_id: e.entry_id,
-        parrots: e.parrots?.length || 0
-      }))
-    );
-  }, [entriesWithParrots]);
 
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
@@ -109,17 +83,14 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
     }
   };
 
-  // 編集ボタンクリック時のハンドラー
   const handleEditClick = (entry: ActivityDiaryEntry) => {
     if (onEditEntry) {
-      onEditEntry(entry); // 親コンポーネントに編集対象のエントリーを渡す
+      onEditEntry(entry);
     }
   };
 
-  // 記録追加ボタンクリック時のハンドラー
   const handleAddRecordClick = () => {
     if (onEditEntry) {
-      // 空のエントリーを作成して編集モードで開く
       const emptyEntry: ActivityDiaryEntry = {
         time: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }),
         tags: [],
@@ -186,22 +157,22 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
                 {/* アクティビティリストとパロット表示 */}
                 <div className={styles.entryContent}>
                   {/* アクティビティリスト */}
-                  {entry.activities.map((activity, actIndex) => (
-                    activity && (
+                  <div className={styles.activitiesSection}>
+                    {entry.activities.filter(Boolean).map((activity, actIndex) => (
                       <div 
                         key={actIndex} 
                         className={styles.activityItem}
                       >
                         {activity}
                       </div>
-                    )
-                  ))}
+                    ))}
+                  </div>
                 
-                  {/* パロットGIFの表示 */}
+                  {/* パロットGIFの表示 - imgタグを使用 */}
                   {entry.parrots && entry.parrots.length > 0 && (
                     <div className={styles.parrotContainer}>
                       {entry.parrots.map((parrot, parrotIndex) => (
-                        <Image 
+                        <img 
                           key={parrotIndex}
                           src={parrot}
                           alt={`Parrot ${parrotIndex + 1}`}

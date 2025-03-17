@@ -340,7 +340,7 @@ const DiaryForm: React.FC<DiaryFormProps> = ({
             userId={authUser.id}
             selectedParrots={selectedParrots}
             onParrotsChange={onParrotsChange}
-            maxParrots={5}
+            maxParrots={1}
           />
         )}
       </div>

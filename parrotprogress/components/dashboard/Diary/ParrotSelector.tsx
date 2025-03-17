@@ -27,7 +27,7 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
   userId,
   selectedParrots,
   onParrotsChange,
-  maxParrots = 5,
+  maxParrots = 1,
   compact = false
 }) => {
   const [availableParrots, setAvailableParrots] = useState<ParrotType[]>([]);

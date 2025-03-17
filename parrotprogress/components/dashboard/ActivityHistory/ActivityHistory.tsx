@@ -29,11 +29,14 @@ type DBDiaryEntry = {
 };
 
 // モーダル表示用の日記エントリー型（ActivityDiaryEntryと同一構造）
+// モーダル表示用の日記エントリー型を修正して entry_id を含めるようにします
 type ModalDiaryEntry = {
   time: string;
   tags: string[];
   activities: string[];
   created_at?: string;
+  entry_id?: number | string;
+  parrots?: string[]; // parrots プロパティを追加
 };
 
 // アクティビティレベルの型
@@ -366,6 +369,8 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
   };
 
   // DBデータをモーダル表示用データに変換
+  // convertToModalEntry 関数を更新して、parrots も含めるようにする
+
   const convertToModalEntry = (dbEntry: DBDiaryEntry): ModalDiaryEntry => {
     const recordedTime = new Date(dbEntry.recorded_at);
     
@@ -383,7 +388,9 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
       time: timeStr,
       tags: ['3行日記'], // 仮のタグ
       activities,
-      created_at: dbEntry.created_at // 実際のデータには秒情報を含む
+      created_at: dbEntry.created_at, // 実際のデータには秒情報を含む
+      entry_id: dbEntry.entry_id,  // entry_id を追加
+      parrots: [] // 空の配列で初期化（実際のパロットはDiaryModalで取得される）
     };
   };
   //#endregion
@@ -436,11 +443,19 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
 
   // エントリー編集ハンドラー
   const handleEditEntry = (entry: ModalDiaryEntry) => {
-    setEditingEntry(entry);
+    // entry_id が string 型の場合は number に変換
+    const convertedEntry = {
+      ...entry,
+      entry_id: entry.entry_id !== undefined ? 
+        (typeof entry.entry_id === 'string' ? parseInt(entry.entry_id, 10) : entry.entry_id) : 
+        undefined
+    };
+    
+    setEditingEntry(convertedEntry);
     setIsEditModalOpen(true);
     setShowModal(false); // DiaryModalを閉じる
   };
-
+  
   // 編集モーダルを閉じるハンドラー
   const handleCloseEditModal = () => {
     setIsEditModalOpen(false);
@@ -560,16 +575,15 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
         onEditEntry={handleEditEntry}
       />
       
-      {/* 編集モーダル */}
       {isEditModalOpen && editingEntry && (
-        <EditDiaryModal
-          isOpen={isEditModalOpen}
-          onClose={handleCloseEditModal}
-          entry={editingEntry}
-          date={selectedDate ? formatDisplayDate(selectedDate) : null}
-          onSave={handleEditComplete}
-        />
-      )}
+      <EditDiaryModal
+        isOpen={isEditModalOpen}
+        onClose={handleCloseEditModal}
+        entry={editingEntry as any} // TypeScriptの型チェックをバイパス
+        date={selectedDate ? formatDisplayDate(selectedDate) : null}
+        onSave={handleEditComplete}
+      />
+    )}
     </div>
   );
 };

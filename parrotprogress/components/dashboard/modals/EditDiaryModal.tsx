@@ -28,9 +28,18 @@ type TagType = {
 type EditDiaryModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  entry: ModalDiaryEntry;
+  entry: EditDiaryEntryType;
   date: string | null;
   onSave: () => void;
+};
+
+type EditDiaryEntryType = {
+  time: string;
+  tags: string[];
+  activities: string[];
+  created_at?: string;
+  entry_id?: number | string;
+  parrots?: string[]; // parrots プロパティを追加
 };
 
 const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
@@ -590,7 +599,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
                 userId={user.id}
                 selectedParrots={selectedParrots}
                 onParrotsChange={setSelectedParrots}
-                maxParrots={5}
+                maxParrots={1}
               />
             )}
           </div>

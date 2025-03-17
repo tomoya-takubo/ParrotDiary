@@ -244,3 +244,55 @@
   position: relative;
   width: 100%;
 }
+
+/* 既存のDiaryModal.module.cssに追加または更新するスタイル */
+
+/* エントリーカードのスタイル - 余分な高さを削除 */
+.entryCard {
+  position: relative;
+  min-height: auto; /* 自動高さに変更 */
+  padding: 16px;
+  background-color: #f9f9fb;
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+
+/* エントリーコンテンツのスタイル - 余白を最小化 */
+.entryContent {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0; /* 余分なパディングを削除 */
+}
+
+/* アクティビティセクション - 右側の余白調整 */
+.activitiesSection {
+  flex: 1;
+  padding-right: 30px; /* パロット用の余白は維持 */
+  margin-bottom: 0; /* 下部の余白を削除 */
+}
+
+/* パロット表示用のコンテナ - 絶対配置で右下に固定 */
+.parrotContainer {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  gap: 5px;
+  z-index: 5;
+}
+
+/* パロットのスタイル */
+.parrotGif {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+/* アクティビティアイテムのスタイル - 余分な余白を削除 */
+.activityItem {
+  padding: 2px 0 2px 12px; /* 上下のパディングを縮小 */
+  color: #333333;
+  font-size: 16px;
+  line-height: 1.4; /* 行間を詰める */
+}
