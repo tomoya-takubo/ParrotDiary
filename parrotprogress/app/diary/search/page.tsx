@@ -1,10 +1,11 @@
 "use client"
 
 // src/app/diary/search/page.tsx
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DiarySearch from '@/components/diary/DiarySearch';
 import { useAuth } from '@/lib/AuthContext';
+import styles from './styles.module.css'; // スタイルをインポート
 
 /**
  * 日記検索ページ
@@ -29,8 +30,23 @@ export default function DiarySearchPage() {
   // ロード中または未認証の場合はローディング表示
   if (isLoading || !user) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-gray-500">読み込み中...</div>
+      <div className={styles.loadingContainer}>
+        <div className={styles.loadingSpinnerWrapper}>
+          <div className={styles.loadingSpinner}></div>
+          <div className={styles.loadingIconContainer}>
+            <img 
+              src="/parrot-icon.png" 
+              alt="Parrot Icon" 
+              className={styles.loadingIcon}
+              onError={(e) => {
+                // 画像が404の場合は何も表示しない
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          </div>
+        </div>
+        <p className={styles.loadingText}>日記データを読み込み中...</p>
+        <p className={styles.loadingSubtext}>お気に入りの日記がもうすぐ表示されます</p>
       </div>
     );
   }

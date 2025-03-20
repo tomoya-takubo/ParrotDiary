@@ -276,7 +276,7 @@
 .parrotContainer {
   position: absolute;
   bottom: 0;
-  right: 0;
+  right: 8px;
   display: flex;
   gap: 5px;
   z-index: 5;
@@ -284,9 +284,10 @@
 
 /* パロットのスタイル */
 .parrotGif {
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
+  transform: scaleX(-1); /* このプロパティを追加することでGIFが左右反転します */
 }
 
 /* アクティビティアイテムのスタイル - 余分な余白を削除 */
