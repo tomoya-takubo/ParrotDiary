@@ -1,9 +1,27 @@
 // src/components/diary/DiarySearch.tsx
 import React, { useState, useEffect } from 'react';
-import { Search, FilterIcon, Calendar, ArrowLeft } from 'lucide-react';
+import { Search, FilterIcon, Calendar, ArrowLeft, Edit } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import diaryService, { DiaryEntry, TagWithCount } from '@/services/diaryService';
 import styles from './diary.module.css';
+import Image from 'next/image'; // Imageコンポーネントをインポート
+import EditDiaryModal from '@/components/dashboard/modals/EditDiaryModal'; // 編集モーダルをインポート
+import { getEntryParrots } from '@/components/dashboard/Diary/ParrotSelector'; // パロット取得関数をインポート
+
+// 拡張したDiaryEntryタイプを定義
+interface ExtendedDiaryEntry extends DiaryEntry {
+  parrots?: string[]; // オプショナルとしてパロット配列を追加
+}
+
+// 編集用のエントリータイプ定義
+type EditDiaryEntryType = {
+  time: string;
+  tags: string[];
+  activities: string[];
+  created_at?: string;
+  entry_id?: number | string;
+  parrots?: string[];
+};
 
 /**
  * 日記検索ページのコンポーネント
@@ -17,10 +35,14 @@ const DiarySearch = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [showAllTags, setShowAllTags] = useState(false);
-  const [diaryEntries, setDiaryEntries] = useState<DiaryEntry[]>([]);
+  const [diaryEntries, setDiaryEntries] = useState<ExtendedDiaryEntry[]>([]);
   const [allTags, setAllTags] = useState<TagWithCount[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // 編集モーダル用の状態
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editEntry, setEditEntry] = useState<EditDiaryEntryType | null>(null);
+  const [editDate, setEditDate] = useState<string | null>(null);
   // #endregion
 
   // #region データ取得
@@ -34,11 +56,41 @@ const DiarySearch = () => {
         
         // Supabaseサービスを使って日記データを取得
         const diaryResponse = await diaryService.getUserDiaryEntries(user.id);
-        setDiaryEntries(diaryResponse);
+        
+        // パロット情報を持つ拡張エントリーとして初期化
+        const extendedEntries: ExtendedDiaryEntry[] = diaryResponse.map(entry => ({
+          ...entry,
+          parrots: [] // 初期値として空配列を設定
+        }));
+        
+        // 一時的にエントリーを設定
+        setDiaryEntries(extendedEntries);
         
         // タグデータを取得
         const tagsResponse = await diaryService.getUserTags(user.id);
         setAllTags(tagsResponse);
+        
+        // 各エントリーのパロット情報を取得
+        const entriesWithParrots = await Promise.all(
+          extendedEntries.map(async (entry) => {
+            try {
+              // getEntryParrotsが文字列の引数を期待している場合は変換
+              const entryId = String(entry.entry_id);
+              const parrotUrls = await getEntryParrots(entryId);
+              // パロット情報をセット
+              return {
+                ...entry,
+                parrots: Array.isArray(parrotUrls) ? parrotUrls : []
+              };
+            } catch (err) {
+              console.error(`エントリー ${entry.entry_id} のパロット取得エラー:`, err);
+              return entry; // エラー時は元のエントリーを返す
+            }
+          })
+        );
+        
+        // パロット情報を含むエントリーで更新
+        setDiaryEntries(entriesWithParrots);
         
       } catch (error) {
         console.error('データの取得に失敗しました:', error);
@@ -66,6 +118,95 @@ const DiarySearch = () => {
     setSelectedTags([]);
     setDateRange({ start: '', end: '' });
   };
+
+  // 編集モーダルを開く
+  const openEditModal = (entry: ExtendedDiaryEntry) => {
+    // 日付フォーマット
+    const entryDate = new Date(entry.created_at);
+    const year = entryDate.getFullYear();
+    const month = (entryDate.getMonth() + 1).toString().padStart(2, '0');
+    const day = entryDate.getDate().toString().padStart(2, '0');
+    const hours = entryDate.getHours().toString().padStart(2, '0');
+    const minutes = entryDate.getMinutes().toString().padStart(2, '0');
+    
+    const formattedDate = `${year}年${month}月${day}日`;
+    const formattedTime = `${hours}:${minutes}`;
+    
+    // EditDiaryModalに渡すデータ形式に変換
+    const activities = [];
+    if (entry.line1) activities.push(entry.line1);
+    if (entry.line2) activities.push(entry.line2);
+    if (entry.line3) activities.push(entry.line3);
+    
+    setEditEntry({
+      time: formattedTime,
+      tags: entry.tags || [],
+      activities,
+      created_at: entry.created_at,
+      entry_id: entry.entry_id,
+      parrots: entry.parrots || []
+    });
+    
+    setEditDate(formattedDate);
+    setIsModalOpen(true);
+  };
+  
+  // モーダルを閉じる
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditEntry(null);
+    setEditDate(null);
+  };
+  
+  // 編集保存後の処理
+  const handleSaveComplete = () => {
+    closeModal();
+    // データを再取得
+    if (user) {
+      // フルリロード
+      fetchDataWithParrots(user.id);
+    }
+  };
+  
+  // パロット情報を含むデータ取得関数
+  const fetchDataWithParrots = async (userId: string) => {
+    try {
+      setIsLoading(true);
+      
+      // 日記エントリーを取得
+      const diaryResponse = await diaryService.getUserDiaryEntries(userId);
+      
+      // 拡張エントリーとして初期化
+      const extendedEntries: ExtendedDiaryEntry[] = diaryResponse.map(entry => ({
+        ...entry,
+        parrots: [] // 初期値として空配列を設定
+      }));
+      
+      // 各エントリーのパロット情報を取得
+      const entriesWithParrots = await Promise.all(
+        extendedEntries.map(async (entry) => {
+          try {
+            const entryId = String(entry.entry_id);
+            const parrotUrls = await getEntryParrots(entryId);
+            return {
+              ...entry,
+              parrots: Array.isArray(parrotUrls) ? parrotUrls : []
+            };
+          } catch (err) {
+            console.error(`エントリー ${entry.entry_id} のパロット取得エラー:`, err);
+            return entry;
+          }
+        })
+      );
+      
+      setDiaryEntries(entriesWithParrots);
+    } catch (error) {
+      console.error('データの再取得に失敗しました:', error);
+      setError('データの更新中にエラーが発生しました。再度お試しください。');
+    } finally {
+      setIsLoading(false);
+    }
+  };
   // #endregion
 
   // #region フィルタリングとフォーマット
@@ -81,7 +222,7 @@ const DiarySearch = () => {
 
   // フィルタリングされたエントリー
   const filteredEntries = diaryEntries.filter((entry) => {
-    const entryContent = `${entry.line1} ${entry.line2} ${entry.line3}`;
+    const entryContent = `${entry.line1} ${entry.line2 || ''} ${entry.line3 || ''}`;
     const matchesSearch =
       searchTerm === '' ||
       entryContent.toLowerCase().includes(searchTerm.toLowerCase());
@@ -258,14 +399,38 @@ const DiarySearch = () => {
                           {tag}
                         </span>
                       ))}
+                      {/* 編集ボタンを追加 */}
+                      <button 
+                        onClick={() => openEditModal(entry)}
+                        className={styles.editButton}
+                      >
+                        編集
+                      </button>
                     </div>
                   </div>
 
                   {/* 内容 */}
                   <div className={styles.entryContent}>
                     <p>{entry.line1}</p>
-                    <p>{entry.line2}</p>
-                    <p>{entry.line3}</p>
+                    {entry.line2 && <p>{entry.line2}</p>}
+                    {entry.line3 && <p>{entry.line3}</p>}
+                    
+                    {/* パロットGIFの表示 - デバッグ情報を追加 */}
+                    {entry.parrots && entry.parrots.length > 0 && (
+                      <div className={styles.parrotBottomRight}>
+                        {entry.parrots.map((parrot, index) => (
+                          <div key={index} className={styles.parrotContainer}>
+                            <Image 
+                              src={parrot}
+                              alt={`Parrot ${index + 1}`}
+                              width={40}
+                              height={40}
+                              className={styles.parrotGif}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))
@@ -275,6 +440,17 @@ const DiarySearch = () => {
               </div>
             )}
           </div>
+        )}
+        
+        {/* 編集モーダル */}
+        {isModalOpen && editEntry && (
+          <EditDiaryModal
+            isOpen={isModalOpen}
+            onClose={closeModal}
+            entry={editEntry}
+            date={editDate}
+            onSave={handleSaveComplete}
+          />
         )}
       </div>
     </>

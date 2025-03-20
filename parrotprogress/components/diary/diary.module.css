@@ -331,3 +331,128 @@
   flex-wrap: wrap;
   gap: 1rem;
 }
+
+/* 既存のdiary.module.cssに追加するスタイル */
+
+/* 編集ボタン */
+.editButton {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  background-color: #f1f5f9;
+  color: #64748b;
+  border: none;
+  cursor: pointer;
+}
+
+.editButton:hover {
+  background-color: #e2e8f0;
+}
+
+/* パロット表示関連 */
+.parrotBottomRight {
+  position: absolute;
+  bottom: -10px;
+  right: -8px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  z-index: 2;
+  padding: 6px;
+}
+
+.parrotContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.parrotGif {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.2s;
+  transform: scaleX(-1); /* GIFを左右反転 */
+}
+
+/* 日記エントリーの内容コンテナを相対位置に設定（パロット配置のため） */
+.entryContent {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* パロット表示修正用スタイル */
+
+/* 日記カードに相対位置を設定 */
+.entryCard {
+  position: relative;
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+/* パロット表示位置の調整 */
+.parrotBottomRight {
+  position: absolute;
+  bottom: -4px;  /* 位置調整 */
+  right: -4px;   /* 位置調整 */
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  z-index: 2;
+}
+
+.parrotContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.parrotGif {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 4px;
+  cursor: default; /* カーソルを通常のものに変更 */
+  transition: transform 0.2s;
+  transform: scaleX(-1); /* GIFを左右反転 */
+}
+
+/* diary.module.cssに追加 */
+
+/* コンテナの最大幅を調整 */
+.container {
+  max-width: 1200px; /* 幅を拡大 */
+  margin: 0 auto;
+  padding: 24px;
+  font-family: sans-serif;
+  position: relative;
+  min-height: 100vh;
+}
+
+/* グリッドレイアウト用のスタイル */
+.entriesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+.entryCard {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .entriesGrid {
+    grid-template-columns: 1fr;
+  }
+}
+

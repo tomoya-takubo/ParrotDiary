@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { X, Search, Plus, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
@@ -23,6 +23,18 @@ interface ParrotSelectorProps {
   compact?: boolean; // コンパクト表示モード
 }
 
+// キャッシュするパロットデータの型
+interface ParrotCache {
+  [userId: string]: {
+    timestamp: number;
+    parrots: ParrotType[];
+  }
+}
+
+// パロットデータをメモリにキャッシュ（セッション中のみ）
+const parrotCache: ParrotCache = {};
+const CACHE_DURATION = 5 * 60 * 1000; // 5分間キャッシュを保持
+
 export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
   userId,
   selectedParrots,
@@ -32,9 +44,12 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
 }) => {
   const [availableParrots, setAvailableParrots] = useState<ParrotType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [showParrotDropdown, setShowParrotDropdown] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [pageSize] = useState(50); // 一度に表示するパロットの数
+  const [currentPage, setCurrentPage] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // カテゴリーリスト（例）
@@ -46,80 +61,146 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
     { id: 'legendary', name: '伝説' }
   ];
 
-  // ユーザーが獲得済みのパロットを取得
-  useEffect(() => {
-    const fetchUserParrots = async () => {
-      if (!userId) return;
+  // パロットデータをキャッシュするか確認する関数
+  const getCachedParrots = (userId: string): ParrotType[] | null => {
+    const cachedData = parrotCache[userId];
+    if (cachedData && Date.now() - cachedData.timestamp < CACHE_DURATION) {
+      return cachedData.parrots;
+    }
+    return null;
+  };
+
+  // ユーザーが獲得済みのパロットを取得（メモ化して再レンダリングを防止）
+  const fetchUserParrots = useCallback(async () => {
+    if (!userId) return;
+    
+    setIsLoading(true);
+    setLoadError(null);
+    
+    try {
+      // キャッシュからデータを取得
+      const cachedParrots = getCachedParrots(userId);
+      if (cachedParrots) {
+        console.log('キャッシュからパロットデータを使用');
+        setAvailableParrots(cachedParrots);
+        setIsLoading(false);
+        return;
+      }
+
+      // キャッシュがない場合はAPIから取得
+      console.log('パロットデータをAPIから取得開始');
       
-      setIsLoading(true);
-      try {
-        // ユーザーが獲得済みのパロットを取得
-        const { data: userParrotData, error: userParrotError } = await supabase
-          .from('user_parrots')
-          .select('parrot_id, obtained_at')
-          .eq('user_id', userId);
+      // タイムアウト設定 (10秒)
+      const timeout = setTimeout(() => {
+        if (isLoading) {
+          setLoadError('データ取得がタイムアウトしました。再読み込みしてください。');
+          setIsLoading(false);
+        }
+      }, 10000);
+      
+      // ユーザーが獲得済みのパロットを取得
+      const { data: userParrotData, error: userParrotError } = await supabase
+        .from('user_parrots')
+        .select('parrot_id, obtained_at')
+        .eq('user_id', userId)
+        .limit(1000); // 取得数に制限を設定
 
-        if (userParrotError) throw userParrotError;
+      clearTimeout(timeout);
+      
+      if (userParrotError) throw userParrotError;
 
-        if (userParrotData && userParrotData.length > 0) {
-          // パロットIDの配列を作成
-          const parrotIds = userParrotData.map(record => String(record.parrot_id));
+      if (userParrotData && userParrotData.length > 0) {
+        // パロットIDの配列を作成
+        const parrotIds = userParrotData.map(record => String(record.parrot_id));
+        
+        console.log(`ユーザーのパロットID ${parrotIds.length}件を取得`);
+        
+        // パロット情報をバッチで取得 (100件ずつ)
+        let allParrotData: any[] = [];
+        
+        // IDを100件ずつのバッチに分割
+        for (let i = 0; i < parrotIds.length; i += 100) {
+          const batchIds = parrotIds.slice(i, i + 100);
           
-          // パロット情報を取得
-          const { data: parrotData, error: parrotError } = await supabase
+          const { data: parrotBatch, error: batchError } = await supabase
             .from('parrots')
             .select('parrot_id, name, image_url, description, category_id, rarity_id, display_order')
-            .in('parrot_id', parrotIds)
+            .in('parrot_id', batchIds)
             .order('display_order', { ascending: true });
-
-          if (parrotError) throw parrotError;
+            
+          if (batchError) throw batchError;
           
-          if (parrotData) {
-            setAvailableParrots(parrotData.map(parrot => ({
-              parrot_id: String(parrot.parrot_id),
-              name: parrot.name ? String(parrot.name) : undefined,
-              image_url: parrot.image_url ? String(parrot.image_url) : undefined,
-              description: parrot.description ? String(parrot.description) : undefined,
-              category_id: parrot.category_id ? String(parrot.category_id) : undefined,
-              rarity_id: parrot.rarity_id ? String(parrot.rarity_id) : undefined,
-              display_order: typeof parrot.display_order === 'number' ? parrot.display_order : undefined
-            })));
+          if (parrotBatch) {
+            allParrotData = [...allParrotData, ...parrotBatch];
           }
-        } else {
-          // ユーザーがまだパロットを持っていない場合はデフォルトパロットを設定
-          setAvailableParrots([
-            { 
-              parrot_id: 'default',
-              name: 'デフォルトパロット',
-              image_url: '/gif/parrots/60fpsparrot.gif',
-              description: 'デフォルトパロット',
-              category_id: 'common',
-              rarity_id: 'common',
-              display_order: 1
-            }
-          ]);
+          
+          console.log(`バッチ ${i/100 + 1}: ${parrotBatch?.length || 0}件のパロットデータを取得`);
         }
-      } catch (error) {
-        console.error('パロットデータの取得エラー:', error);
-        // エラー時もデフォルトパロットを表示
-        setAvailableParrots([
-          { 
-            parrot_id: 'default',
-            name: 'デフォルトパロット',
-            image_url: '/gif/parrots/60fpsparrot.gif',
-            description: 'デフォルトパロット',
-            category_id: 'common',
-            rarity_id: 'common',
-            display_order: 1
-          }
-        ]);
-      } finally {
-        setIsLoading(false);
+        
+        const formattedParrots = allParrotData.map(parrot => ({
+          parrot_id: String(parrot.parrot_id),
+          name: parrot.name ? String(parrot.name) : undefined,
+          image_url: parrot.image_url ? String(parrot.image_url) : undefined,
+          description: parrot.description ? String(parrot.description) : undefined,
+          category_id: parrot.category_id ? String(parrot.category_id) : undefined,
+          rarity_id: parrot.rarity_id ? String(parrot.rarity_id) : undefined,
+          display_order: typeof parrot.display_order === 'number' ? parrot.display_order : undefined
+        }));
+        
+        // キャッシュに保存
+        parrotCache[userId] = {
+          timestamp: Date.now(),
+          parrots: formattedParrots
+        };
+        
+        setAvailableParrots(formattedParrots);
+      } else {
+        // ユーザーがまだパロットを持っていない場合はデフォルトパロットを設定
+        const defaultParrot = [{ 
+          parrot_id: 'default',
+          name: 'デフォルトパロット',
+          image_url: '/gif/parrots/60fpsparrot.gif',
+          description: 'デフォルトパロット',
+          category_id: 'common',
+          rarity_id: 'common',
+          display_order: 1
+        }];
+        
+        // キャッシュに保存
+        parrotCache[userId] = {
+          timestamp: Date.now(),
+          parrots: defaultParrot
+        };
+        
+        setAvailableParrots(defaultParrot);
       }
-    };
+    } catch (error) {
+      console.error('パロットデータの取得エラー:', error);
+      setLoadError('パロットデータの取得中にエラーが発生しました');
+      
+      // エラー時もデフォルトパロットを表示
+      setAvailableParrots([
+        { 
+          parrot_id: 'default',
+          name: 'デフォルトパロット',
+          image_url: '/gif/parrots/60fpsparrot.gif',
+          description: 'デフォルトパロット',
+          category_id: 'common',
+          rarity_id: 'common',
+          display_order: 1
+        }
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [userId, isLoading]);
 
-    fetchUserParrots();
-  }, [userId]);
+  // ユーザーIDが変更されたときに再取得
+  useEffect(() => {
+    if (userId) {
+      fetchUserParrots();
+    }
+  }, [userId, fetchUserParrots]);
 
   // ドロップダウンの外側をクリックしたときに閉じる
   useEffect(() => {
@@ -176,8 +257,40 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
     return matchesSearch && matchesCategory;
   });
 
+  // ページング用のパロット (現在のページに表示するパロットのみ)
+  const pagedParrots = filteredParrots.slice(
+    currentPage * pageSize, 
+    (currentPage + 1) * pageSize
+  );
+
+  // 次のページがあるかどうか
+  const hasNextPage = filteredParrots.length > (currentPage + 1) * pageSize;
+  // 前のページがあるかどうか
+  const hasPrevPage = currentPage > 0;
+
+  // エラー表示
+  if (loadError) {
+    return (
+      <div className={styles.parrotSelectorLoading}>
+        <div>{loadError}</div>
+        <button 
+          onClick={() => {
+            setIsLoading(true);
+            setLoadError(null);
+            fetchUserParrots();
+          }}
+          className={styles.parrotTypeButton}
+          style={{ marginTop: '10px' }}
+        >
+          再読み込み
+        </button>
+      </div>
+    );
+  }
+
+  // ローディング表示
   if (isLoading) {
-    return <div className={styles.parrotSelectorLoading}>Loading...</div>;
+    return <div className={styles.parrotSelectorLoading}>パロットを読み込み中...</div>;
   }
 
   // コンパクトモード用のCSSクラス
@@ -208,7 +321,7 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
           </div>
         ))}
 
-        {/* 追加ボタン - 5つ未満の場合のみ表示 */}
+        {/* 追加ボタン - 最大数未満の場合のみ表示 */}
         {selectedParrots.length < maxParrots && (
           <div 
             className={styles.addParrotButton}
@@ -222,12 +335,12 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
 
       {/* パロット選択ドロップダウン - 追加ボタンをクリックすると表示/非表示が切り替わる */}
       {showParrotDropdown && (
-        <div ref={dropdownRef} className={styles.parrotDropdown}>
-          <div className={styles.dropdownHeader}>
-            <div className={styles.dropdownTitle}>
+        <div ref={dropdownRef} className={styles.parrotSelectorModal}>
+          <div className={styles.parrotSelectorHeader}>
+            <div className={styles.parrotSelectorTitle}>
               パロットを選択 ({selectedParrots.length}/{maxParrots})
               <button 
-                className={styles.closeDropdownButton}
+                className={styles.toggleSelectorButton}
                 onClick={() => setShowParrotDropdown(false)}
                 aria-label="パロット選択を閉じる"
               >
@@ -241,7 +354,10 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
               <input
                 type="text"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(0); // 検索時にページをリセット
+                }}
                 placeholder="パロットを検索..."
                 className={styles.searchInput}
               />
@@ -255,9 +371,12 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
                   className={`${styles.parrotTypeButton} ${
                     selectedCategory === category.id ? styles.parrotTypeButtonActive : ''
                   }`}
-                  onClick={() => setSelectedCategory(
-                    selectedCategory === category.id ? null : category.id
-                  )}
+                  onClick={() => {
+                    setSelectedCategory(
+                      selectedCategory === category.id ? null : category.id
+                    );
+                    setCurrentPage(0); // カテゴリー変更時にページをリセット
+                  }}
                 >
                   {category.name}
                 </button>
@@ -267,8 +386,8 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
 
           {/* パロットグリッド */}
           <div className={styles.parrotGrid}>
-            {filteredParrots.length > 0 ? (
-              filteredParrots.map((parrot) => (
+            {pagedParrots.length > 0 ? (
+              pagedParrots.map((parrot) => (
                 <div
                   key={parrot.parrot_id}
                   className={`${styles.parrotGridItem} ${
@@ -300,6 +419,36 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
                   '検索条件に一致するパロットがありません' : 
                   'パロットがありません'
                 }
+              </div>
+            )}
+            
+            {/* ページングコントロール - 必要な場合のみ表示 */}
+            {(hasPrevPage || hasNextPage) && (
+              <div style={{ 
+                gridColumn: "1 / -1", 
+                display: "flex", 
+                justifyContent: "space-between",
+                padding: "8px 0" 
+              }}>
+                <button 
+                  onClick={() => setCurrentPage(currentPage - 1)} 
+                  disabled={!hasPrevPage}
+                  className={styles.parrotTypeButton}
+                  style={{ opacity: hasPrevPage ? 1 : 0.5 }}
+                >
+                  前のページ
+                </button>
+                <span>
+                  {currentPage + 1} / {Math.ceil(filteredParrots.length / pageSize)}
+                </span>
+                <button 
+                  onClick={() => setCurrentPage(currentPage + 1)} 
+                  disabled={!hasNextPage}
+                  className={styles.parrotTypeButton}
+                  style={{ opacity: hasNextPage ? 1 : 0.5 }}
+                >
+                  次のページ
+                </button>
               </div>
             )}
           </div>
