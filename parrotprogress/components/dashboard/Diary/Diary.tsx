@@ -380,6 +380,8 @@ const Diary: React.FC = () => {
   // パロット関連のstate追加
   const [selectedParrots, setSelectedParrots] = useState<string[]>([]);
 
+  const [reloadTrigger, setReloadTrigger] = useState(0);
+
   // パロットのパス - 今は固定値ですが、将来的にはユーザーが選択できるようにする
   const defaultParrotPath = '/gif/parrots/60fpsparrot.gif';
 
@@ -509,7 +511,7 @@ const Diary: React.FC = () => {
     };
     
     handleAuth();
-  }, [authUser, authLoading]);
+  }, [authUser, authLoading, reloadTrigger]);
 
     // 編集モーダルを開く - パロット情報も読み込む
     const openEditModal = (entry: DiaryEntryType) => {
@@ -949,6 +951,30 @@ const Diary: React.FC = () => {
         line2, 
         line3, 
       );
+    }
+
+    try {
+      let success = false;
+      
+      if (modalState.mode === 'edit') {
+        // エラー2の修正: エラーをキャッチして確実にbooleanを返す
+        success = await updateDiaryEntry(modalState.entry!.entry_id, line1, line2, line3) || false;
+      } else {
+        // エラー2の修正: エラーをキャッチして確実にbooleanを返す
+        success = await createDiaryEntry(line1, line2, line3) || false;
+      }
+  
+      // 成功したら、状態を更新
+      if (success) {
+        setReloadTrigger(prev => prev + 1);
+        closeModal();
+      }
+      
+      return success;
+    } catch (error) {
+      console.error('日記保存エラー:', error);
+      setError('保存処理中にエラーが発生しました。');
+      return false;
     }
   };
 
