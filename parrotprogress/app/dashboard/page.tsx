@@ -316,7 +316,7 @@ export default function Dashboard() {
           <div className={styles.navButtons}>
             {/* ログアウトボタンを追加 */}
             <button 
-              className={`${styles.navButton} ${styles.logoutButton}`}
+              className={`${styles.navButton}`}
               onClick={handleLogout}
               disabled={isLoggingOut}
             >
@@ -324,10 +324,10 @@ export default function Dashboard() {
               <span>{isLoggingOut ? 'ログアウト中...' : 'ログアウト'}</span>
             </button>
             <div className={styles.divider}></div>
-            <button className={styles.navButton}>
+            {/* <button className={styles.navButton}>
               <Star size={20} />
               <span>統計</span>
-            </button>
+            </button> */}
             <button 
               className={`${styles.navButton} ${styles.primaryButton}`}
               onClick={() => router.push('/collection')}
@@ -447,7 +447,7 @@ export default function Dashboard() {
         />
 
         {/* 3行日記 */}
-        <Diary />
+        {/* <Diary /> */}
 
         {/* モーダルコンポーネント */}
         {/* ガチャアニメーションコンポーネント */}

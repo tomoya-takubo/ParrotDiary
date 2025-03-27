@@ -1,6 +1,7 @@
 import { Metadata } from "next"
 import { AuthProvider } from '@/lib/AuthContext';
 import "./globals.css"
+import RewardNotification from "@/components/dashboard/Diary/RewardNotification";
 
 export const metadata: Metadata = {
   title: "ぱろっとぷろぐれす",
@@ -15,7 +16,10 @@ export default function RootLayout({
   return (
     <AuthProvider>
       <html lang="ja">
-        <body>{children}</body>
+        <body>
+          {children}
+          <RewardNotification />
+        </body>
       </html>
     </AuthProvider>
   )
