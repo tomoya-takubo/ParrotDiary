@@ -447,7 +447,7 @@ export default function Dashboard() {
         />
 
         {/* 3行日記 */}
-        {/* <Diary /> */}
+        <Diary />
 
         {/* モーダルコンポーネント */}
         {/* ガチャアニメーションコンポーネント */}
