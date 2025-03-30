@@ -1,22 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { X, Edit3, Calendar, Clock, Hash, Plus } from 'lucide-react';
+import { X, Edit3, Hash, Plus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import styles from './EditDiaryModal.module.css'; // 専用のスタイルシートを使用
-import Image from 'next/image'; // Imageコンポーネントをインポート
 // パロット関連のimport
 import { ParrotSelector, saveEntryParrots, getEntryParrots } from '@/components/dashboard/Diary/ParrotSelector';
 import { showReward } from '@/components/dashboard/Diary/RewardNotification';
-
-// ActivityHistoryで使用する日記エントリー型
-type ModalDiaryEntry = {
-  time: string;
-  tags: string[];
-  activities: string[];
-  created_at?: string;
-  entry_id?: number; // エントリーIDを追加
-  parrots?: string[]; // パロット情報を追加
-};
 
 // タグの型定義
 type TagType = {
@@ -50,7 +39,6 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
   onClose,
   entry,
   date,
-  onSave
 }) => {
   const { user } = useAuth();
   
@@ -98,7 +86,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
   // 書いた行数に応じてXP報酬を計算する関数（関数定義部分に追加）
   const calculateXpReward = (linesCount: number): number => {
     // 基本XP
-    let baseXP = 50;
+    const baseXP = 50;
     
     // 行数に応じたボーナス
     switch (linesCount) {

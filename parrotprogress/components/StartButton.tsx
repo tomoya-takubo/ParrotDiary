@@ -17,7 +17,6 @@ export default function StartButton() {
       try {
         setIsLoading(true);
         // ユーザーセッションを取得
-        const { data } = await supabase.auth.getSession();
         setIsLoading(false);
       } catch (error) {
         console.error('認証状態確認エラー:', error);

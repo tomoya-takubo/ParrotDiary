@@ -707,10 +707,20 @@
 }
 
 /* 無効な状態のボタン */
-button:disabled {
+/* button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+} */
+
+.sortButton:disabled,
+.obtainedButton:disabled,
+.loginButton:disabled,
+.retryButton:disabled,
+.resetButton:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
+
 
 /* 未ログイン状態のパロットカード */
 .parrotCard.notLoggedIn {

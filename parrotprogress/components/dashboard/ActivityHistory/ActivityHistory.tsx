@@ -301,7 +301,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
     });
     
     // 現在の日付
-    let currentDate = new Date(startDate);
+    const currentDate = new Date(startDate);
     
     // columnCount週間分のデータを生成
     let colIndex = 0;
@@ -359,15 +359,6 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
     return `${year}年${month}月${day}日`;
   };
   
-  // アクティビティレベルに応じたクラス名を取得
-  const getLevelClassName = (level: ActivityLevel, isToday: boolean): string => {
-    if (isToday) {
-      return styles.cellToday;
-    }
-    
-    return styles[`level${level}`];
-  };
-
   // DBデータをモーダル表示用データに変換
   // convertToModalEntry 関数を更新して、parrots も含めるようにする
 
@@ -579,7 +570,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
       <EditDiaryModal
         isOpen={isEditModalOpen}
         onClose={handleCloseEditModal}
-        entry={editingEntry as any} // TypeScriptの型チェックをバイパス
+        entry={editingEntry}
         date={selectedDate ? formatDisplayDate(selectedDate) : null}
         onSave={handleEditComplete}
       />

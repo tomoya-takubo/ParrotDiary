@@ -1,11 +1,11 @@
 import { useAuth } from '@/lib/AuthContext'; // 認証コンテキストのインポート
-import React, { useState, useEffect } from 'react'; // React等インポート
-import { Edit2, Edit3, Search, Plus, Calendar, Clock, Hash, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase'; // Supabaseクライアントのインポート
-import styles from './Diary.module.css'; // スタイル
-import { useRouter } from 'next/navigation'; // Next.jsのルーターを使用
+import { Edit2, Edit3, Hash, Plus, Search, X } from 'lucide-react';
 import Image from 'next/image'; // Next.jsのImageコンポーネントをインポート
-import { ParrotSelector, saveEntryParrots, getEntryParrots } from './ParrotSelector'; // 追加
+import { useRouter } from 'next/navigation'; // Next.jsのルーターを使用
+import React, { useEffect, useState } from 'react'; // React等インポート
+import styles from './Diary.module.css'; // スタイル
+import { getEntryParrots, ParrotSelector, saveEntryParrots } from './ParrotSelector'; // 追加
 
 //#region 型定義
 // 3行日記エントリーの型定義
@@ -22,26 +22,11 @@ type DiaryEntryType = {
   parrots?: string[]; // パロットGIFのパス（将来的にはDBから取得）
 };
 
-// ユーザー情報の型定義
-type UserType = {
-  id: string;
-  email?: string;
-  user_metadata?: any;
-};
-
 // ダイアログの状態を管理する型
 type DiaryModalState = {
   isOpen: boolean;
   mode: 'edit' | 'add'; // 編集モードか追加モードか
   entry: DiaryEntryType | null;
-};
-
-// データベースから取得したポモドーロセッションタイプを一時的に保存する型
-type PomodoroSessionType = {
-  session_id: number;
-  pomodoro_type: string;
-  duration: number;
-  started_at: string;
 };
 
 // タグの型定義
@@ -93,7 +78,6 @@ const DiaryForm: React.FC<DiaryFormProps> = ({
   onAddTag,
   onRemoveTag,
   onSave,
-  onCancel
 }) => {
   const { user: authUser } = useAuth();
   const [line1, setLine1] = useState(entry.line1 || '');
@@ -368,7 +352,6 @@ const Diary: React.FC = () => {
   const { user: authUser, isLoading: authLoading } = useAuth();
   const [diaryEntries, setDiaryEntries] = useState<DiaryEntryType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [modalState, setModalState] = useState<DiaryModalState>({
     isOpen: false,
     mode: 'edit',
@@ -380,10 +363,7 @@ const Diary: React.FC = () => {
   // パロット関連のstate追加
   const [selectedParrots, setSelectedParrots] = useState<string[]>([]);
 
-  const [reloadTrigger, setReloadTrigger] = useState(0);
-
-  // パロットのパス - 今は固定値ですが、将来的にはユーザーが選択できるようにする
-  const defaultParrotPath = '/gif/parrots/60fpsparrot.gif';
+  const [reloadTrigger] = useState(0);
 
   // タグリストのデータ - allTags 定義を追加
   const allTags: TagType[] = [
@@ -408,7 +388,6 @@ const Diary: React.FC = () => {
         return;
       }
       
-      setError(null);
       console.log('認証状態:', authUser ? '認証済み' : '未認証', 'User ID:', authUser?.id);
       
       if (authUser?.id) {
@@ -426,18 +405,6 @@ const Diary: React.FC = () => {
           
           console.log('取得した日記エントリー:', diaryData?.length || 0);
           
-          // 各エントリーについてタグ情報を取得
-          const entriesWithTags = [];
-
-          // サンプルパロットパスを配列で用意（将来的にはDBから取得）
-          const sampleParrots = [
-            '/gif/parrots/60fpsparrot.gif',
-            '/gif/parrots/60fpsparrot.gif',
-            '/gif/parrots/60fpsparrot.gif',
-            '/gif/parrots/60fpsparrot.gif',
-            '/gif/parrots/60fpsparrot.gif',
-          ];
-
           // 各エントリーについてタグとパロット情報を取得
           const entriesWithTagsAndParrots = [];
 
@@ -496,9 +463,8 @@ const Diary: React.FC = () => {
           
           setDiaryEntries(entriesWithTagsAndParrots);
           
-        } catch (err: any) {
+        } catch (err: unknown) {
           console.error('データ取得エラー:', err);
-          setError('データ取得に失敗しました');
           setDiaryEntries([]);
         } finally {
           setIsLoading(false);
@@ -562,7 +528,6 @@ const Diary: React.FC = () => {
       if (entryError) throw entryError;
 
       if (entryData.user_id !== authUser?.id) {
-        setError('このエントリーを編集する権限がありません。');
         return false;
       }
 
@@ -593,7 +558,7 @@ const Diary: React.FC = () => {
       // 画面の日記データを更新
       if (data && data.length > 0) {
         const updatedEntry = {
-          ...(data[0] as any),
+          ...data[0],
           tags: selectedTags,
           parrots: selectedParrots,
         } as DiaryEntryType;
@@ -692,13 +657,12 @@ const Diary: React.FC = () => {
       return false;
     } catch (err) {
       console.error('日記の更新エラー:', err);
-      setError('日記の更新に失敗しました。');
       return false;
     }
   };
 
   // 新規エントリー作成関数
-  const createDiaryEntry = async (line1: string, line2: string, line3: string, typeId: number = 1) => {
+  const createDiaryEntry = async (line1: string, line2: string, line3: string) => {
     if (!authUser) {
       console.log('ユーザーが認証されていません');
       return false;
@@ -815,7 +779,7 @@ const Diary: React.FC = () => {
         
         // 画面の日記データを更新
         const newEntryWithTagsAndParrots = {
-          ...(data[0] as any),
+          ...data[0],
           tags: selectedTags,
           parrots: selectedParrots
         } as DiaryEntryType;
@@ -825,61 +789,9 @@ const Diary: React.FC = () => {
       }
     } catch (err) {
       console.error('日記の作成エラー:', err);
-      setError('日記の作成に失敗しました');
       return false;
     }
   };
-
-  /**
-   * 日記エントリーを削除する関数
-   */
-  const deleteDiaryEntry = async (entryId: number) => {
-    try {
-      const { data: entryData, error: entryError } = await supabase
-        .from('diary_entries')
-        .select('user_id')
-        .eq('entry_id', entryId)
-        .single();
-
-      if (entryError) throw entryError;
-
-      if (entryData.user_id !== authUser?.id) {
-        setError('このエントリーを削除する権限がありません。');
-        return false;
-      }
-
-      const { error } = await supabase
-        .from('diary_entries')
-        .delete()
-        .eq('entry_id', entryId);
-
-      if (error) throw error;
-
-      setDiaryEntries(prev => prev.filter(entry => entry.entry_id !== entryId));
-      return true;
-    } catch (err) {
-      console.error('日記の削除エラー:', err);
-      setError('日記の削除に失敗しました');
-      return false;
-    }
-  };
-
-  /**
-   * 編集モーダルを開く
-   */
-  // const openEditModal = (entry: DiaryEntryType) => {
-  //   setModalState({
-  //     isOpen: true,
-  //     mode: 'edit',
-  //     entry
-  //   });
-    
-  //   if (entry.tags) {
-  //     setSelectedTags(entry.tags);
-  //   } else {
-  //     setSelectedTags([]);
-  //   }
-  // };
 
   /**
    * 新規作成モーダルを開く
@@ -934,12 +846,10 @@ const Diary: React.FC = () => {
     if (!modalState.entry) return false;
 
     if ((!line1 && (line2 || line3)) || (!line2 && line3)) {
-      setError('入力順序に誤りがあります。前の行が空の場合、後の行にも入力できません。');
       return false;
     }
 
     if (!line1 && !line2 && !line3) {
-      setError('少なくとも1行は入力してください。');
       return false;
     }
 
@@ -953,29 +863,6 @@ const Diary: React.FC = () => {
       );
     }
 
-    try {
-      let success = false;
-      
-      if (modalState.mode === 'edit') {
-        // エラー2の修正: エラーをキャッチして確実にbooleanを返す
-        success = await updateDiaryEntry(modalState.entry!.entry_id, line1, line2, line3) || false;
-      } else {
-        // エラー2の修正: エラーをキャッチして確実にbooleanを返す
-        success = await createDiaryEntry(line1, line2, line3) || false;
-      }
-  
-      // 成功したら、状態を更新
-      if (success) {
-        setReloadTrigger(prev => prev + 1);
-        closeModal();
-      }
-      
-      return success;
-    } catch (error) {
-      console.error('日記保存エラー:', error);
-      setError('保存処理中にエラーが発生しました。');
-      return false;
-    }
   };
 
   /**
@@ -1002,13 +889,6 @@ const Diary: React.FC = () => {
   const getFilteredEntries = () => {
     // タブによるフィルタリングを削除し、単純に最新の3件を返す
     return diaryEntries.slice(0, 3);
-  };
-
-  /**
-   * 日記タイプの表示名を取得する
-   */
-  const getDiaryTypeName = (typeId: number) => {
-    return '通常';
   };
 
   // ローディング中のレンダリング

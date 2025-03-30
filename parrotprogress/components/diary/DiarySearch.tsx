@@ -1,6 +1,6 @@
 // src/components/diary/DiarySearch.tsx
 import React, { useState, useEffect } from 'react';
-import { Search, FilterIcon, Calendar, ArrowLeft, Edit } from 'lucide-react';
+import { Search, FilterIcon, Calendar } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import diaryService, { DiaryEntry, TagWithCount } from '@/services/diaryService';
 import styles from './diary.module.css';

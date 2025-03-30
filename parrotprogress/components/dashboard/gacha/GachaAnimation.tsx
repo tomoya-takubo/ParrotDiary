@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, Sparkles } from 'lucide-react';
+import { Star } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import Image from 'next/image';
 import { useAuth } from '@/lib/AuthContext'; // 認証コンテキストをインポート
@@ -32,16 +32,6 @@ interface Parrot {
 }
 
 /**
- * レアリティの型定義
- * rarity テーブルの構造に合わせています
- */
-interface Rarity {
-  rarity_id: number;
-  name: string;
-  abbreviation: string;
-}
-
-/**
  * レアリティ表示設定の型定義
  * UIの見た目の設定を管理します
  */
@@ -52,14 +42,6 @@ interface RarityConfig {
   particleColors: readonly string[];
   stars: number;
   particleCount: number;
-}
-
-/**
- * チケット情報の型定義
- */
-interface TicketInfo {
-  ticket_count: number;
-  last_updated: string;
 }
 
 /**
@@ -146,13 +128,12 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
   onClose,
 }) => {
   // 認証コンテキストからユーザー情報を取得
-  const { user, session, isLoading: authLoading } = useAuth();
+  const { user } = useAuth();
 
   //#region 状態管理
   const [showResult, setShowResult] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const [currentRarity, setCurrentRarity] = useState<RarityType | null>(null);
-  const [isMounted, setIsMounted] = useState(false);
   const [selectedParrot, setSelectedParrot] = useState<Parrot | null>(null);
   const [gifUrl, setGifUrl] = useState<string | null>(null);
   const [tickets, setTickets] = useState<number>(0);
@@ -160,11 +141,6 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
   //#endregion
 
   //#region ライフサイクル管理
-  // コンポーネントマウント時の処理
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
   // isOpenが変更された時の処理
   useEffect(() => {
     if (isOpen) {

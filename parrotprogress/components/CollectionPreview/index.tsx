@@ -40,6 +40,30 @@ type Category = {
   name: string;
 }
 
+type UserParrot = {
+  user_id: string;
+  parrot_id: string;
+  obtained_at: string;
+  obtain_count: number;
+};
+
+type RawParrot = {
+  parrot_id: string;
+  name: string;
+  rarity_id: string;
+  category_id: string;
+  description: string | null;
+  image_url: string;
+  display_order?: number;
+  rarity: {
+    rarity_id: string;
+    name: string;
+    abbreviation: string;
+    drop_rate: number;
+  };
+  user_parrots: UserParrot[];
+};
+
 export default function CollectionPreview() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +79,7 @@ export default function CollectionPreview() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null); // 認証状態を追跡
   
   // AuthContextからユーザー情報を取得
-  const { user, session, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
 
   // 現在のユーザーを取得
   const getCurrentUser = async () => {
@@ -154,43 +178,39 @@ export default function CollectionPreview() {
       
       if (parrotData && Array.isArray(parrotData)) {
         // 型安全な方法でデータを処理
-        const processedParrots: Parrot[] = parrotData.map((item: any, index: number) => {
-          // 各フィールドが存在するか確認し、適切な型に変換
+        const processedParrots: Parrot[] = ((parrotData as unknown) as RawParrot[]).map((item: RawParrot, index: number) => {
           const parrot: Parrot = {
-            parrot_id: String(item.parrot_id || ''),
-            name: String(item.name || ''),
-            rarity_id: String(item.rarity_id || ''),
-            category_id: String(item.category_id || ''),
-            description: item.description ? String(item.description) : null,
-            image_url: String(item.image_url || ''),
+            parrot_id: item.parrot_id,
+            name: item.name,
+            rarity_id: item.rarity_id,
+            category_id: item.category_id,
+            description: item.description ?? null,
+            image_url: item.image_url,
             display_order: typeof item.display_order === 'number' ? item.display_order : index + 1,
-            
-            // rarity情報の処理
             rarity: {
-              rarity_id: String(item.rarity?.rarity_id || ''),
-              name: String(item.rarity?.name || ''),
-              abbreviation: String(item.rarity?.abbreviation || ''),
-              drop_rate: Number(item.rarity?.drop_rate || 0)
+              rarity_id: item.rarity.rarity_id,
+              name: item.rarity.name,
+              abbreviation: item.rarity.abbreviation,
+              drop_rate: item.rarity.drop_rate,
             },
-            
-            // user_parrots情報の処理
-            user_parrots: Array.isArray(item.user_parrots) 
-              ? item.user_parrots.map((up: any) => ({
-                  user_id: String(up.user_id || ''),
-                  parrot_id: String(up.parrot_id || ''),
-                  obtained_at: String(up.obtained_at || ''),
-                  obtain_count: Number(up.obtain_count || 0)
+            user_parrots: Array.isArray(item.user_parrots)
+              ? item.user_parrots.map((up) => ({
+                  user_id: up.user_id,
+                  parrot_id: up.parrot_id,
+                  obtained_at: up.obtained_at,
+                  obtain_count: up.obtain_count,
                 }))
               : [],
-            
-            // 獲得状態を設定
-            obtained: userId && Array.isArray(item.user_parrots) && 
-                      item.user_parrots.some((up: any) => String(up.user_id) === userId)
+            obtained: !!(
+              userId &&
+              Array.isArray(item.user_parrots) &&
+              item.user_parrots.some((up) => up.user_id === userId)
+            ),
           };
-          
+        
           return parrot;
         });
-        
+                
         // 表示順でソート
         const sortedParrots = [...processedParrots].sort((a, b) => {
           const displayOrderA = typeof a.display_order === 'number' ? a.display_order : 0;

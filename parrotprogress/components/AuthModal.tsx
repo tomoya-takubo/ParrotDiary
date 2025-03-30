@@ -8,7 +8,6 @@ import { validateEmailFormat, validatePasswordStrength } from '../lib/validation
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
 import { Database } from '../types/supabase';
-import { signUpWithEmail, signInWithEmail, sendPasswordResetEmail } from '../lib/authentication';
 //#endregion
 
 type AuthModalProps = {
@@ -33,7 +32,6 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [emailError, setEmailError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-  const [authError, setAuthError] = useState<string>('');
   const [formFeedback, setFormFeedback] = useState<{
     type: 'success' | 'error';
     message: string;
@@ -87,7 +85,6 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     
     // 送信処理の開始
     setIsLoading(true);
-    setAuthError('');
 
       // 現在時刻を日本時間（JST）で取得
     const getCurrentJSTTime = () => {
@@ -316,7 +313,6 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         type: 'error',
         message: translatedError
       });
-      setAuthError(translatedError);
       //#endregion
     } finally {
       // 処理完了時に必ずローディング状態を解除
@@ -358,7 +354,6 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setConfirmPassword('');
     setPasswordError('');
     setEmailError('');
-    setAuthError('');
     setFormFeedback(null);
   }
   //#endregion
@@ -370,7 +365,6 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setConfirmPassword('');
     setPasswordError('');
     setEmailError('');
-    setAuthError('');
     setFormFeedback(null);
     setModalMode('signin');
   };
@@ -422,32 +416,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   };
   //#endregion
 
-  // パスワード一致のチェック関数を追加
-const validatePasswordMatch = () => {
-  if (password !== confirmPassword) {
-    setPasswordError('パスワードと確認用パスワードが一致しません');
-    return false;
-  }
-  return true;
-};
-
-// 入力フィールド変更時のハンドラ（確認用パスワード用）
-const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const value = e.target.value;
-  setConfirmPassword(value);
-  
-  // 確認用パスワードが入力されたら、パスワードとの一致をチェック
-  if (value && password !== value) {
-    setPasswordError('パスワードと確認用パスワードが一致しません');
-  } else if (password && value) {
-    // パスワードが一致した場合はエラーをクリア
-    setPasswordError('');
-  }
-};
-
   const emailInputRef = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
-  const confirmCloseRef = useRef(confirmClose);
 
   // 既存のuseEffect関連部分はそのまま維持
   //#region useEffectでisOpenの変更を監視

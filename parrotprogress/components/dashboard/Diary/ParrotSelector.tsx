@@ -1,12 +1,22 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
-import { X, Search, Plus, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, Search, Plus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './ParrotSelector.module.css';
 
 // パロットの型定義
 type ParrotType = {
   parrot_id: string;
+  name?: string;
+  image_url?: string;
+  description?: string;
+  category_id?: string;
+  rarity_id?: string;
+  display_order?: number;
+};
+
+type RawParrot = {
+  parrot_id: string | number;
   name?: string;
   image_url?: string;
   description?: string;
@@ -116,7 +126,7 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
         console.log(`ユーザーのパロットID ${parrotIds.length}件を取得`);
         
         // パロット情報をバッチで取得 (100件ずつ)
-        let allParrotData: any[] = [];
+        let allParrotData: RawParrot[] = [];
         
         // IDを100件ずつのバッチに分割
         for (let i = 0; i < parrotIds.length; i += 100) {
@@ -131,7 +141,7 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
           if (batchError) throw batchError;
           
           if (parrotBatch) {
-            allParrotData = [...allParrotData, ...parrotBatch];
+            allParrotData = [...allParrotData, ...(parrotBatch as unknown as RawParrot[])];
           }
           
           console.log(`バッチ ${i/100 + 1}: ${parrotBatch?.length || 0}件のパロットデータを取得`);

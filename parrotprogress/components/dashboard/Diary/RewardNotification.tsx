@@ -13,7 +13,7 @@ interface RewardData {
 }
 
 // グローバルな変数として通知キューを管理（型付き）
-let notificationQueue: RewardData[] = [];
+const notificationQueue: RewardData[] = [];
 let showNotificationCallback: ((reward: RewardData) => void) | null = null;
 
 // 通知を表示するためのグローバル関数

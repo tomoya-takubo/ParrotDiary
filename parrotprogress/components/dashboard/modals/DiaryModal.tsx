@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { X, Calendar, Clock, Edit2 } from 'lucide-react';
 import styles from './DiaryModal.module.css';
-import Image from 'next/image';
 import { getEntryParrots } from '@/components/dashboard/Diary/ParrotSelector';
 
 // ActivityHistoryで使用する日記エントリー型
@@ -29,7 +28,6 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
   onClose, 
   date, 
   entries, 
-  onDataUpdated,
   isToday,
   onEditEntry
 }) => {
@@ -45,7 +43,7 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
       
       try {
         const updatedEntries = await Promise.all(
-          entries.map(async (entry, index) => {
+          entries.map(async (entry) => {
             // entry_idがある場合のみパロット情報を取得
             if (entry.entry_id) {
               try {

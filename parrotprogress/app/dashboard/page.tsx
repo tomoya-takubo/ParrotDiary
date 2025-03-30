@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Timer, Star, Gift, Book, Award, Users, HelpCircle, Zap, Link, LogOut } from 'lucide-react';
+import { Star, Gift, Book, Award, LogOut } from 'lucide-react';
 import styles from './page.module.css';
 import { useRouter } from 'next/navigation';
 import { signOut } from '@/lib/authentication';
@@ -9,10 +9,9 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
 // コンポーネントのインポート
 import GachaAnimation from '@/components/dashboard/gacha/GachaAnimation';
-import DiaryModal from '@/components/dashboard/modals/DiaryModal';
 import ActivityHistory from '@/components/dashboard/ActivityHistory/ActivityHistory';
 import Diary from '@/components/dashboard/Diary/Diary';
-import type { DiaryEntry, UserStatus } from '@/types';
+import type { UserStatus } from '@/types';
 
 //#region Dashboard コンポーネント - メインダッシュボード
 export default function Dashboard() {
@@ -22,9 +21,6 @@ export default function Dashboard() {
   //#region State
   // モーダル表示用のstate
   const [showGachaModal, setShowGachaModal] = useState(false);
-  const [showDiaryModal, setShowDiaryModal] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [selectedDiaryEntries, setSelectedDiaryEntries] = useState<DiaryEntry[]>([]);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   
   // チケット情報を格納するstate
@@ -65,7 +61,7 @@ export default function Dashboard() {
     nextLevelXP: number 
   } => {
     // データベースのレベルをベースに計算
-    let level = currentLevel;
+    const level = currentLevel;
     
     // 累積XPの計算（現在のレベルまでに必要だったXP）
     let accumulatedXp = 0;
@@ -91,15 +87,6 @@ export default function Dashboard() {
       nextLevelXP: nextLevelRequiredXp
     };
   };
-  
-  // タイマーオプション
-  const timerOptions = [
-    { time: 5, label: 'クイック', gradient: 'linear-gradient(135deg, #60a5fa, #3b82f6)' },
-    { time: 15, label: 'ショート', gradient: 'linear-gradient(135deg, #818cf8, #6366f1)' },
-    { time: 25, label: '標準', gradient: 'linear-gradient(135deg, #a78bfa, #8b5cf6)' },
-    { time: 45, label: 'ディープ', gradient: 'linear-gradient(135deg, #c084fc, #9333ea)' },
-    { time: 60, label: 'フル', gradient: 'linear-gradient(135deg, #e879f9, #d946ef)' }
-  ];
   //#endregion
 
   // ページ読み込み時にユーザー情報とチケット情報を取得
@@ -186,27 +173,7 @@ export default function Dashboard() {
     }
     
     console.log(`セルがクリックされました: ${date}`);
-    
-    // 実際のアプリケーションではここでsupabaseからデータを取得
-    // 例: const { data, error } = await supabase.from('diary_entries').select('*').eq('date', date);
-    
-    // 今回はモックデータを使用
-    const mockEntries: DiaryEntry[] = [
-      {
-        time: '14:45',
-        tags: ['標準', '25分'],
-        activities: ['英語の勉強を開始', '新しい単語を習得', '明日も頑張ろう']
-      },
-      {
-        time: '12:30',
-        tags: ['読書', '英語'],
-        activities: ['新しい本を買った', '読書を始めた', '面白そう']
-      }
-    ];
-    
-    setSelectedDate(date);
-    setSelectedDiaryEntries(mockEntries);
-    setShowDiaryModal(true);
+            
   };
 
   // ログアウト処理を行うハンドラ

@@ -23,7 +23,7 @@ export const fetchParrotData = async (userId?: string) => {
       .eq('user_id', userId);
 
     if (userParrotError) throw userParrotError;
-    userParrots = userParrotData || [];
+    userParrots = (userParrotData as unknown as UserParrot[]) || [];
   }
 
   return { parrots, userParrots };

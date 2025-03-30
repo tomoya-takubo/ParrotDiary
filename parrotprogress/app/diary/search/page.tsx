@@ -1,11 +1,12 @@
 "use client"
 
 // src/app/diary/search/page.tsx
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import DiarySearch from '@/components/diary/DiarySearch';
 import { useAuth } from '@/lib/AuthContext';
 import styles from './styles.module.css'; // スタイルをインポート
+import Image from 'next/image';
 
 /**
  * 日記検索ページ
@@ -34,14 +35,12 @@ export default function DiarySearchPage() {
         <div className={styles.loadingSpinnerWrapper}>
           <div className={styles.loadingSpinner}></div>
           <div className={styles.loadingIconContainer}>
-            <img 
-              src="/parrot-icon.png" 
-              alt="Parrot Icon" 
+            <Image
+              src="/parrot-icon.png"
+              alt="Parrot Icon"
+              width={64}
+              height={64}
               className={styles.loadingIcon}
-              onError={(e) => {
-                // 画像が404の場合は何も表示しない
-                e.currentTarget.style.display = 'none';
-              }}
             />
           </div>
         </div>
