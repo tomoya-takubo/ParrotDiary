@@ -28,3 +28,5 @@ export const fetchParrotData = async (userId?: string) => {
 
   return { parrots, userParrots };
 };
+
+// テストコメント
