@@ -456,3 +456,101 @@
   }
 }
 
+/* src/components/diary/diary.module.css - ページネーション用スタイルを追加 */
+
+/* ページネーション関連のスタイル */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 16px 0;
+  gap: 8px;
+}
+
+.paginationButton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background-color: #f7fafc;
+  border: 1px solid #e2e8f0;
+  color: #4a5568;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.paginationButton:hover {
+  background-color: #edf2f7;
+}
+
+.paginationButtonActive {
+  background-color: #3182ce;
+  color: white;
+  border-color: #3182ce;
+}
+
+.paginationButtonActive:hover {
+  background-color: #2c5282;
+}
+
+.paginationArrow {
+  padding: 0;
+  width: 36px;
+}
+
+.paginationArrow:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.paginationEllipsis {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 36px;
+  height: 36px;
+  color: #4a5568;
+}
+
+/* 検索結果とページサイズセレクタのレイアウト */
+.resultControlRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.pageSizeSelector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #4a5568;
+  font-size: 14px;
+}
+
+.pageSizeSelect {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background-color: white;
+  font-size: 14px;
+  color: #4a5568;
+  cursor: pointer;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 640px) {
+  .resultControlRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .pagination {
+    flex-wrap: wrap;
+  }
+}

@@ -1,16 +1,16 @@
 // src/components/diary/DiarySearch.tsx
 import React, { useState, useEffect } from 'react';
-import { Search, FilterIcon, Calendar } from 'lucide-react';
+import { Search, FilterIcon, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import diaryService, { DiaryEntry, TagWithCount } from '@/services/diaryService';
 import styles from './diary.module.css';
-import Image from 'next/image'; // Imageコンポーネントをインポート
-import EditDiaryModal from '@/components/dashboard/modals/EditDiaryModal'; // 編集モーダルをインポート
-import { getEntryParrots } from '@/components/dashboard/Diary/ParrotSelector'; // パロット取得関数をインポート
+import Image from 'next/image';
+import EditDiaryModal from '@/components/dashboard/modals/EditDiaryModal';
+import { getEntryParrots } from '@/components/dashboard/Diary/ParrotSelector';
 
 // 拡張したDiaryEntryタイプを定義
 interface ExtendedDiaryEntry extends DiaryEntry {
-  parrots?: string[]; // オプショナルとしてパロット配列を追加
+  parrots?: string[];
 }
 
 // 編集用のエントリータイプ定義
@@ -29,7 +29,7 @@ type EditDiaryEntryType = {
  */
 const DiarySearch = () => {
   // #region 状態管理
-  const { user } = useAuth(); // 認証情報を取得
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
@@ -43,6 +43,11 @@ const DiarySearch = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editEntry, setEditEntry] = useState<EditDiaryEntryType | null>(null);
   const [editDate, setEditDate] = useState<string | null>(null);
+  
+  // ページネーション用の状態
+  const [currentPage, setCurrentPage] = useState(1);
+  const [entriesPerPage, setEntriesPerPage] = useState(10);
+  const [pageSizeOptions] = useState([5, 10, 20, 50]);
   // #endregion
 
   // #region データ取得
@@ -111,12 +116,48 @@ const DiarySearch = () => {
     } else {
       setSelectedTags([...selectedTags, tag]);
     }
+    // フィルター変更時は1ページ目に戻す
+    setCurrentPage(1);
   };
 
   const handleClearFilters = () => {
     setSearchTerm('');
     setSelectedTags([]);
     setDateRange({ start: '', end: '' });
+    // フィルタークリア時は1ページ目に戻す
+    setCurrentPage(1);
+  };
+
+  // 検索キーワード変更時
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    // 検索条件変更時は1ページ目に戻す
+    setCurrentPage(1);
+  };
+
+  // 日付範囲変更時
+  const handleDateRangeChange = (type: 'start' | 'end', value: string) => {
+    setDateRange(prev => ({ ...prev, [type]: value }));
+    // 日付条件変更時は1ページ目に戻す
+    setCurrentPage(1);
+  };
+
+  // ページサイズ変更ハンドラ
+  const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newSize = parseInt(e.target.value);
+    setEntriesPerPage(newSize);
+    // ページサイズ変更時は1ページ目に戻す
+    setCurrentPage(1);
+  };
+
+  // ページ変更ハンドラ
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // ページトップにスクロール
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   };
 
   // 編集モーダルを開く
@@ -238,6 +279,81 @@ const DiarySearch = () => {
     return matchesSearch && matchesTags && afterStart && beforeEnd;
   });
 
+  // ページネーションのためのデータ計算
+  const indexOfLastEntry = currentPage * entriesPerPage;
+  const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
+  const currentEntries = filteredEntries.slice(indexOfFirstEntry, indexOfLastEntry);
+  const totalPages = Math.ceil(filteredEntries.length / entriesPerPage);
+
+  // ページボタンの生成
+  const renderPageNumbers = () => {
+    const pageNumbers = [];
+    const maxPagesToShow = 5; // 表示するページボタンの最大数
+    
+    let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+    let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+    
+    // 表示ページ数を調整
+    if (endPage - startPage + 1 < maxPagesToShow) {
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+    
+    // 最初のページへのリンク
+    if (startPage > 1) {
+      pageNumbers.push(
+        <button
+          key="first"
+          onClick={() => handlePageChange(1)}
+          className={styles.paginationButton}
+        >
+          1
+        </button>
+      );
+      
+      if (startPage > 2) {
+        pageNumbers.push(
+          <span key="ellipsis1" className={styles.paginationEllipsis}>...</span>
+        );
+      }
+    }
+    
+    // ページ番号ボタン
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(
+        <button
+          key={i}
+          onClick={() => handlePageChange(i)}
+          className={`${styles.paginationButton} ${
+            currentPage === i ? styles.paginationButtonActive : ''
+          }`}
+        >
+          {i}
+        </button>
+      );
+    }
+    
+    // 最後のページへのリンク
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        pageNumbers.push(
+          <span key="ellipsis2" className={styles.paginationEllipsis}>...</span>
+        );
+      }
+      
+      pageNumbers.push(
+        <button
+          key="last"
+          onClick={() => handlePageChange(totalPages)}
+          className={styles.paginationButton}
+        >
+          {totalPages}
+        </button>
+      );
+    }
+    
+    return pageNumbers;
+  };
+
   // 表示するタグ
   const displayTags = showAllTags ? allTags : allTags.slice(0, 10);
 
@@ -273,7 +389,7 @@ const DiarySearch = () => {
             type="text"
             placeholder="キーワードで検索..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={handleSearchChange}
             className={styles.searchInput}
           />
           <Search className={styles.searchIcon} size={20} />
@@ -307,14 +423,14 @@ const DiarySearch = () => {
                 <input
                   type="date"
                   value={dateRange.start}
-                  onChange={(e) => setDateRange((prev) => ({ ...prev, start: e.target.value }))}
+                  onChange={(e) => handleDateRangeChange('start', e.target.value)}
                   className={styles.dateInput}
                 />
                 <span className={styles.dateSeparator}>～</span>
                 <input
                   type="date"
                   value={dateRange.end}
-                  onChange={(e) => setDateRange((prev) => ({ ...prev, end: e.target.value }))}
+                  onChange={(e) => handleDateRangeChange('end', e.target.value)}
                   className={styles.dateInput}
                 />
               </div>
@@ -363,10 +479,53 @@ const DiarySearch = () => {
           </div>
         )}
 
-        {/* 検索結果カウント */}
-        <div className={styles.resultCount}>
-          {filteredEntries.length}件の記録が見つかりました
+        {/* 検索結果カウントとページサイズ設定 */}
+        <div className={styles.resultControlRow}>
+          <div className={styles.resultCount}>
+            {filteredEntries.length}件の記録が見つかりました
+          </div>
+          
+          <div className={styles.pageSizeSelector}>
+            <span>表示件数: </span>
+            <select
+              value={entriesPerPage}
+              onChange={handlePageSizeChange}
+              className={styles.pageSizeSelect}
+            >
+              {pageSizeOptions.map(size => (
+                <option key={size} value={size}>
+                  {size}件
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
+
+        {/* 上部ページネーション */}
+        {filteredEntries.length > 0 && (
+          <div className={styles.pagination}>
+            {/* 前のページボタン */}
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className={`${styles.paginationButton} ${styles.paginationArrow}`}
+            >
+              <ChevronLeft size={16} />
+            </button>
+            
+            {/* ページ番号 */}
+            {renderPageNumbers()}
+            
+            {/* 次のページボタン */}
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className={`${styles.paginationButton} ${styles.paginationArrow}`}
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        )}
 
         {/* エラー表示 */}
         {error && (
@@ -379,67 +538,95 @@ const DiarySearch = () => {
         {isLoading ? (
           <div className={styles.loading}>データを読み込み中...</div>
         ) : (
-          /* 日記エントリー */
-          <div className={styles.entriesContainer}>
-            {filteredEntries.length > 0 ? (
-              filteredEntries.map((entry) => (
-                <div key={entry.entry_id} className={styles.entryCard}>
-                  {/* 日時とタグ */}
-                  <div className={styles.entryHeader}>
-                    <span className={styles.entryDate}>
-                      {formatDateTime(entry.created_at)}
-                    </span>
-                    <div className={styles.entryTags}>
-                      {entry.tags.map((tag, tagIndex) => (
-                        <span 
-                          key={tagIndex} 
-                          className={styles.entryTag}
-                          onClick={() => handleTagToggle(tag)}
+          <>
+            {/* 日記エントリー */}
+            <div className={styles.entriesContainer}>
+              {currentEntries.length > 0 ? (
+                currentEntries.map((entry) => (
+                  <div key={entry.entry_id} className={styles.entryCard}>
+                    {/* 日時とタグ */}
+                    <div className={styles.entryHeader}>
+                      <span className={styles.entryDate}>
+                        {formatDateTime(entry.created_at)}
+                      </span>
+                      <div className={styles.entryTags}>
+                        {entry.tags.map((tag, tagIndex) => (
+                          <span 
+                            key={tagIndex} 
+                            className={styles.entryTag}
+                            onClick={() => handleTagToggle(tag)}
+                          >
+                            #{tag}
+                          </span>
+                        ))}
+                        {/* 編集ボタンを追加 */}
+                        <button 
+                          onClick={() => openEditModal(entry)}
+                          className={styles.editButton}
                         >
-                          #{tag}
-                        </span>
-                      ))}
-                      {/* 編集ボタンを追加 */}
-                      <button 
-                        onClick={() => openEditModal(entry)}
-                        className={styles.editButton}
-                      >
-                        編集
-                      </button>
+                          編集
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* 内容 */}
+                    <div className={styles.entryContent}>
+                      <p>{entry.line1}</p>
+                      {entry.line2 && <p>{entry.line2}</p>}
+                      {entry.line3 && <p>{entry.line3}</p>}
+                      
+                      {/* パロットGIFの表示 */}
+                      {entry.parrots && entry.parrots.length > 0 && (
+                        <div className={styles.parrotBottomRight}>
+                          {entry.parrots.map((parrot, index) => (
+                            <div key={index} className={styles.parrotContainer}>
+                              <Image 
+                                src={parrot}
+                                alt={`Parrot ${index + 1}`}
+                                width={40}
+                                height={40}
+                                className={styles.parrotGif}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
-
-                  {/* 内容 */}
-                  <div className={styles.entryContent}>
-                    <p>{entry.line1}</p>
-                    {entry.line2 && <p>{entry.line2}</p>}
-                    {entry.line3 && <p>{entry.line3}</p>}
-                    
-                    {/* パロットGIFの表示 - デバッグ情報を追加 */}
-                    {entry.parrots && entry.parrots.length > 0 && (
-                      <div className={styles.parrotBottomRight}>
-                        {entry.parrots.map((parrot, index) => (
-                          <div key={index} className={styles.parrotContainer}>
-                            <Image 
-                              src={parrot}
-                              alt={`Parrot ${index + 1}`}
-                              width={40}
-                              height={40}
-                              className={styles.parrotGif}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                ))
+              ) : (
+                <div className={styles.noResults}>
+                  検索条件に一致する日記が見つかりませんでした
                 </div>
-              ))
-            ) : (
-              <div className={styles.noResults}>
-                検索条件に一致する日記が見つかりませんでした
+              )}
+            </div>
+            
+            {/* ページネーション */}
+            {filteredEntries.length > 0 && (
+              <div className={styles.pagination}>
+                {/* 前のページボタン */}
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className={`${styles.paginationButton} ${styles.paginationArrow}`}
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                
+                {/* ページ番号 */}
+                {renderPageNumbers()}
+                
+                {/* 次のページボタン */}
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className={`${styles.paginationButton} ${styles.paginationArrow}`}
+                >
+                  <ChevronRight size={16} />
+                </button>
               </div>
             )}
-          </div>
+          </>
         )}
         
         {/* 編集モーダル */}
