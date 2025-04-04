@@ -46,7 +46,7 @@ const DiarySearch = () => {
   
   // ページネーション用の状態
   const [currentPage, setCurrentPage] = useState(1);
-  const [entriesPerPage, setEntriesPerPage] = useState(10);
+  const [entriesPerPage, setEntriesPerPage] = useState(5);
   const [pageSizeOptions] = useState([5, 10, 20, 50]);
   // #endregion
 
