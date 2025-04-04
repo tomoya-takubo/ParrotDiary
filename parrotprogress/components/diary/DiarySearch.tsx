@@ -396,7 +396,7 @@ const DiarySearch = () => {
                           className={styles.entryTag}
                           onClick={() => handleTagToggle(tag)}
                         >
-                          {tag}
+                          #{tag}
                         </span>
                       ))}
                       {/* 編集ボタンを追加 */}

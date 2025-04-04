@@ -479,35 +479,35 @@ const Diary: React.FC = () => {
     handleAuth();
   }, [authUser, authLoading, reloadTrigger]);
 
-    // 編集モーダルを開く - パロット情報も読み込む
-    const openEditModal = (entry: DiaryEntryType) => {
-      setModalState({
-        isOpen: true,
-        mode: 'edit',
-        entry
-      });
-      
-      if (entry.tags) {
-        setSelectedTags(entry.tags);
-      } else {
-        setSelectedTags([]);
-      }
-      
-      if (entry.parrots) {
-        setSelectedParrots(entry.parrots);
-      } else {
-        setSelectedParrots([]);
-      }
-    };
+  // 編集モーダルを開く - パロット情報も読み込む
+  const openEditModal = (entry: DiaryEntryType) => {
+    setModalState({
+      isOpen: true,
+      mode: 'edit',
+      entry
+    });
     
-    // モーダルを閉じる
-    const closeModal = () => {
-      setModalState(prev => ({ ...prev, isOpen: false }));
-      setCurrentTag('');
-      setShowTagSuggestions(false);
-      // パロット選択状態をリセット
+    if (entry.tags) {
+      setSelectedTags(entry.tags);
+    } else {
+      setSelectedTags([]);
+    }
+    
+    if (entry.parrots) {
+      setSelectedParrots(entry.parrots);
+    } else {
       setSelectedParrots([]);
-    };
+    }
+  };
+  
+  // モーダルを閉じる
+  const closeModal = () => {
+    setModalState(prev => ({ ...prev, isOpen: false }));
+    setCurrentTag('');
+    setShowTagSuggestions(false);
+    // パロット選択状態をリセット
+    setSelectedParrots([]);
+  };
   
   // エントリー更新時にパロット情報も保存
   const updateDiaryEntry = async (
