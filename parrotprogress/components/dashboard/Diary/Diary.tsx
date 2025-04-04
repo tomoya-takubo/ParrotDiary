@@ -106,7 +106,7 @@ const Diary: React.FC = () => {
                 // 確実に配列として扱う
                 parrots = Array.isArray(parrotUrls) ? parrotUrls : [];
                 
-                // console.log(`エントリー ${entry.entry_id} のパロット:`, parrots);
+                console.log(`エントリー ${entry.entry_id} のパロット:`, parrots);
                 
                 // まずタグの使用履歴からタグIDを取得
                 const { data: tagUsages, error: tagUsageError } = await supabase

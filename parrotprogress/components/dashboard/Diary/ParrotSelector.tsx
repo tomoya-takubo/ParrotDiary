@@ -91,14 +91,14 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
       // キャッシュからデータを取得
       const cachedParrots = getCachedParrots(userId);
       if (cachedParrots) {
-        // console.log('キャッシュからパロットデータを使用');
+        console.log('キャッシュからパロットデータを使用');
         setAvailableParrots(cachedParrots);
         setIsLoading(false);
         return;
       }
 
       // キャッシュがない場合はAPIから取得
-      // console.log('パロットデータをAPIから取得開始');
+      console.log('パロットデータをAPIから取得開始');
       
       // タイムアウト設定 (10秒)
       const timeout = setTimeout(() => {
@@ -123,7 +123,7 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
         // パロットIDの配列を作成
         const parrotIds = userParrotData.map(record => String(record.parrot_id));
         
-        // console.log(`ユーザーのパロットID ${parrotIds.length}件を取得`);
+        console.log(`ユーザーのパロットID ${parrotIds.length}件を取得`);
         
         // パロット情報をバッチで取得 (100件ずつ)
         let allParrotData: RawParrot[] = [];
@@ -144,7 +144,7 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
             allParrotData = [...allParrotData, ...(parrotBatch as unknown as RawParrot[])];
           }
           
-          // console.log(`バッチ ${i/100 + 1}: ${parrotBatch?.length || 0}件のパロットデータを取得`);
+          console.log(`バッチ ${i/100 + 1}: ${parrotBatch?.length || 0}件のパロットデータを取得`);
         }
         
         const formattedParrots = allParrotData.map(parrot => ({
@@ -474,7 +474,7 @@ export const saveEntryParrots = async (
   userId: string,
   parrotImageUrls: string[]
 ): Promise<boolean> => {
-  // console.log("saveEntryParrots関数開始:", { entryId, userId, parrotImageUrls });
+  console.log("saveEntryParrots関数開始:", { entryId, userId, parrotImageUrls });
   
   if (!entryId || !userId || !parrotImageUrls.length) {
     console.log("早期リターン条件:", { 
@@ -486,7 +486,7 @@ export const saveEntryParrots = async (
   }
   
   try {
-    // console.log(`パロット保存開始: entryId=${entryId}, parrots=${parrotImageUrls.length}件`);
+    console.log(`パロット保存開始: entryId=${entryId}, parrots=${parrotImageUrls.length}件`);
     
     // まず既存のパロット関連付けを削除
     const { error: deleteError } = await supabase
@@ -522,7 +522,7 @@ export const saveEntryParrots = async (
       throw parrotError;
     }
 
-    // console.log(`パロットデータ取得成功: ${allParrots?.length || 0}件`);
+    console.log(`パロットデータ取得成功: ${allParrots?.length || 0}件`);
     
     // パロットが見つからない場合のデフォルト値
     if (!allParrots || allParrots.length === 0) {
@@ -571,7 +571,7 @@ export const saveEntryParrots = async (
         user_id: userId
       }));
     
-    // console.log(`挿入するパロットデータ: ${parrotInserts.length}件`, parrotInserts);
+    console.log(`挿入するパロットデータ: ${parrotInserts.length}件`, parrotInserts);
     
     if (parrotInserts.length > 0) {
       const { data: insertData, error: insertError } = await supabase
@@ -584,7 +584,7 @@ export const saveEntryParrots = async (
         throw insertError;
       }
       
-      // console.log(`パロット挿入成功: ${insertData?.length || 0}件`);
+      console.log(`パロット挿入成功: ${insertData?.length || 0}件`);
     } else {
       console.warn('挿入するパロットデータがありません');
     }
@@ -601,7 +601,7 @@ export const getEntryParrots = async (entryId: string | number): Promise<string[
   if (!entryId) return [];
   
   try {
-    // console.log(`getEntryParrots: entryId=${entryId} の取得開始`);
+    console.log(`getEntryParrots: entryId=${entryId} の取得開始`);
     
     // エントリーに関連付けられたパロットIDを取得
     const { data: iconData, error: iconError } = await supabase
@@ -615,7 +615,7 @@ export const getEntryParrots = async (entryId: string | number): Promise<string[
       throw iconError;
     }
     
-    // console.log(`パロットアイコン取得成功: ${iconData?.length || 0}件`);
+    console.log(`パロットアイコン取得成功: ${iconData?.length || 0}件`);
     
     if (iconData && iconData.length > 0) {
       // パロットIDからパロット情報を取得
@@ -631,7 +631,7 @@ export const getEntryParrots = async (entryId: string | number): Promise<string[
         throw parrotError;
       }
       
-      // console.log(`パロット情報取得成功: ${parrotData?.length || 0}件`);
+      console.log(`パロット情報取得成功: ${parrotData?.length || 0}件`);
       
       if (parrotData) {
         // 型安全のために明示的にstring型に変換し、null値を除外
@@ -639,11 +639,11 @@ export const getEntryParrots = async (entryId: string | number): Promise<string[
           .filter(parrot => parrot.image_url)
           .map(parrot => String(parrot.image_url));
           
-        // console.log('取得したパロットURL:', imageUrls);
+        console.log('取得したパロットURL:', imageUrls);
         return imageUrls;
       }
     } else {
-      // console.log('このエントリーにはパロットがありません');
+      console.log('このエントリーにはパロットがありません');
     }
     
     return [];
