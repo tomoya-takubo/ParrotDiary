@@ -32,6 +32,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [emailError, setEmailError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [globalLoading, setGlobalLoading] = useState(false);
   const [formFeedback, setFormFeedback] = useState<{
     type: 'success' | 'error';
     message: string;
@@ -225,7 +226,10 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           type: 'success',
           message: 'アカウントが作成されました。ダッシュボードに移動します...'
         });
-        
+
+        // グローバルローディングを有効にしてユーザー操作をブロック
+        setGlobalLoading(true);
+
         // ダッシュボードへリダイレクト
         setTimeout(() => {
           router.push('/dashboard');
@@ -268,8 +272,11 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         // Step 3: 成功フィードバックとリダイレクト
         setFormFeedback({
           type: 'success',
-          message: 'ログインしました！'
+          message: 'サインインしました！'
         });
+
+        // グローバルローディングを有効にしてユーザー操作をブロック
+        setGlobalLoading(true);
 
         // ダッシュボードへリダイレクト
         setTimeout(() => {
@@ -531,192 +538,201 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div 
-      ref={modalRef}
-      className={`${styles.modal} ${isVisible ? styles.modalVisible : ''}`}
-      onClick={handleOverlayClick} 
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="modalTitle"
-    >
-      <Card className={styles.modalCard}>
-        <CardContent className={styles.modalContent}>
-          <div className={styles.closeButton}>
-            <button onClick={handleClose}>✕</button>
-          </div>
-          {modalMode === 'reset' ? (
-            <div className={styles.modalInner}>
-              <h2 id="modalTitle" className={styles.modalTitle}>パスワードをリセット</h2>
-              <p className={styles.modalDescription}>
-                登録済みのメールアドレスを入力してください。<br />
-                パスワードリセット用のリンクをお送りします。
-              </p>
-              <form className={styles.form} onSubmit={handleAuthSubmit}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>メールアドレス</label>
-                  <input 
-                    ref={emailInputRef}
-                    id="email"
-                    name="email"
-                    type="email"
-                    aria-required="true"
-                    aria-invalid={!!emailError}
-                    aria-describedby={emailError ? "emailError" : undefined}
-                    className={`${styles.input} ${emailError ? styles.inputError : ''}`}
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      validateEmail(e.target.value);
-                      }
-                    }
-                    required
-                  />
-                  {emailError && (
-                    <p id="emailError" className={styles.errorMessage}>
-                      {emailError}
-                    </p>
-                  )}
-                </div>
-                <button 
-                  type="submit" 
-                  className={styles.submitButton}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <span className={styles.loadingText}>送信中...</span>
-                  ) : '送信する'}
-                </button>
-                <button
-                  type="button"
-                  className={styles.backButton}
-                  onClick={() => handleModeChange('signin')}
-                >
-                  ← サインインに戻る
-                </button>
-              </form>
+    <>
+      <div 
+        ref={modalRef}
+        className={`${styles.modal} ${isVisible ? styles.modalVisible : ''}`}
+        onClick={handleOverlayClick} 
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modalTitle"
+      >
+        <Card className={styles.modalCard}>
+          <CardContent className={styles.modalContent}>
+            <div className={styles.closeButton}>
+              <button onClick={handleClose}>✕</button>
             </div>
-          ) : (
-            <div className={styles.modalInner}>
-              <h2 id="modalTitle" className={styles.modalTitle}>
-                {modalMode === 'signup'  ? 'アカウント作成' : 'サインイン'}
-              </h2>
-              {/* タブ切り替えを追加 */}
-              <div className={styles.tabs}>
-                <button
-                  className={`${styles.tab} ${modalMode === 'signin'  ? styles.activeTab : ''}`}
-                  onClick={() => handleModeChange('signin')}
-                >
-                  サインイン
-                </button>
-                <button
-                  className={`${styles.tab} ${modalMode === 'signup' ? styles.activeTab : ''}`}
-                  onClick={() => handleModeChange('signup')}
-                >
-                  アカウント作成
-                </button>
-              </div>
-              {formFeedback && (
-                <div className={`${styles.feedbackWrapper} ${
-                  formFeedback.type === 'success' ? 
-                  styles.feedbackSuccess : 
-                  styles.feedbackError
-                }`}>
-                  <div className={styles.feedbackContent}>
-                    {formFeedback.type === 'success' ? '✓ ' : '⚠ '}
-                    {formFeedback.message}
-                  </div>
-                </div>
-              )}
+            {modalMode === 'reset' ? (
+              <div className={styles.modalInner}>
+                <h2 id="modalTitle" className={styles.modalTitle}>パスワードをリセット</h2>
+                <p className={styles.modalDescription}>
+                  登録済みのメールアドレスを入力してください。<br />
+                  パスワードリセット用のリンクをお送りします。
+                </p>
                 <form className={styles.form} onSubmit={handleAuthSubmit}>
-                {/* メールアドレス入力部 */}
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>メールアドレス</label>
-                  <input
-                    ref={emailInputRef}
-                    id="email"
-                    name="email"
-                    type="email"
-                    aria-required="true"
-                    aria-invalid={!!emailError}
-                    aria-describedby={emailError ? "emailError" : undefined}
-                    className={styles.input}
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      validateEmail(e.target.value);
-                      }
-                    }
-                    required
-                  />
-                  {emailError && (
-                    <p id="emailError" className={styles.errorMessage}>
-                      {emailError}
-                    </p>
-                  )}
-                </div>
-                {/* パスワード入力部 */}
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>パスワード</label>
-                  <div className={styles.passwordInput}>
-                    <input 
-                      type={showPassword ? "text" : "password"}
-                      className={`${styles.input} ${passwordError ? styles.inputError : ''}`}
-                      value={password}
-                      onChange={(e) => {
-                        setPassword(e.target.value);
-                        validatePassword(e.target.value);
-                      }}
-                      required
-                    />
-                    <button 
-                      type="button"
-                      className={styles.togglePassword}
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? "非表示" : "表示"}
-                    </button>
-                  </div>
-                  {passwordError && (
-                    <p className={styles.errorMessage}>{passwordError}</p>
-                  )}
-                </div>
-                {modalMode === 'signup'  && (
                   <div className={styles.formGroup}>
-                    <label className={styles.label}>パスワード（確認）</label>
+                    <label className={styles.label}>メールアドレス</label>
                     <input 
-                      type="password" 
-                      className={styles.input}
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      ref={emailInputRef}
+                      id="email"
+                      name="email"
+                      type="email"
+                      aria-required="true"
+                      aria-invalid={!!emailError}
+                      aria-describedby={emailError ? "emailError" : undefined}
+                      className={`${styles.input} ${emailError ? styles.inputError : ''}`}
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        validateEmail(e.target.value);
+                        }
+                      }
                       required
                     />
+                    {emailError && (
+                      <p id="emailError" className={styles.errorMessage}>
+                        {emailError}
+                      </p>
+                    )}
                   </div>
-                )}
-                <button 
-                  type="submit" 
-                  className={styles.submitButton}
-                  disabled={isLoading}
-                >
-                {isLoading ? (
-                  <span className={styles.loadingText}>送信中...</span>
-                ) : (
-                  modalMode === 'signup' ? 'アカウントを作成' : 'サインイン'
-                )}
-                </button>
-                {modalMode === 'signin' && (
+                  <button 
+                    type="submit" 
+                    className={styles.submitButton}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <span className={styles.loadingText}>送信中...</span>
+                    ) : '送信する'}
+                  </button>
                   <button
                     type="button"
-                    className={styles.forgotPasswordButton}
-                    onClick={() => handleModeChange('reset')}
+                    className={styles.backButton}
+                    onClick={() => handleModeChange('signin')}
                   >
-                    パスワードをお忘れの方はこちら
+                    ← サインインに戻る
                   </button>
+                </form>
+              </div>
+            ) : (
+              <div className={styles.modalInner}>
+                <h2 id="modalTitle" className={styles.modalTitle}>
+                  {modalMode === 'signup'  ? 'アカウント作成' : 'サインイン'}
+                </h2>
+                {/* タブ切り替えを追加 */}
+                <div className={styles.tabs}>
+                  <button
+                    className={`${styles.tab} ${modalMode === 'signin'  ? styles.activeTab : ''}`}
+                    onClick={() => handleModeChange('signin')}
+                  >
+                    サインイン
+                  </button>
+                  <button
+                    className={`${styles.tab} ${modalMode === 'signup' ? styles.activeTab : ''}`}
+                    onClick={() => handleModeChange('signup')}
+                  >
+                    アカウント作成
+                  </button>
+                </div>
+                {formFeedback && (
+                  <div className={`${styles.feedbackWrapper} ${
+                    formFeedback.type === 'success' ? 
+                    styles.feedbackSuccess : 
+                    styles.feedbackError
+                  }`}>
+                    <div className={styles.feedbackContent}>
+                      {formFeedback.type === 'success' ? '✓ ' : '⚠ '}
+                      {formFeedback.message}
+                    </div>
+                  </div>
                 )}
-              </form>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+                  <form className={styles.form} onSubmit={handleAuthSubmit}>
+                  {/* メールアドレス入力部 */}
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>メールアドレス</label>
+                    <input
+                      ref={emailInputRef}
+                      id="email"
+                      name="email"
+                      type="email"
+                      aria-required="true"
+                      aria-invalid={!!emailError}
+                      aria-describedby={emailError ? "emailError" : undefined}
+                      className={styles.input}
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        validateEmail(e.target.value);
+                        }
+                      }
+                      required
+                    />
+                    {emailError && (
+                      <p id="emailError" className={styles.errorMessage}>
+                        {emailError}
+                      </p>
+                    )}
+                  </div>
+                  {/* パスワード入力部 */}
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>パスワード</label>
+                    <div className={styles.passwordInput}>
+                      <input 
+                        type={showPassword ? "text" : "password"}
+                        className={`${styles.input} ${passwordError ? styles.inputError : ''}`}
+                        value={password}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          validatePassword(e.target.value);
+                        }}
+                        required
+                      />
+                      <button 
+                        type="button"
+                        className={styles.togglePassword}
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? "非表示" : "表示"}
+                      </button>
+                    </div>
+                    {passwordError && (
+                      <p className={styles.errorMessage}>{passwordError}</p>
+                    )}
+                  </div>
+                  {modalMode === 'signup'  && (
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>パスワード（確認）</label>
+                      <input 
+                        type="password" 
+                        className={styles.input}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+                  )}
+                  <button 
+                    type="submit" 
+                    className={styles.submitButton}
+                    disabled={isLoading}
+                  >
+                  {isLoading ? (
+                    <span className={styles.loadingText}>送信中...</span>
+                  ) : (
+                    modalMode === 'signup' ? 'アカウントを作成' : 'サインイン'
+                  )}
+                  </button>
+                  {modalMode === 'signin' && (
+                    <button
+                      type="button"
+                      className={styles.forgotPasswordButton}
+                      onClick={() => handleModeChange('reset')}
+                    >
+                      パスワードをお忘れの方はこちら
+                    </button>
+                  )}
+                </form>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* グローバルローディングオーバーレイ */}
+      {globalLoading && (
+        <div className={styles.globalOverlay}>
+          {/* ローディングアニメーションなどを配置可能 */}
+        </div>
+      )}
+    </>
   );
 }

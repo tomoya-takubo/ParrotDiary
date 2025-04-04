@@ -8,6 +8,8 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 export default function StartButton() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  // 認証成功時のグローバルローディング状態を追加
+  const [isAuthSuccess, setIsAuthSuccess] = useState(false);
   const router = useRouter();
   const supabase = createClientComponentClient();
 
@@ -27,8 +29,15 @@ export default function StartButton() {
     checkAuth();
   }, [supabase.auth]);
 
+  // ボタンクリック時のハンドラー修正
   const handleButtonClick = async () => {
     try {
+      // すでにローディング中なら何もしない
+      if (isLoading) return;
+      
+      // ボタンクリック時にローディング状態を設定
+      setIsLoading(true);
+      
       // ボタンクリック時に改めて認証状態を確認
       const { data } = await supabase.auth.getSession();
       
@@ -38,16 +47,24 @@ export default function StartButton() {
       } else {
         // 未認証の場合はログインモーダルを表示
         setIsModalOpen(true);
+        // ローディング状態を解除（モーダルが表示されたため）
+        setIsLoading(false);
       }
     } catch (error) {
       console.error('認証確認エラー:', error);
       // エラーが発生した場合は安全のためモーダルを表示
       setIsModalOpen(true);
+      setIsLoading(false);
     }
   };
 
   const handleModalClose = () => {
     setIsModalOpen(false);
+  };
+
+  // 認証成功通知を受け取るコールバック
+  const handleAuthSuccess = () => {
+    setIsAuthSuccess(true);
   };
 
   return (
@@ -61,9 +78,16 @@ export default function StartButton() {
       </button>
       <AuthModal 
         isOpen={isModalOpen} 
-        onClose={handleModalClose} 
+        onClose={handleModalClose}
         key={isModalOpen ? 'open' : 'closed'}
       />
-    </>
+      
+      {/* グローバルローディングオーバーレイ - 認証確認中またはボタンが無効化されている時に表示 */}
+      {isLoading && (
+        <div className={styles.globalOverlay}>
+          {/* オーバーレイの内容はローディング中のみシンプルに保つ */}
+        </div>
+      )}
+  </>
   );
 }
