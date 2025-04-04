@@ -3,18 +3,16 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import styles from './ActivityHistory.module.css';
 import { createClient } from '@supabase/supabase-js';
 import DiaryModal from '@/components/dashboard/modals/DiaryModal';
-import { useAuth } from '@/lib/AuthContext'; // 認証コンテキストをインポート
+import { useAuth } from '@/lib/AuthContext';
 import EditDiaryModal from '@/components/dashboard/modals/EditDiaryModal';
 
 //#region 型定義
-// モーダルの状態をGachaModalと連動させるためのpropsを追加
 type ActivityHistoryProps = {
   onCellClick?: (date: string) => void;
   width?: string | number;
-  isGachaOpen?: boolean; // ガチャモーダルが開いているかどうかのフラグ
+  isGachaOpen?: boolean;
 };
 
-// データベースの日記エントリー型
 type DBDiaryEntry = {
   entry_id: number;
   user_id: string;
@@ -28,21 +26,17 @@ type DBDiaryEntry = {
   updated_at: string;
 };
 
-// モーダル表示用の日記エントリー型（ActivityDiaryEntryと同一構造）
-// モーダル表示用の日記エントリー型を修正して entry_id を含めるようにします
 type ModalDiaryEntry = {
   time: string;
   tags: string[];
   activities: string[];
   created_at?: string;
   entry_id?: number | string;
-  parrots?: string[]; // parrots プロパティを追加
+  parrots?: string[];
 };
 
-// アクティビティレベルの型
 type ActivityLevel = 0 | 1 | 2 | 3 | 4;
 
-// セルデータの型
 type CellData = {
   date: string;
   day: number;
@@ -51,6 +45,7 @@ type CellData = {
   level: ActivityLevel;
   count: number;
   isToday: boolean;
+  isCurrentMonth: boolean;
 };
 //#endregion
 
@@ -62,39 +57,33 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const ActivityHistory: React.FC<ActivityHistoryProps> = ({ 
   onCellClick, 
   width = '100%',
-  isGachaOpen = false // デフォルトはfalse
-}) => {  // 認証コンテキストから情報を取得
+  isGachaOpen = false
+}) => {
   const { user, session, isLoading: authLoading } = useAuth();
   
   //#region 定数
-  const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  const CELL_WIDTH = 36; // セルの幅
-  const CELL_GAP = 8;  // セル間のギャップ
-  const TOTAL_CELL_WIDTH = CELL_WIDTH + CELL_GAP; // セル幅 + ギャップ
-  const WEEKDAY_LABEL_WIDTH = 50; // 曜日ラベルの幅
+  const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']; // 英語の曜日表示
   const MAX_AUTH_RETRIES = 3;
+  const MONTHS_JP = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
   //#endregion
 
   //#region refs
   const containerRef = useRef<HTMLDivElement>(null);
-  const gridRef = useRef<HTMLDivElement>(null);
   //#endregion
 
   //#region 状態管理
-  // 現在のオフセット（何週前を表示するか）
-  const [currentOffset, setCurrentOffset] = useState(0);
-  // 列数
-  const [columnCount, setColumnCount] = useState(20);
-  // カレンダーデータ
-  const [calendarData, setCalendarData] = useState<{
-    rows: Record<string, (CellData | null)[]>;
-  }>({
-    rows: {}
+  // 表示する年月
+  const [currentDate, setCurrentDate] = useState(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
   });
+  
   // エントリーデータ（日付ごと）
   const [entriesByDate, setEntriesByDate] = useState<Record<string, DBDiaryEntry[]>>({});
   // 選択されたセルデータ
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  // カレンダーデータ
+  const [calendarData, setCalendarData] = useState<CellData[][]>([]);
   // 日記エントリーデータのロード状態
   const [loading, setLoading] = useState(true);
   // エラー状態
@@ -118,35 +107,6 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
     setRefreshTrigger(prev => prev + 1);
   };
 
-  //#region レイアウト調整
-  // カードの幅に基づいて表示する列数を計算
-  useEffect(() => {
-    const calculateColumnCount = () => {
-      if (!containerRef.current) return;
-      
-      const containerWidth = containerRef.current.clientWidth;
-      // パディングと曜日ラベル幅を考慮して、表示可能な最大の列数を計算
-      const availableWidth = containerWidth - WEEKDAY_LABEL_WIDTH - 50; // 50pxはパディングなどの余分なスペース
-      const maxColumns = Math.floor(availableWidth / TOTAL_CELL_WIDTH);
-      
-      setColumnCount(Math.max(10, maxColumns)); // 最低10列は表示
-    };
-    
-    // 初回レンダリング時に計算
-    calculateColumnCount();
-    
-    // ウィンドウサイズ変更時にも再計算
-    const handleResize = () => {
-      calculateColumnCount();
-    };
-    
-    window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-  //#endregion
-
   //#region データ取得
   // 日付文字列の処理を改善する関数
   const formatDateForComparison = (dateString: string): string => {
@@ -165,7 +125,6 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
   useEffect(() => {
     const fetchDiaryEntries = async () => {
       try {
-        // authLoadingの場合は単に戻るだけではなく、ローディング状態を設定
         if (authLoading) {
           setLoading(true);
           return;
@@ -173,7 +132,6 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
         
         setLoading(true);
         
-        // ユーザー認証のより堅牢なチェック
         if (!user?.id || !session?.access_token) {
           console.log('認証情報を待機中またはログインしていません');
           setEntriesByDate({});
@@ -196,8 +154,8 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
           .from('diary_entries')
           .select('*')
           .eq('user_id', userId)
-          .gte('recorded_at', formatDateString(sixMonthsAgo) + ' 00:00:00')  // 時刻部分を追加
-          .lte('recorded_at', formatDateString(today) + ' 23:59:59')  // 1日の終わりまで含める
+          .gte('recorded_at', formatDateString(sixMonthsAgo) + ' 00:00:00')
+          .lte('recorded_at', formatDateString(today) + ' 23:59:59')
           .order('recorded_at', { ascending: false });
 
         // デバッグ出力
@@ -207,9 +165,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
         // エラー処理
         if (error) {
           console.error('データ取得エラー:', error);
-          // エラーを設定するが、「ログインが必要です」エラーは回避
           setError(`データの取得に失敗しました: ${error.message}`);
-          // エラーがあっても空のデータを設定して表示を維持
           setEntriesByDate({});
           setLoading(false);
           return;
@@ -229,115 +185,144 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
         });
         
         setEntriesByDate(entriesByDate);
-        // エラーをクリア
         setError(null);
-
-        console.log('今日の日付（JST）:', formatDateString(today));
-        console.log('取得したエントリーの日付一覧:', data?.map(e => formatDateForComparison(e.recorded_at)));
-        console.log('タイムゾーン調整後の今日の日付:', formatDateForComparison(new Date().toISOString()));
 
       } catch (err) {
         console.error('日記エントリー取得中のエラー:', err);
         setError(`予期せぬエラーが発生しました: ${(err as Error).message}`);
         setEntriesByDate({});
-        } finally {
+      } finally {
         setLoading(false);
       }
     };
     
-    // 認証ロード中でない場合「または」有効なユーザーがいる場合のみデータ取得を試みる
     if (!authLoading || user?.id) {
       fetchDiaryEntries();
     }
-  }, [user, session, authLoading, refreshTrigger]); // 認証情報が変わるか、リフレッシュトリガーが変わったときに再取得
+  }, [user, session, authLoading, refreshTrigger]);
   //#endregion
 
   //#region カレンダーグリッド生成
   useEffect(() => {
-    // entriesByDateが空でも実行できるように条件を修正
-    if ((!loading || Object.keys(entriesByDate).length >= 0) && columnCount > 0) {
+    if (!loading || Object.keys(entriesByDate).length >= 0) {
       generateCalendarGrid();
     }
-  }, [currentOffset, entriesByDate, loading, columnCount]);
+  }, [currentDate, entriesByDate, loading]);
 
-  // 認証リトライを処理するuseEffectを追加
+  // 認証リトライを処理するuseEffect
   useEffect(() => {
-    // コンポーネントマウント後も認証ロード中の場合、リトライを設定
     if (authLoading && authRetryCount < MAX_AUTH_RETRIES) {
       const timer = setTimeout(() => {
         console.log(`認証リトライ ${authRetryCount + 1}/${MAX_AUTH_RETRIES}`);
         setAuthRetryCount(prev => prev + 1);
         setRefreshTrigger(prev => prev + 1);
-      }, 2000); // リトライ間隔は2秒
+      }, 2000);
       
       return () => clearTimeout(timer);
     }
   }, [authLoading, authRetryCount]);
     
-  // カレンダーグリッドの生成
+  // カレンダーグリッドの生成（月間カレンダー形式）
   const generateCalendarGrid = () => {
     const today = new Date();
     const todayStr = formatDateForComparison(today.toISOString());
     
-    // 終了日は今日
-    const endDate = new Date(today);
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
     
-    // 開始日の計算
-    // 今日が含まれる週の日曜日から始めて、そこから(columnCount-1)週間前に設定
-    // さらにオフセットを考慮
-    const todayDayOfWeek = today.getDay();
-    const startDate = new Date(today);
-    // 日曜日まで戻る
-    startDate.setDate(today.getDate() - todayDayOfWeek);
-    // columnCount-1週間前に戻る
-    startDate.setDate(startDate.getDate() - (columnCount - 1) * 7);
-    // オフセットを適用
-    startDate.setDate(startDate.getDate() - currentOffset * columnCount * 7);
+    // 月の最初の日の曜日を取得（0: 日曜日, 1: 月曜日, ...）
+    const firstDayOfMonth = new Date(year, month, 1);
+    const firstDayOfWeek = firstDayOfMonth.getDay();
     
-    // 曜日ごとの行を初期化
-    const rows: Record<string, (CellData | null)[]> = {};
-    WEEKDAYS.forEach(day => {
-      rows[day] = [];
-    });
+    // 月の最終日を取得
+    const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
     
-    // 現在の日付
-    const currentDate = new Date(startDate);
+    // 前月の日数を取得（前月の表示用）
+    const prevMonthLastDay = new Date(year, month, 0).getDate();
     
-    // columnCount週間分のデータを生成
-    let colIndex = 0;
-    while (colIndex < columnCount) {
-      // 1週間分の日付を処理
-      for (let dayOfWeek = 0; dayOfWeek < 7; dayOfWeek++) {
-        const date = new Date(currentDate);
-        date.setDate(currentDate.getDate() + dayOfWeek);
-        
-        const dateStr = formatDateString(date);
-        const weekday = WEEKDAYS[dayOfWeek];
-        
-        // 今日より後の日付はnullとして設定
-        if (date > endDate) {
-          rows[weekday].push(null);
-          continue;
+    // カレンダーの行数を計算（最大6週間）
+    const rowCount = Math.ceil((firstDayOfWeek + lastDayOfMonth) / 7);
+    
+    // カレンダーグリッドを初期化
+    const grid: CellData[][] = Array(rowCount).fill(null).map(() => Array(7).fill(null));
+    
+    // 前月の日を埋める
+    let day = 1;
+    let currentMonthFlag = false;
+    let nextMonthFlag = false;
+    
+    for (let row = 0; row < rowCount; row++) {
+      for (let col = 0; col < 7; col++) {
+        // グリッドの開始位置を計算
+        if (row === 0 && col < firstDayOfWeek) {
+          // 前月の日付
+          const prevMonthDay = prevMonthLastDay - (firstDayOfWeek - col - 1);
+          const prevMonth = month === 0 ? 11 : month - 1;
+          const prevYear = month === 0 ? year - 1 : year;
+          const dateObj = new Date(prevYear, prevMonth, prevMonthDay);
+          const dateStr = formatDateString(dateObj);
+          
+          const entries = entriesByDate[dateStr] || [];
+          grid[row][col] = {
+            date: dateStr,
+            day: prevMonthDay,
+            month: prevMonth,
+            year: prevYear,
+            level: Math.min(entries.length, 4) as ActivityLevel,
+            count: entries.length,
+            isToday: dateStr === todayStr,
+            isCurrentMonth: false
+          };
+        } else if (day <= lastDayOfMonth && !nextMonthFlag) {
+          // 当月の日付
+          currentMonthFlag = true;
+          const dateObj = new Date(year, month, day);
+          const dateStr = formatDateString(dateObj);
+          
+          const entries = entriesByDate[dateStr] || [];
+          grid[row][col] = {
+            date: dateStr,
+            day: day,
+            month: month,
+            year: year,
+            level: Math.min(entries.length, 4) as ActivityLevel,
+            count: entries.length,
+            isToday: dateStr === todayStr,
+            isCurrentMonth: true
+          };
+          
+          day++;
+          
+          // 月末に達したら次月フラグをオン
+          if (day > lastDayOfMonth) {
+            nextMonthFlag = true;
+            day = 1;
+          }
+        } else {
+          // 次月の日付
+          const nextMonth = month === 11 ? 0 : month + 1;
+          const nextYear = month === 11 ? year + 1 : year;
+          const dateObj = new Date(nextYear, nextMonth, day);
+          const dateStr = formatDateString(dateObj);
+          
+          const entries = entriesByDate[dateStr] || [];
+          grid[row][col] = {
+            date: dateStr,
+            day: day,
+            month: nextMonth,
+            year: nextYear,
+            level: Math.min(entries.length, 4) as ActivityLevel,
+            count: entries.length,
+            isToday: dateStr === todayStr,
+            isCurrentMonth: false
+          };
+          
+          day++;
         }
-        
-        const entries = entriesByDate[dateStr] || [];
-        rows[weekday].push({
-          date: dateStr,
-          day: date.getDate(),
-          month: date.getMonth(),
-          year: date.getFullYear(),
-          level: Math.min(entries.length, 4) as ActivityLevel,
-          count: entries.length,
-          isToday: dateStr === todayStr
-        });
       }
-      
-      // 次の週に進む
-      currentDate.setDate(currentDate.getDate() + 7);
-      colIndex++;
     }
     
-    setCalendarData({ rows });
+    setCalendarData(grid);
   };
   //#endregion
 
@@ -360,15 +345,13 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
   };
   
   // DBデータをモーダル表示用データに変換
-  // convertToModalEntry 関数を更新して、parrots も含めるようにする
-
   const convertToModalEntry = (dbEntry: DBDiaryEntry): ModalDiaryEntry => {
     const recordedTime = new Date(dbEntry.recorded_at);
     
     // 時間を整形（時分のみ）
     const hours = recordedTime.getHours().toString().padStart(2, '0');
     const minutes = recordedTime.getMinutes().toString().padStart(2, '0');
-    const timeStr = `${hours}:${minutes}`; // 秒は含めない
+    const timeStr = `${hours}:${minutes}`;
     
     // 活動内容を配列に変換
     const activities = [dbEntry.line1];
@@ -377,12 +360,27 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
     
     return {
       time: timeStr,
-      tags: ['3行日記'], // 仮のタグ
+      tags: ['3行日記'],
       activities,
-      created_at: dbEntry.created_at, // 実際のデータには秒情報を含む
-      entry_id: dbEntry.entry_id,  // entry_id を追加
-      parrots: [] // 空の配列で初期化（実際のパロットはDiaryModalで取得される）
+      created_at: dbEntry.created_at,
+      entry_id: dbEntry.entry_id,
+      parrots: []
     };
+  };
+  
+  // 月を変更する関数
+  const changeMonth = (increment: number) => {
+    setCurrentDate(prevDate => {
+      const newDate = new Date(prevDate);
+      newDate.setMonth(newDate.getMonth() + increment);
+      return newDate;
+    });
+  };
+  
+  // 現在の日本時間をISO形式で取得する関数
+  const getJSTISOString = () => {
+    const now = new Date();
+    return new Date(now.getTime() + (9 * 60 * 60 * 1000)).toISOString();
   };
   //#endregion
 
@@ -391,6 +389,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
   const handleCellClick = (cell: CellData) => {
     // ガチャモーダルが開いている場合は処理をスキップ
     if (isGachaOpen) {
+      console.log('ガチャモーダルが開いているため、セルクリックをスキップします');
       return;
     }
     
@@ -406,7 +405,6 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
     
     if (entries.length === 0) {
       console.log('選択された日付のエントリーがありません:', cell.date);
-      // エントリーがない場合でも空のモーダルを表示（新規作成用）
       setModalEntries([]);
     } else {
       // DBエントリーをモーダル用エントリーに変換
@@ -415,16 +413,6 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
     }
     
     setShowModal(true);
-  };
-  
-  // ナビゲーションハンドラー
-  const handleNavigate = (direction: 'prev' | 'next') => {
-    // グリッド単位で移動するようにする
-    if (direction === 'prev') {
-      setCurrentOffset(prev => prev + 1);
-    } else {
-      setCurrentOffset(prev => Math.max(0, prev - 1));
-    }
   };
   
   // モーダルを閉じるハンドラー
@@ -459,36 +447,29 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
     setEditingEntry(null);
     refreshData(); // データを再取得して表示を更新
   };
-
-  // 現在の日本時間をISO形式で取得する関数
-  const getJSTISOString = () => {
-    const now = new Date();
-    // 日本時間 = UTC + 9時間
-    // console.log("現在の日時：" + new Date(now.getTime() + (9 * 60 * 60 * 1000)).toISOString());
-    return new Date(now.getTime() + (9 * 60 * 60 * 1000)).toISOString();
-  };
   //#endregion
 
   return (
-    <div className={styles.container} style={{ width }} ref={containerRef}>
+          <div className={`${styles.container} ${isGachaOpen ? styles.gachaOpen : ''}`} style={{ width }} ref={containerRef}>
       {/* カレンダーカード */}
       <div className={styles.calendarCard}>
         {/* カードヘッダー（タイトルとナビゲーションボタン） */}
         <div className={styles.cardHeader}>
-          <h2 className={styles.title}>活動記録</h2>
+          <h2 className={styles.title}>
+            活動記録 - {currentDate.getFullYear()}年{MONTHS_JP[currentDate.getMonth()]}
+          </h2>
           <div className={styles.navigationButtons}>
             <button 
               className={styles.navButton} 
-              onClick={() => handleNavigate('prev')}
-              aria-label="前の期間"
+              onClick={() => changeMonth(-1)}
+              aria-label="前月"
             >
               <ChevronLeft size={20} />
             </button>
             <button 
               className={styles.navButton} 
-              onClick={() => handleNavigate('next')}
-              disabled={currentOffset === 0}
-              aria-label="次の期間"
+              onClick={() => changeMonth(1)}
+              aria-label="翌月"
             >
               <ChevronRight size={20} />
             </button>
@@ -501,38 +482,46 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
           <div className={styles.error}>エラー: {error}</div>
         ) : (
           <div className={styles.calendarContent}>
-            {/* カレンダーグリッド */}
-            <div className={styles.calendarGrid} ref={gridRef}>
-              {/* 曜日ラベル */}
-              <div className={styles.weekdayLabels}>
+            {/* 月間カレンダー */}
+            <div className={styles.monthlyCalendar}>
+              {/* 曜日ヘッダー */}
+              <div className={styles.weekdayHeader}>
                 {WEEKDAYS.map(weekday => (
-                  <div key={weekday} className={styles.weekdayLabel}>
+                  <div key={weekday} className={styles.weekdayHeaderCell}>
                     {weekday}
                   </div>
                 ))}
               </div>
               
-              {/* セルグリッド */}
-              <div className={styles.cellsGrid}>
-                {WEEKDAYS.map(weekday => (
-                  <div key={weekday} className={styles.dayRow}>
-                    {calendarData.rows[weekday]?.map((cell, colIndex) => (
+              {/* カレンダー本体 */}
+              <div className={styles.monthlyGrid}>
+                {calendarData.map((week, weekIndex) => (
+                  <div key={`week-${weekIndex}`} className={styles.weekRow}>
+                    {week.map((cell, dayIndex) => (
                       <div 
-                        key={`cell-${weekday}-${colIndex}`} 
-                        className={styles.cellWrapper}
+                        key={`day-${weekIndex}-${dayIndex}`} 
+                        className={`
+                          ${styles.dayCell}
+                          ${cell ? styles[`level${cell.level}`] : ''}
+                          ${cell && !cell.isCurrentMonth ? styles.otherMonth : ''}
+                          ${cell && cell.isToday ? styles.today : ''}
+                        `}
+                        onClick={() => cell && handleCellClick(cell)}
                       >
                         {cell && (
-                          <button
-                            className={`
-                              ${styles.cell} 
-                              ${styles[`level${cell.level}`]}
-                            `}
-                            onClick={() => handleCellClick(cell)}
-                            disabled={isGachaOpen} 
-                            aria-label={`${cell.year}年${cell.month + 1}月${cell.day}日 (アクティビティ: ${cell.count}件)`}
-                          >
-                            {cell.day}
-                          </button>
+                          <>
+                            <div className={styles.dayCellContent}>
+                              <span className={styles.dayNumber}>{cell.day}</span>
+                              {cell.count > 0 && (
+                                <span 
+                                  className={styles.activityCount}
+                                  title={`${cell.count}件のアクティビティ`}
+                                >
+                                  {cell.count}
+                                </span>
+                              )}
+                            </div>
+                          </>
                         )}
                       </div>
                     ))}
@@ -567,14 +556,14 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
       />
       
       {isEditModalOpen && editingEntry && (
-      <EditDiaryModal
-        isOpen={isEditModalOpen}
-        onClose={handleCloseEditModal}
-        entry={editingEntry}
-        date={selectedDate ? formatDisplayDate(selectedDate) : null}
-        onSave={handleEditComplete}
-      />
-    )}
+        <EditDiaryModal
+          isOpen={isEditModalOpen}
+          onClose={handleCloseEditModal}
+          entry={editingEntry}
+          date={selectedDate ? formatDisplayDate(selectedDate) : null}
+          onSave={handleEditComplete}
+        />
+      )}
     </div>
   );
 };
