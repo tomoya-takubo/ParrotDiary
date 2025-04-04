@@ -58,7 +58,7 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
   const [showParrotDropdown, setShowParrotDropdown] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [pageSize] = useState(50); // 一度に表示するパロットの数
+  const [pageSize] = useState(18); // 一度に表示するパロットの数
   const [currentPage, setCurrentPage] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
