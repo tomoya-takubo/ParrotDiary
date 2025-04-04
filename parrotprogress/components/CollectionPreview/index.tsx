@@ -2,7 +2,7 @@
 
 // components/CollectionPreview/index.tsx
 import { useEffect, useState } from 'react';
-import { Filter, Search, LogIn, AlertCircle } from 'lucide-react';
+import { Filter, Search, LogIn, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import ParrotIcon from '../ParrotIcon';
 import styles from './styles.module.css';
@@ -77,6 +77,11 @@ export default function CollectionPreview() {
   const [showObtainedOnly, setShowObtainedOnly] = useState<boolean>(false);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null); // 認証状態を追跡
+  
+  // ページネーション用の状態
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(24); // デフォルトのアイテム数
+  const [totalPages, setTotalPages] = useState(1);
   
   // AuthContextからユーザー情報を取得
   const { user, isLoading: authLoading } = useAuth();
@@ -230,6 +235,36 @@ export default function CollectionPreview() {
     }
   };
 
+  // 画面サイズに応じてitemsPerPageを調整する関数
+  const updateItemsPerPage = () => {
+    const width = window.innerWidth;
+    if (width >= 1280) {
+      setItemsPerPage(24); // 6x4の表示
+    } else if (width >= 1024) {
+      setItemsPerPage(20); // 5x4の表示
+    } else if (width >= 768) {
+      setItemsPerPage(16); // 4x4の表示
+    } else if (width >= 640) {
+      setItemsPerPage(12); // 3x4の表示
+    } else {
+      setItemsPerPage(8); // 小さい画面では2x4
+    }
+  };
+
+  // リサイズイベントのリスナー設定
+  useEffect(() => {
+    updateItemsPerPage(); // 初回のサイズ設定
+    
+    const handleResize = () => {
+      updateItemsPerPage();
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
   // ユーザー認証チェックと初期データ読み込み
   useEffect(() => {
     const initializeData = async () => {
@@ -302,6 +337,11 @@ export default function CollectionPreview() {
     };
   }, [user, authLoading]); // user, authLoadingが変更されたときに実行
 
+  // フィルタリングが変更された場合、ページを1に戻す
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, searchQuery, searchRarity, showObtainedOnly, sortType]);
+
   const handleParrotClick = (parrot: Parrot) => {
     // ログイン済みユーザーの場合のみ、獲得済みパロットの詳細を表示
     if (isAuthenticated && parrot.obtained) {
@@ -318,6 +358,19 @@ export default function CollectionPreview() {
   const handleLogin = () => {
     // ログインページへリダイレクト
     window.location.href = '/login';
+  };
+  
+  // ページネーション制御関数
+  const handlePageChange = (pageNumber: number) => {
+    if (pageNumber < 1 || pageNumber > totalPages) return;
+    setCurrentPage(pageNumber);
+    // ページ上部にスクロール
+    window.scrollTo({
+      top: document.querySelector('.'+styles.filterSection)?.getBoundingClientRect().top 
+           ? (document.querySelector('.'+styles.filterSection)?.getBoundingClientRect().top as number) + window.scrollY - 20
+           : 0,
+      behavior: 'smooth'
+    });
   };
 
   const getRarityOrder = (rarityAbbreviation: string): number => {
@@ -451,6 +504,23 @@ export default function CollectionPreview() {
 
   // フィルター適用後のパロットをさらに並び替え
   const sortedAndFilteredParrots = sortParrots(filteredParrots);
+  
+  // 総ページ数の計算とページネーションデータの準備
+  useEffect(() => {
+    const pages = Math.ceil(sortedAndFilteredParrots.length / itemsPerPage);
+    setTotalPages(pages || 1); // 0の場合は1ページ
+    
+    // ページ番号が範囲外になった場合、調整
+    if (currentPage > pages && pages > 0) {
+      setCurrentPage(pages);
+    }
+  }, [sortedAndFilteredParrots.length, itemsPerPage, currentPage]);
+  
+  // 現在のページのパロットだけを表示
+  const currentParrots = sortedAndFilteredParrots.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   // パロット名を処理する関数
   const formatParrotName = (name: string) => {
@@ -469,6 +539,99 @@ export default function CollectionPreview() {
     }
     // 短い名前やparrotを含まない名前はそのまま返す
     return name;
+  };
+
+  // ページネーションコンポーネント
+  const Pagination = () => {
+    // 表示するページ番号の範囲を決定（最大5ページ分）
+    const getPageNumbers = () => {
+      const pageNumbers = [];
+      const maxVisiblePages = 5; // 表示するページボタンの最大数
+      
+      let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+      let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+      
+      if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+      }
+      
+      for (let i = startPage; i <= endPage; i++) {
+        pageNumbers.push(i);
+      }
+      
+      return pageNumbers;
+    };
+    
+    return (
+      <div className={styles.paginationContainer}>
+        <div className={styles.paginationInfo}>
+          全 {sortedAndFilteredParrots.length} アイテム中 {sortedAndFilteredParrots.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} - {Math.min(currentPage * itemsPerPage, sortedAndFilteredParrots.length)} を表示
+        </div>
+        
+        <div className={styles.paginationControls}>
+          <button 
+            className={`${styles.paginationButton} ${currentPage === 1 ? styles.disabled : ''}`}
+            onClick={() => handlePageChange(1)}
+            disabled={currentPage === 1}
+          >
+            最初
+          </button>
+          
+          <button 
+            className={`${styles.paginationButton} ${currentPage === 1 ? styles.disabled : ''}`}
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft size={16} />
+          </button>
+          
+          {getPageNumbers().map(number => (
+            <button 
+              key={number}
+              className={`${styles.paginationButton} ${currentPage === number ? styles.active : ''}`}
+              onClick={() => handlePageChange(number)}
+            >
+              {number}
+            </button>
+          ))}
+          
+          <button 
+            className={`${styles.paginationButton} ${currentPage === totalPages ? styles.disabled : ''}`}
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            <ChevronRight size={16} />
+          </button>
+          
+          <button 
+            className={`${styles.paginationButton} ${currentPage === totalPages ? styles.disabled : ''}`}
+            onClick={() => handlePageChange(totalPages)}
+            disabled={currentPage === totalPages}
+          >
+            最後
+          </button>
+        </div>
+        
+        <div className={styles.itemsPerPageSelector}>
+          <label htmlFor="itemsPerPage">1ページあたり: </label>
+          <select 
+            id="itemsPerPage"
+            value={itemsPerPage}
+            onChange={(e) => {
+              const newValue = parseInt(e.target.value);
+              setItemsPerPage(newValue);
+              setCurrentPage(1); // ページ数変更時はページ1に戻る
+            }}
+            className={styles.itemsPerPageSelect}
+          >
+            <option value="12">12</option>
+            <option value="24">24</option>
+            <option value="36">36</option>
+            <option value="48">48</option>
+          </select>
+        </div>
+      </div>
+    );
   };
 
   // ローディング表示 - より洗練されたローディング画面
@@ -651,8 +814,13 @@ export default function CollectionPreview() {
         </div>
       </div>
       
+      {/* ページネーション（上部） */}
+      {totalPages > 1 && (
+        <Pagination />
+      )}
+      
       <div className={styles.grid}>
-        {sortedAndFilteredParrots.map((parrot, index) => (
+        {currentParrots.map((parrot, index) => (
           <div 
             key={parrot.parrot_id} 
             className={`
@@ -693,6 +861,11 @@ export default function CollectionPreview() {
           </div>
         ))}
       </div>
+      
+      {/* ページネーション（下部） */}
+      {totalPages > 1 && (
+        <Pagination />
+      )}
       
       {/* 結果が0件の場合のメッセージ */}
       {sortedAndFilteredParrots.length === 0 && (

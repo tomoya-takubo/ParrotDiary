@@ -776,3 +776,94 @@
 .resetButton:hover {
   background-color: #7C3AED;
 }
+
+/* ページネーション用のスタイル */
+.paginationContainer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1.5rem 0;
+  padding: 0.75rem 1rem;
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  gap: 1rem;
+}
+
+.paginationInfo {
+  color: #6B7280;
+  font-size: 0.875rem;
+}
+
+.paginationControls {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.paginationButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 0.5rem;
+  background: white;
+  border: 1px solid #E5E7EB;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  color: #4B5563;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.paginationButton:hover:not(.disabled) {
+  background: #F3F4F6;
+  border-color: #D1D5DB;
+}
+
+.paginationButton.active {
+  background: #8B5CF6;
+  color: white;
+  border-color: #8B5CF6;
+}
+
+.paginationButton.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.itemsPerPageSelector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6B7280;
+  font-size: 0.875rem;
+}
+
+.itemsPerPageSelect {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #E5E7EB;
+  border-radius: 0.25rem;
+  background: white;
+  font-size: 0.875rem;
+  color: #4B5563;
+}
+
+/* モバイル用のレスポンシブ対応 */
+@media (max-width: 768px) {
+  .paginationContainer {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .paginationInfo, 
+  .paginationControls, 
+  .itemsPerPageSelector {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+}
