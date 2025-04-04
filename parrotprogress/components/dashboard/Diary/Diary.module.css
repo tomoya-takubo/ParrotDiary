@@ -683,7 +683,7 @@
   justify-content: flex-end;
   align-items: center;
   gap: 10px;
-  z-index: 2;
+  z-index: 1;
   padding: 6px; /* 0から6pxに変更 */
 }
 
@@ -841,5 +841,10 @@
   width: 40px;
   height: 40px;
   object-fit: contain;
-  transform: scaleX(-1); /* このプロパティを追加することでGIFが左右反転します */
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.2s;
+  z-index: 1; /* 明示的に低い値を設定 */
+  transform: scaleX(-1);
 }
+

@@ -291,7 +291,7 @@ const DiarySearch = () => {
     const maxVisiblePages = 5; // 表示するページボタンの最大数
     
     let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
     
     // 表示ページ数を調整（重要：この部分が安定した表示のカギ）
     if (endPage - startPage + 1 < maxVisiblePages) {
@@ -517,7 +517,7 @@ const DiarySearch = () => {
             {renderPageNumbers()}
           </div>
         )}
-        
+
         {/* エラー表示 */}
         {error && (
           <div className={styles.errorMessage}>

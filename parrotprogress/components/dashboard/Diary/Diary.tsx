@@ -1,11 +1,11 @@
 import { useAuth } from '@/lib/AuthContext'; // 認証コンテキストのインポート
 import { supabase } from '@/lib/supabase'; // Supabaseクライアントのインポート
-import { Edit2, Edit3, Hash, Plus, Search, X } from 'lucide-react';
+import { Edit2, Search } from 'lucide-react';
 import Image from 'next/image'; // Next.jsのImageコンポーネントをインポート
 import { useRouter } from 'next/navigation'; // Next.jsのルーターを使用
 import React, { useEffect, useState, useCallback } from 'react'; // React等インポート
 import styles from './Diary.module.css'; // スタイル
-import { getEntryParrots, ParrotSelector, saveEntryParrots } from './ParrotSelector'; // パロット関連
+import { getEntryParrots } from './ParrotSelector'; // パロット関連
 import EditDiaryModal from '@/components/dashboard/modals/EditDiaryModal'; // EditDiaryModalのインポート
 
 //#region 型定義

@@ -248,7 +248,6 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
     
     // 前月の日を埋める
     let day = 1;
-    let currentMonthFlag = false;
     let nextMonthFlag = false;
     
     for (let row = 0; row < rowCount; row++) {
@@ -275,7 +274,6 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
           };
         } else if (day <= lastDayOfMonth && !nextMonthFlag) {
           // 当月の日付
-          currentMonthFlag = true;
           const dateObj = new Date(year, month, day);
           const dateStr = formatDateString(dateObj);
           

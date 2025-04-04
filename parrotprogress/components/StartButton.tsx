@@ -8,8 +8,6 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 export default function StartButton() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  // 認証成功時のグローバルローディング状態を追加
-  const [isAuthSuccess, setIsAuthSuccess] = useState(false);
   const router = useRouter();
   const supabase = createClientComponentClient();
 
@@ -60,11 +58,6 @@ export default function StartButton() {
 
   const handleModalClose = () => {
     setIsModalOpen(false);
-  };
-
-  // 認証成功通知を受け取るコールバック
-  const handleAuthSuccess = () => {
-    setIsAuthSuccess(true);
   };
 
   return (
