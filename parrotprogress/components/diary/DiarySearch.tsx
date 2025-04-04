@@ -288,34 +288,39 @@ const DiarySearch = () => {
   // ページボタンの生成
   const renderPageNumbers = () => {
     const pageNumbers = [];
-    const maxPagesToShow = 5; // 表示するページボタンの最大数
+    const maxVisiblePages = 5; // 表示するページボタンの最大数
     
-    let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
-    let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
     
-    // 表示ページ数を調整
-    if (endPage - startPage + 1 < maxPagesToShow) {
-      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    // 表示ページ数を調整（重要：この部分が安定した表示のカギ）
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
     
-    // 最初のページへのリンク
-    if (startPage > 1) {
-      pageNumbers.push(
-        <button
-          key="first"
-          onClick={() => handlePageChange(1)}
-          className={styles.paginationButton}
-        >
-          1
-        </button>
-      );
-      
-      if (startPage > 2) {
-        pageNumbers.push(
-          <span key="ellipsis1" className={styles.paginationEllipsis}>...</span>
-        );
-      }
-    }
+    // 「最初」のページへのボタン
+    pageNumbers.push(
+      <button 
+        key="first"
+        className={`${styles.paginationButton} ${currentPage === 1 ? styles.disabled : ''}`}
+        onClick={() => handlePageChange(1)}
+        disabled={currentPage === 1}
+      >
+        最初
+      </button>
+    );
+    
+    // 「前へ」ボタン
+    pageNumbers.push(
+      <button
+        key="prev"
+        onClick={() => handlePageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className={`${styles.paginationButton} ${styles.paginationArrow} ${currentPage === 1 ? styles.disabled : ''}`}
+      >
+        <ChevronLeft size={16} />
+      </button>
+    );
     
     // ページ番号ボタン
     for (let i = startPage; i <= endPage; i++) {
@@ -332,24 +337,29 @@ const DiarySearch = () => {
       );
     }
     
-    // 最後のページへのリンク
-    if (endPage < totalPages) {
-      if (endPage < totalPages - 1) {
-        pageNumbers.push(
-          <span key="ellipsis2" className={styles.paginationEllipsis}>...</span>
-        );
-      }
-      
-      pageNumbers.push(
-        <button
-          key="last"
-          onClick={() => handlePageChange(totalPages)}
-          className={styles.paginationButton}
-        >
-          {totalPages}
-        </button>
-      );
-    }
+    // 「次へ」ボタン
+    pageNumbers.push(
+      <button
+        key="next"
+        onClick={() => handlePageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className={`${styles.paginationButton} ${styles.paginationArrow} ${currentPage === totalPages ? styles.disabled : ''}`}
+      >
+        <ChevronRight size={16} />
+      </button>
+    );
+    
+    // 「最後」のページへのボタン
+    pageNumbers.push(
+      <button 
+        key="last"
+        className={`${styles.paginationButton} ${currentPage === totalPages ? styles.disabled : ''}`}
+        onClick={() => handlePageChange(totalPages)}
+        disabled={currentPage === totalPages}
+      >
+        最後
+      </button>
+    );
     
     return pageNumbers;
   };
@@ -504,29 +514,10 @@ const DiarySearch = () => {
         {/* 上部ページネーション */}
         {filteredEntries.length > 0 && (
           <div className={styles.pagination}>
-            {/* 前のページボタン */}
-            <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className={`${styles.paginationButton} ${styles.paginationArrow}`}
-            >
-              <ChevronLeft size={16} />
-            </button>
-            
-            {/* ページ番号 */}
             {renderPageNumbers()}
-            
-            {/* 次のページボタン */}
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className={`${styles.paginationButton} ${styles.paginationArrow}`}
-            >
-              <ChevronRight size={16} />
-            </button>
           </div>
         )}
-
+        
         {/* エラー表示 */}
         {error && (
           <div className={styles.errorMessage}>
