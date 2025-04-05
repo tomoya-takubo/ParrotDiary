@@ -76,29 +76,20 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
   });
 
   // 書いた行数に応じてXP報酬を計算する関数（関数定義部分に追加）
-  const calculateXpReward = (linesCount: number): number => {
-    // 基本XP
-    const baseXP = 50;
-    
-    // 行数に応じたボーナス
-    switch (linesCount) {
-      case 1:
-        return baseXP;
-      case 2:
-        return baseXP + 25; // 75 XP
-      case 3:
-        return baseXP + 50; // 100 XP
-      default:
-        return baseXP;
-    }
+  const calculateXpReward = (totalChars: number): number => {
+    // 1文字 = 2XP、上限300文字で最大600XP
+    const xpPerChar = 2;
+    const maxXp = 600;
+  
+    return Math.min(totalChars * xpPerChar, maxXp);
   };
-
+  
   // 書いた行数に応じてチケット報酬を計算する関数（関数定義部分に追加）
-  const calculateTicketReward = (linesCount: number): number => {
-    // 3行書いたら1枚のチケットを付与
-    return linesCount === 3 ? 1 : 0;
+  const calculateTicketReward = (totalChars: number): number => {
+    // 100文字ごとに1枚、最大5枚
+    return Math.min(Math.floor(totalChars), 100);
   };
-
+  
   // レベルアップをチェックする関数（関数定義部分に追加）
   const checkLevelUp = (totalXp: number, currentLevel: number) => {
     // レベルごとの必要XPを計算する関数
@@ -448,9 +439,14 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
       // 🎁 報酬付与（新規のみ）
       if (isNewEntry) {
         try {
-          xpAmount = calculateXpReward(activities.length);
-          ticketsAmount = calculateTicketReward(activities.length);
-  
+          const totalChars =
+          (line1.trim().length || 0) +
+          (line2.trim().length || 0) +
+          (line3.trim().length || 0);
+        
+          xpAmount = calculateXpReward(totalChars);
+          ticketsAmount = calculateTicketReward(totalChars);
+          
           const { data: userData, error: userError } = await supabase
             .from('users')
             .select('total_xp, level')
