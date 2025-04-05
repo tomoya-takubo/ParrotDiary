@@ -151,7 +151,7 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
                         key={tagIndex}
                         className={styles.entryTag}
                       >
-                        {tag}
+                        #{tag}
                       </span>
                     ))}
                     {/* 編集ボタン */}

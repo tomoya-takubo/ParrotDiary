@@ -680,7 +680,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
                     key={index}
                     className={styles.selectedTag}
                   >
-                    {tag}
+                    #{tag}
                     <button
                       onClick={() => handleRemoveTag(tag)}
                       className={styles.removeTagButton}
