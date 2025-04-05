@@ -241,17 +241,16 @@ const Diary: React.FC<DiaryProps> = ({ onSave }) => {
     if (!authUser?.id) return;
 
     const now = new Date();
-    const jstTime = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-    const formattedDate = jstTime.toLocaleDateString('ja-JP', {
+    const formattedDate = now.toLocaleDateString('ja-JP', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
     });
-    const formattedTime = jstTime.toLocaleTimeString('ja-JP', {
+    const formattedTime = now.toLocaleTimeString('ja-JP', {
       hour: '2-digit',
       minute: '2-digit'
     });
-
+    
     setModalState({
       isOpen: true,
       entry: {
@@ -340,7 +339,14 @@ const Diary: React.FC<DiaryProps> = ({ onSave }) => {
                 <div key={entry.entry_id} className={styles.diaryEntry} style={{ position: 'relative' }}>
                   <div className={styles.entryHeader}>
                     <div className={styles.entryTimestamp}>
-                      記録時刻: {new Date(entry.recorded_at).toLocaleString('ja-JP')}
+                    記録時刻: {new Date(entry.recorded_at).toLocaleString('ja-JP', {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      // second は指定しない
+                    })}
                     </div>
                     <div className={styles.entryTags}>
                       {entry.tags?.map((tag, index) => (
