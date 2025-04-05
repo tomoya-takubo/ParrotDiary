@@ -47,7 +47,8 @@ export default function Home() {
               <h3 className={styles.featureTitle}>3行日記</h3>
             </div>
             <p className={styles.featureDescription}>
-              シンプルな3行で今日を振り返り。継続でPartyParrotから特別なメッセージが届きます！
+              シンプルな3行で今日を振り返り。<br />
+              活動記録カレンダーで過去の記録数や日記を確認できます。
             </p>
           </div>
           <div className={styles.featureCard}>
@@ -58,7 +59,8 @@ export default function Home() {
               <h3 className={styles.featureTitle}>PartyParrotガチャ</h3>
             </div>
             <p className={styles.featureDescription}>
-              獲得したコインでレアなPartyParrotをゲット！特殊能力を活用して作業効率アップ！
+              獲得したチケットでレアなPartyParrotをゲット！<br />
+              個性的なPartyParrotをたくさん集めよう！
             </p>
           </div>
         </div>
