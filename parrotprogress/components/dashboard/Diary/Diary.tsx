@@ -39,12 +39,18 @@ type ModalState = {
   entry: EditDiaryEntryType | null;
   date: string | null;
 };
+
+// Diary.tsx 最上部あたりに追加
+type DiaryProps = {
+  onSave?: () => void;
+};
+
 //#endregion
 
 /**
  * 3行日記のメインコンポーネント
  */
-const Diary: React.FC = () => {
+const Diary: React.FC<DiaryProps> = ({ onSave }) => {
   // 既存のstateとhooks
   const router = useRouter();
   const { user: authUser, isLoading: authLoading } = useAuth();
@@ -381,7 +387,10 @@ const Diary: React.FC = () => {
           onClose={closeModal}
           entry={modalState.entry}
           date={modalState.date}
-          onSave={reloadData}
+          onSave={() => {
+            reloadData();         // ローカルの日記リスト再取得
+            onSave?.();           // ダッシュボードのステータス更新を呼び出す
+          }}
         />
       )}
     </div>

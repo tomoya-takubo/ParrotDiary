@@ -121,6 +121,19 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
           </button>
         </div>
 
+        {/* 記録追加ボタンを上に移動 */}
+        {isToday && (
+          <div className={styles.addRecordTop}>
+            <button 
+              className={styles.addRecordButton}
+              onClick={handleAddRecordClick}
+            >
+              <Clock size={20} />
+              <span>記録を追加</span>
+            </button>
+          </div>
+        )}
+
         {/* エントリーリスト */}
         <div className={styles.entriesContainer}>
           {entriesWithParrots.length > 0 ? (
@@ -192,19 +205,6 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
             </div>
           )}
         </div>
-
-        {/* フッター: 記録追加ボタン */}
-        {isToday && (
-          <div className={styles.addRecordSection}>
-            <button 
-              className={styles.addRecordButton}
-              onClick={handleAddRecordClick}
-            >
-              <Clock size={20} />
-              <span>記録を追加</span>
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
