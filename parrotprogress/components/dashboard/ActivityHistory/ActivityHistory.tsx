@@ -376,13 +376,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
     });
   };
   
-  // 現在の日本時間をISO形式で取得する関数
-  const getJSTISOString = () => {
-    const now = new Date();
-    // 日本時間の日付部分だけを返す
-    return formatDateString(now);
-  };
-    //#endregion
+  //#endregion
 
   //#region イベントハンドラー
   // セルクリックのハンドラー

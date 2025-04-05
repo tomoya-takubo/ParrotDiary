@@ -70,18 +70,6 @@ interface GachaResult {
 //#endregion
 
 //#region レアリティ設定
-/**
- * レアリティIDとタイプのマッピング
- * データベースはUUID形式の文字列を使用していることがログから判明
- */
-const uuidToNumericRarity: Record<string, number> = {
-  // 実際のUUIDをログから確認して設定
-  "b9e8a015-e81b-4cf8-98ad-deaec2007c83": 4,  // UUIDに対応するレアリティを設定
-  "ea093042-a369-4442-8e6a-eba4a42ec117": 3,  // UUIDに対応するレアリティを設定
-  "fdbfbbe1-42dc-4f98-acf4-8f70aa7d4f8c": 2,    // 実際のUUIDに置き換える
-  "88b7a9a1-c650-49f1-89cf-f18ee48c120f": 1 // 実際のUUIDに置き換える
-};
-
 // 数値レアリティとレアリティタイプのマッピング
 // 従来通り1,2,3,4を使用
 const numericRarityToType: Record<number, RarityType> = {
@@ -136,17 +124,6 @@ const getJSTISOString = () => {
   const now = new Date();
   // 日本時間 = UTC + 9時間
   return new Date(now.getTime() + (9 * 60 * 60 * 1000)).toISOString();
-};
-
-/**
- * UUIDからレアリティタイプを取得する関数
- */
-const getRarityTypeFromUUID = (uuid: string): RarityType => {
-  // UUIDに対応する数値レアリティを取得
-  const numericRarity = uuidToNumericRarity[uuid] || 1; // デフォルトは1(Normal)
-  
-  // 数値レアリティからレアリティタイプを取得
-  return numericRarityToType[numericRarity];
 };
 
 /**
@@ -711,7 +688,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
     result: GachaResult, 
     index: number, 
     onClick: () => void 
-  }> = ({ result, index, onClick }) => {
+  }> = ({ result, onClick }) => {
     return (
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
