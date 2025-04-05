@@ -1,5 +1,5 @@
 'use client'; 
-import { ArrowRight, BookOpen, Gift, Timer } from 'lucide-react';
+import { ArrowRight, BookOpen, Gift } from 'lucide-react';
 import StartButton from '@/components/StartButton';
 import styles from '@/styles/Home.module.css';
 import { ParrotCollection } from '@/components/ParrotCollection';

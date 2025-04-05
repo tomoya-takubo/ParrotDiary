@@ -70,7 +70,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
   const { showReward } = useReward();
 
   // 報酬状態の管理用（useState定義の近くに追加）
-  const [rewardState, setRewardState] = useState<{
+  const [rewardState] = useState<{
     show: boolean;
     xp: number;
     tickets: number;
@@ -275,7 +275,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
     // 🎁 報酬関連の値（初期値）
     let xpAmount = 0;
     let ticketsAmount = 0;
-    let shouldLevelUp = false;
+    const shouldLevelUp = false;
     let newLevel: number | null = null;
   
     try {
