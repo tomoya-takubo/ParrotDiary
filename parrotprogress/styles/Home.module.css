@@ -568,59 +568,26 @@
   align-items: center;
 }
 
-/* ダークモード対応 */
 @media (prefers-color-scheme: dark) {
-  .title {
-    color: #ffffff;
-  }
-
-  .subtitle {
-    color: #d1d5db;
-  }
-
-  .featureDescription {
-    color: #d1d5db;
-  }
-
-  .collectionTitle {
-    color: #ffffff;
-  }
-
-  .collectionDescription {
-    color: #d1d5db;
-  }
-
+  .title,
+  .collectionTitle,
+  .featureTitle,
   .ecoTitle {
-    color: #bbf7d0;
+    color: #1f2937; /* ダークグレー（黒に近い） */
   }
 
+  .subtitle,
+  .featureDescription,
+  .collectionDescription,
   .ecoDescription {
-    color: #a7f3d0;
+    color: #374151; /* やや薄めの黒（標準的なテキストカラー） */
   }
 
   .ecoLink {
-    color: #6ee7b7;
+    color: #059669;
   }
 
   .ecoLink:hover {
-    color: #34d399;
-  }
-
-  .featureCard {
-    background-color: #1f2937;
-  }
-
-  .parrotItem {
-    background-color: #374151;
-  }
-
-  .feedbackSuccess {
-    background-color: #14532d;
-    color: #bbf7d0;
-  }
-
-  .feedbackError {
-    background-color: #7f1d1d;
-    color: #fee2e2;
+    color: #047857;
   }
 }
