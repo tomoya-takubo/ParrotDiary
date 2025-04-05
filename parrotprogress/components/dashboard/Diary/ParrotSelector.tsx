@@ -13,6 +13,7 @@ type ParrotType = {
   category_id?: string;
   rarity_id?: string;
   display_order?: number;
+  tags?: ParrotTagInfo[]; // タグ情報を追加
 };
 
 type RawParrot = {
@@ -23,6 +24,21 @@ type RawParrot = {
   category_id?: string;
   rarity_id?: string;
   display_order?: number;
+};
+
+// パロットタグの型定義
+type ParrotTagInfo = {
+  entry_id: string;
+  user_id: string;
+  parrot_id: string;
+  parrot_tag_name: string;
+  executed_at: string;
+};
+
+// 人気タグ用の型定義
+type ParrotTag = {
+  tag_name: string;
+  count: number;
 };
 
 interface ParrotSelectorProps {
@@ -59,19 +75,12 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
   const [loadError, setLoadError] = useState<string | null>(null);
   const [showParrotDropdown, setShowParrotDropdown] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory] = useState<string | null>(null);
   const [pageSize] = useState(16); // 一度に表示するパロットの数
   const [currentPage, setCurrentPage] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // カテゴリーリスト（例）
-  const categories = [
-    { id: 'all', name: 'すべて' },
-    { id: 'common', name: '一般' },
-    { id: 'rare', name: 'レア' },
-    { id: 'epic', name: 'エピック' },
-    { id: 'legendary', name: '伝説' }
-  ];
+  const [popularTags, setPopularTags] = useState<ParrotTag[]>([]);
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
   // パロットデータをキャッシュするか確認する関数
   const getCachedParrots = (userId: string): ParrotType[] | null => {
@@ -81,6 +90,44 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
     }
     return null;
   };
+
+  // 人気タグデータを取得する関数
+  const fetchPopularTags = useCallback(async () => {
+    if (!userId) return;
+    
+    try {
+      // user_parrots_tags テーブルからタグを取得して集計
+      const { data, error } = await supabase
+        .from('user_parrots_tags')
+        .select('parrot_tag_name')
+        .eq('user_id', userId);
+      
+      if (error) {
+        console.error('タグ取得エラー:', error);
+        return;
+      }
+      
+      if (data && data.length > 0) {
+        // タグの出現回数を集計
+        const tagCounts: Record<string, number> = {};
+        
+        data.forEach(item => {
+          const tagName = item.parrot_tag_name as string;
+          tagCounts[tagName] = (tagCounts[tagName] || 0) + 1;
+        });
+        
+        // 配列に変換してソート
+        const sortedTags = Object.entries(tagCounts)
+          .map(([tag_name, count]) => ({ tag_name, count }))
+          .sort((a, b) => b.count - a.count) // 多い順にソート
+          .slice(0, 10); // 上位10件を取得
+        
+        setPopularTags(sortedTags);
+      }
+    } catch (error) {
+      console.error('人気タグの取得エラー:', error);
+    }
+  }, [userId]);
 
   // ユーザーが獲得済みのパロットを取得（メモ化して再レンダリングを防止）
   const fetchUserParrots = useCallback(async () => {
@@ -156,8 +203,33 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
           description: parrot.description ? String(parrot.description) : undefined,
           category_id: parrot.category_id ? String(parrot.category_id) : undefined,
           rarity_id: parrot.rarity_id ? String(parrot.rarity_id) : undefined,
-          display_order: typeof parrot.display_order === 'number' ? parrot.display_order : undefined
+          display_order: typeof parrot.display_order === 'number' ? parrot.display_order : undefined,
+          tags: [] as ParrotTagInfo[] // 明示的に型を指定
         }));
+
+        // パロットのタグ情報を取得
+        try {
+          const { data: tagsData, error: tagsError } = await supabase
+            .from('user_parrots_tags')
+            .select('*')
+            .eq('user_id', userId);
+            
+          if (tagsError) {
+            console.error('パロットタグ取得エラー:', tagsError);
+          } else if (tagsData && tagsData.length > 0) {
+            // パロットにタグを関連付け
+            formattedParrots.forEach(parrot => {
+              const parrotTags = tagsData.filter(tag => tag.parrot_id === parrot.parrot_id);
+              if (parrotTags.length > 0) {
+                parrot.tags = parrotTags as ParrotTagInfo[];
+              }
+            });
+            
+            console.log(`${tagsData.length}件のタグ情報を取得`);
+          }
+        } catch (tagError) {
+          console.error('タグ情報取得エラー:', tagError);
+        }
         
         // キャッシュに保存
         parrotCache[userId] = {
@@ -175,9 +247,10 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
           description: 'デフォルトパロット',
           category_id: 'common',
           rarity_id: 'common',
-          display_order: 1
+          display_order: 1,
+          tags: [] as ParrotTagInfo[]
         }];
-        
+
         // キャッシュに保存
         parrotCache[userId] = {
           timestamp: Date.now(),
@@ -199,7 +272,8 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
           description: 'デフォルトパロット',
           category_id: 'common',
           rarity_id: 'common',
-          display_order: 1
+          display_order: 1,
+          tags: [] as ParrotTagInfo[]
         }
       ]);
     } finally {
@@ -211,8 +285,9 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
   useEffect(() => {
     if (userId) {
       fetchUserParrots();
+      fetchPopularTags();
     }
-  }, [userId, fetchUserParrots]);
+  }, [userId, fetchUserParrots, fetchPopularTags]);
 
   // ドロップダウンの外側をクリックしたときに閉じる
   useEffect(() => {
@@ -261,6 +336,12 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
     onParrotsChange(selectedParrots.filter(p => p !== parrotImageUrl));
   };
 
+  // タグをクリックした時の処理
+  const handleTagClick = (tagName: string) => {
+    setSelectedTag(selectedTag === tagName ? null : tagName);
+    setCurrentPage(0); // ページをリセット
+  };
+
   // パロットをフィルタリングする関数
   const filteredParrots = availableParrots.filter(parrot => {
     // 検索条件とカテゴリーでフィルタリング
@@ -272,7 +353,11 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
       selectedCategory === 'all' || 
       parrot.category_id === selectedCategory;
       
-    return matchesSearch && matchesCategory;
+    // 選択されたタグでフィルタリング
+    const matchesTag = !selectedTag || 
+      (parrot.tags && parrot.tags.some(tag => tag.parrot_tag_name === selectedTag));
+      
+    return matchesSearch && matchesCategory && matchesTag;
   });
 
   // ページング用のパロット (現在のページに表示するパロットのみ)
@@ -285,6 +370,30 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
   const hasNextPage = filteredParrots.length > (currentPage + 1) * pageSize;
   // 前のページがあるかどうか
   const hasPrevPage = currentPage > 0;
+
+  // 人気タグ表示コンポーネント
+  const PopularTagsSection = () => {
+    if (popularTags.length === 0) return null;
+    
+    return (
+      <div className={styles.popularTagsSection}>
+        <div className={styles.popularTagsTitle}>よく使うタグ</div>
+        <div className={styles.popularTagsList}>
+          {popularTags.map(tag => (
+            <button
+              key={tag.tag_name}
+              className={`${styles.tagButton} ${
+                selectedTag === tag.tag_name ? styles.tagButtonActive : ''
+              }`}
+              onClick={() => handleTagClick(tag.tag_name)}
+            >
+              {tag.tag_name} <span className={styles.tagCount}>{tag.count}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   // エラー表示
   if (loadError) {
@@ -381,25 +490,8 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
               />
             </div>
 
-            {/* カテゴリー選択 */}
-            <div className={styles.parrotTypeSelector}>
-              {categories.map(category => (
-                <button
-                  key={category.id}
-                  className={`${styles.parrotTypeButton} ${
-                    selectedCategory === category.id ? styles.parrotTypeButtonActive : ''
-                  }`}
-                  onClick={() => {
-                    setSelectedCategory(
-                      selectedCategory === category.id ? null : category.id
-                    );
-                    setCurrentPage(0); // カテゴリー変更時にページをリセット
-                  }}
-                >
-                  {category.name}
-                </button>
-              ))}
-            </div>
+            {/* 人気タグセクション */}
+            <PopularTagsSection />
           </div>
 
           {/* パロットグリッド */}
@@ -626,21 +718,21 @@ export const getEntryParrots = async (entryId: string | number): Promise<string[
     console.log(`パロットアイコン取得成功: ${iconData?.length || 0}件`);
     
     if (iconData && iconData.length > 0) {
-      // パロットIDからパロット情報を取得
+    // パロットIDからパロット情報を取得
       const parrotIds = iconData.map(icon => String(icon.parrot_id));
-      
+            
       const { data: parrotData, error: parrotError } = await supabase
         .from('parrots')
         .select('image_url')
         .in('parrot_id', parrotIds);
-      
+
       if (parrotError) {
         console.error('パロット情報取得エラー:', parrotError);
         throw parrotError;
       }
-      
+
       console.log(`パロット情報取得成功: ${parrotData?.length || 0}件`);
-      
+
       if (parrotData) {
         // 型安全のために明示的にstring型に変換し、null値を除外
         const imageUrls = parrotData
@@ -653,18 +745,18 @@ export const getEntryParrots = async (entryId: string | number): Promise<string[
     } else {
       console.log('このエントリーにはパロットがありません');
     }
-    
+
     return [];
-  } catch (error) {
+    } catch (error) {
     console.error('日記パロット取得エラー:', error);
     return [];
-  }
-};
+    }
+  };
 
-// 追加: ファイル名を取得するヘルパー関数
-function getFileNameFromUrl(url: string): string {
+  // 追加: ファイル名を取得するヘルパー関数
+  function getFileNameFromUrl(url: string): string {
   if (!url) return '';
-  
+
   // 最後のスラッシュ以降をファイル名として取得
   const parts = url.split('/');
   return parts[parts.length - 1];
