@@ -399,8 +399,8 @@ export default function Dashboard() {
         />
 
         {/* 3行日記 */}
-        <Diary onSave={() => setRefreshKey(k => k + 1)} />
-          
+        <Diary key={`diary-${refreshKey}`} onSave={() => setRefreshKey(k => k + 1)} />
+
         {/* モーダルコンポーネント */}
         {/* ガチャアニメーションコンポーネント */}
         <GachaAnimation
