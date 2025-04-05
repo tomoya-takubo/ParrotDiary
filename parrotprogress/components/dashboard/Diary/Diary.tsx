@@ -46,7 +46,7 @@ const Diary: React.FC<DiaryProps> = ({ onSave }) => {
   const { user: authUser, isLoading: authLoading } = useAuth();
   const [diaryEntries, setDiaryEntries] = useState<DiaryEntryType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [reloadTrigger, setReloadTrigger] = useState(0);
+  const [reloadTrigger] = useState(0);
   const [modalState, setModalState] = useState<ModalState>({
     isOpen: false,
     entry: null,

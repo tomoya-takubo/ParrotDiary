@@ -691,6 +691,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
   }> = ({ result, onClick }) => {
     return (
       <motion.div
+        key={result.parrot.parrot_id} // ← indexではなくparrot_idに
         initial={{ scale: 0.8, opacity: 0 }}
         animate={result.revealed ? { 
           scale: 1, 

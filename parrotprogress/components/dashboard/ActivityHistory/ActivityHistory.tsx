@@ -158,9 +158,8 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
           .eq('user_id', userId)
           .gte('recorded_at', formatDateString(sixMonthsAgo) + ' 00:00:00')
           .lte('recorded_at', formatDateString(today) + ' 23:59:59')
-          .order('recorded_at', { ascending: false })
-          .limit(3);
-          
+          .order('recorded_at', { ascending: false });
+
         // デバッグ出力
         console.log('取得したデータ:', data);
         console.log('今日の日付:', formatDateString(today));
