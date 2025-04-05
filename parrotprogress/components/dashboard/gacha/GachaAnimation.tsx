@@ -557,7 +557,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
         results.push({
           parrot,
           rarityType,
-          revealed: false // 初期状態は未表示
+          revealed: true // 最初から表示状態にする
         });
         
         // パロットをユーザーに登録
@@ -565,49 +565,19 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
       }
       
       // 4. 結果を保存して表示モードに切り替え
-      setGachaResults(results);
-      setShowResult(true);
-      setProcessing(false);
-      
-      // 5. カードを順番に表示
-      revealCardsSequentially(results);
-      
+      setTimeout(() => {
+        // 結果を保存して表示モードに切り替え
+        setGachaResults(results);
+        setShowResult(true);
+        setProcessing(false);
+        setAllRevealed(true); // すべて表示済みに設定
+      }, 2000); // ローディングアニメーションの後、一斉に表示
+
     } catch (error) {
       console.error('複数ガチャ処理エラー:', error);
       setError(`ガチャの実行中にエラーが発生しました: ${(error as Error).message}`);
       setProcessing(false);
     }
-  };
-
-  /**
-     * カードを順番に表示する関数
-     */
-  const revealCardsSequentially = (results: GachaResult[]) => {
-    // 各カードの表示間隔（ミリ秒）
-    const revealInterval = 300;
-    
-    // 最初から全てのカードを表示しておき、revealed状態だけを変更する
-    setGachaResults(results.map(result => ({
-      ...result,
-      revealed: false
-    })));
-    
-    // インデックスの配列を作成（左上から右下への順序）
-    const indices = Array.from({ length: results.length }, (_, i) => i);
-    
-    // 順番に表示
-    indices.forEach((index, i) => {
-      setTimeout(() => {
-        setGachaResults(prev => {
-          const newResults = [...prev];
-          newResults[index] = {
-            ...newResults[index],
-            revealed: true
-          };
-          return newResults;
-        });
-      }, i * revealInterval);
-    });
   };
 
   //#region UI操作関数
@@ -706,7 +676,8 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
           type: "spring",
           stiffness: 260,
           damping: 20,
-          duration: 0.5
+          duration: 0.5,
+          delay: 0.05 * Math.random() // ランダムな遅延で自然な印象に
         }}
         whileHover={{ scale: 1.05 }}
         onClick={onClick}
@@ -1228,15 +1199,21 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                     <h3 className="text-xl font-bold mb-6 text-center text-gray-800">ガチャ結果</h3>
                     
                     {/* グリッド表示 */}
-                    <div className="mb-6 max-h-[80vh] overflow-y-auto">
+                    <div className="max-h-[80vh] overflow-y-auto overflow-x-hidden">
                       <div className="grid grid-cols-5 gap-3">
                         {gachaResults.map((result, index) => (
-                          <ResultCard 
-                            key={index} 
-                            result={result} 
-                            index={index} 
-                            onClick={() => showParrotDetail(result)} 
-                          />
+                          <motion.div
+                            key={result.parrot.parrot_id}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: result.revealed ? 1 : 0.4 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <ResultCard
+                              result={result}
+                              index={index}
+                              onClick={() => showParrotDetail(result)}
+                            />
+                          </motion.div>
                         ))}
                       </div>
                     </div>
