@@ -199,44 +199,13 @@ export default function Dashboard() {
   //#endregion
 
   // ガチャを開始する関数
+  // startGacha関数を簡素化
   const startGacha = async () => {
-    // チケットが0枚の場合は処理を中断
     if (ticketCount <= 0) {
       alert('チケットがありません。活動を行ってチケットを獲得してください。');
       return;
     }
-    
-    try {
-      // // 現在ログイン中のユーザー情報を取得
-      // const { data: { user } } = await supabase.auth.getUser();
-      
-      // if (!user) {
-      //   console.error('ユーザーが認証されていません');
-      //   return;
-      // }
-      
-      // // チケットを1枚消費（データベース更新）
-      // const { error } = await supabase
-      //   .from('gacha_tickets')
-      //   .update({ 
-      //     ticket_count: ticketCount - 1,
-      //     last_updated: new Date().toISOString()
-      //   })
-      //   .eq('user_id', user.id);
-      
-      // if (error) {
-      //   console.error('チケット消費の更新に失敗しました:', error);
-      //   return;
-      // }
-      
-      // ローカルのチケットカウントを更新
-      setTicketCount(prevCount => Math.max(0, prevCount - 1));
-      
-      // ガチャモーダルを表示
-      setShowGachaModal(true);
-    } catch (error) {
-      console.error('ガチャ処理中にエラーが発生しました:', error);
-    }
+    setShowGachaModal(true);
   };
 
   // ガチャ完了後に画面のチケット数を更新する関数を追加
@@ -419,11 +388,10 @@ export default function Dashboard() {
         {/* モーダルコンポーネント */}
         {/* ガチャアニメーションコンポーネント */}
         <GachaAnimation
-          isOpen={showGachaModal}
-          startGacha={updateTicketCount}
-          onClose={closeGacha}
-        />
-        
+        isOpen={showGachaModal}
+        startGacha={updateTicketCount}
+        onClose={closeGacha}
+      />        
       </div>
     </div>
   );
