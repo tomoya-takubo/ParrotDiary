@@ -308,7 +308,7 @@
 
 @media (min-width: 768px) {
   .featureGrid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr); /* 変更：3 → 2 */
   }
 }
 

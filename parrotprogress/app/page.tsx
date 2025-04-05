@@ -29,7 +29,7 @@ export default function Home() {
     <main className={styles.container}>
       <div className={styles.wrapper}>
         <div className={styles.hero}>
-          <h1 className={styles.title}> ぱろっとぷろぐれす </h1>
+          <h1 className={styles.title}> ぱろっとだいありー </h1>
           <p className={styles.subtitle}>PartyParrotと一緒に楽しく継続</p>
           <div className={styles.heroParrot}>
             {gifUrl && <Image src={gifUrl} alt="Party Parrot" width={400} height={400}/>}
@@ -39,17 +39,6 @@ export default function Home() {
       </div>
       <section className={styles.features}>
         <div className={styles.featureGrid}>
-          <div className={styles.featureCard}>
-            <div className={styles.featureIcon}>
-              <div className={`${styles.iconWrapper} ${styles.iconBlue}`}>
-                <Timer className="w-6 h-6" />
-              </div>
-              <h3 className={styles.featureTitle}>集中タイマー</h3>
-            </div>
-            <p className={styles.featureDescription}>
-              25分の集中タイムで効率的に作業。達成するたびにPartyParrotがお祝いとコインをプレゼント！
-            </p>
-          </div>
           <div className={styles.featureCard}>
             <div className={styles.featureIcon}>
               <div className={`${styles.iconWrapper} ${styles.iconPurple}`}>
