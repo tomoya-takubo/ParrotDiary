@@ -299,9 +299,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
       if (line2.trim()) activities.push(line2.trim());
       if (line3.trim()) activities.push(line3.trim());
   
-      const now = new Date();
-      const jstTime = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-      const isoString = jstTime.toISOString();
+      const isoString = new Date().toISOString(); // UTCのままで保存し、表示時にJST変換
   
       const entryData = {
         line1: line1.trim() || null,
