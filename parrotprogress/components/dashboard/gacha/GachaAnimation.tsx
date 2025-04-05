@@ -157,6 +157,10 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
   const [currentSingleParrot, setCurrentSingleParrot] = useState<GachaResult | null>(null); // 単一ガチャのパロット
   //#endregion
 
+  // #region 定数
+  const maxGacha = 50; // ガチャ最大連数
+  // #endregion
+
   //#region ライフサイクル管理
   // isOpenが変更された時の処理
   useEffect(() => {
@@ -610,7 +614,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
   // ガチャ回数を増やす
   const increaseGachaCount = () => {
     // 最大10回まで、かつ持っているチケット数を超えない
-    setGachaCount(prev => Math.min(prev + 1, Math.min(10, tickets)));
+    setGachaCount(prev => Math.min(prev + 1, Math.min(maxGacha, tickets)));
   };
   
   // ガチャ回数を減らす
@@ -831,23 +835,26 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                     </div>
                     
                     {/* クイックアクセスボタン */}
-                    <div className="grid grid-cols-2 gap-3 mb-6">
-                      <button
-                        onClick={() => runMultiGacha(5)}
-                        disabled={tickets < 5}
-                        className={`py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg shadow-md ${tickets < 5 ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'}`}
-                      >
-                        5連ガチャ
-                      </button>
-                      <button
-                        onClick={() => runMultiGacha(10)}
-                        disabled={tickets < 10}
-                        className={`py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg shadow-md ${tickets < 10 ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'}`}
-                      >
-                        10連ガチャ
-                      </button>
+                    <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 mb-6">
+                      {[
+                        { count: 10, from: 'from-blue-500', to: 'to-cyan-500' },
+                        { count: 20, from: 'from-green-500', to: 'to-lime-500' },
+                        { count: 30, from: 'from-yellow-500', to: 'to-orange-500' },
+                        { count: 40, from: 'from-pink-500', to: 'to-fuchsia-500' },
+                        { count: 50, from: 'from-purple-500', to: 'to-indigo-500' },
+                      ].map(({ count, from, to }) => (
+                        <button
+                          key={count}
+                          onClick={() => runMultiGacha(count)}
+                          disabled={tickets < count}
+                          className={`py-3 bg-gradient-to-r ${from} ${to} text-white rounded-lg shadow-md ${
+                            tickets < count ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'
+                          }`}
+                        >
+                          {count}連ガチャ
+                        </button>
+                      ))}
                     </div>
-                    
                     {/* カスタム回数セレクター */}
                     <div className="mb-5">
                       <p className="text-gray-700 mb-2">カスタム回数</p>
@@ -868,8 +875,8 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                         
                         <button 
                           onClick={increaseGachaCount}
-                          disabled={gachaCount >= 10 || gachaCount >= tickets}
-                          className={`w-10 h-10 rounded-full flex items-center justify-center ${gachaCount >= 10 || gachaCount >= tickets ? 'bg-gray-200 text-gray-400' : 'bg-blue-100 text-blue-600 hover:bg-blue-200'}`}
+                          disabled={gachaCount >= maxGacha || gachaCount >= tickets}
+                          className={`w-10 h-10 rounded-full flex items-center justify-center ${gachaCount >= maxGacha || gachaCount >= tickets ? 'bg-gray-200 text-gray-400' : 'bg-blue-100 text-blue-600 hover:bg-blue-200'}`}
                         >
                           <ChevronRight size={20} />
                         </button>
@@ -1221,15 +1228,17 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                     <h3 className="text-xl font-bold mb-6 text-center text-gray-800">ガチャ結果</h3>
                     
                     {/* グリッド表示 */}
-                    <div className="grid grid-cols-5 gap-3 mb-6">
-                      {gachaResults.map((result, index) => (
-                        <ResultCard 
-                          key={index} 
-                          result={result} 
-                          index={index} 
-                          onClick={() => showParrotDetail(result)} 
-                        />
-                      ))}
+                    <div className="mb-6 max-h-[80vh] overflow-y-auto">
+                      <div className="grid grid-cols-5 gap-3">
+                        {gachaResults.map((result, index) => (
+                          <ResultCard 
+                            key={index} 
+                            result={result} 
+                            index={index} 
+                            onClick={() => showParrotDetail(result)} 
+                          />
+                        ))}
+                      </div>
                     </div>
                     
                     {/* 完了ボタン */}
