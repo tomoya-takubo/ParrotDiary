@@ -344,29 +344,46 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
   };
   
   // DBデータをモーダル表示用データに変換
-  const convertToModalEntry = (dbEntry: DBDiaryEntry): ModalDiaryEntry => {
+  const convertToModalEntry = async (dbEntry: DBDiaryEntry): Promise<ModalDiaryEntry> => {
     const recordedTime = new Date(dbEntry.recorded_at);
-    
-    // 時間を整形（時分のみ）
-    const hours = recordedTime.getHours().toString().padStart(2, '0');
-    const minutes = recordedTime.getMinutes().toString().padStart(2, '0');
+    const hours = String(recordedTime.getHours()).padStart(2, '0');
+    const minutes = String(recordedTime.getMinutes()).padStart(2, '0');
     const timeStr = `${hours}:${minutes}`;
-    
-    // 活動内容を配列に変換
+      
     const activities = [dbEntry.line1];
     if (dbEntry.line2) activities.push(dbEntry.line2);
     if (dbEntry.line3) activities.push(dbEntry.line3);
-    
+  
+    let tags: string[] = [];
+  
+    try {
+      const { data: tagUsages } = await supabase
+        .from('tag_usage_histories')
+        .select('tag_id')
+        .eq('entry_id', dbEntry.entry_id);
+  
+      const tagIds = tagUsages?.map(t => t.tag_id).filter(Boolean);
+      if (tagIds && tagIds.length > 0) {
+        const { data: tagNames } = await supabase
+          .from('tags')
+          .select('name')
+          .in('tag_id', tagIds);
+        tags = tagNames?.map(t => t.name) || [];
+      }
+    } catch (error) {
+      console.error('タグ取得エラー:', error);
+    }
+  
     return {
       time: timeStr,
-      tags: ['3行日記'],
+      tags: tags.length > 0 ? tags : ['3行日記'], // タグがないときのフォールバック
       activities,
       created_at: dbEntry.created_at,
       entry_id: dbEntry.entry_id,
       parrots: []
     };
   };
-  
+    
   // 月を変更する関数
   const changeMonth = (increment: number) => {
     setCurrentDate(prevDate => {
@@ -380,35 +397,26 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
 
   //#region イベントハンドラー
   // セルクリックのハンドラー
-  const handleCellClick = (cell: CellData) => {
-    // ガチャモーダルが開いている場合は処理をスキップ
-    if (isGachaOpen) {
-      console.log('ガチャモーダルが開いているため、セルクリックをスキップします');
-      return;
-    }
-    
+  const handleCellClick = async (cell: CellData) => {
+    if (isGachaOpen) return;
+  
     setSelectedDate(cell.date);
-    
-    // 親コンポーネントに通知
+  
     if (onCellClick) {
       onCellClick(cell.date);
     }
-    
-    // 選択された日付のエントリーをモーダル用に変換
+  
     const entries = entriesByDate[cell.date] || [];
-    
     if (entries.length === 0) {
-      console.log('選択された日付のエントリーがありません:', cell.date);
       setModalEntries([]);
     } else {
-      // DBエントリーをモーダル用エントリーに変換
-      const modalData = entries.map(convertToModalEntry);
+      const modalData = await Promise.all(entries.map(convertToModalEntry));
       setModalEntries(modalData);
     }
-    
+  
     setShowModal(true);
   };
-  
+    
   // モーダルを閉じるハンドラー
   const handleCloseModal = () => {
     setShowModal(false);

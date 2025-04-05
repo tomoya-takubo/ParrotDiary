@@ -32,6 +32,7 @@ type EditDiaryEntryType = {
   parrots?: string[]; // parrots プロパティを追加
 };
 
+
 const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
   isOpen,
   onClose,
@@ -40,20 +41,6 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
   onSave,
 }) => {
   const { user } = useAuth();
-  
-  // サンプルのタグデータ（実際の実装では、これを外部から渡すか、APIから取得する）
-  const allTags: TagType[] = [
-    { id: 1, name: '英語学習', count: 42, lastUsed: '2024-03-09' },
-    { id: 2, name: 'プログラミング', count: 35, lastUsed: '2024-03-09' },
-    { id: 3, name: '集中できた', count: 28, lastUsed: '2024-03-09' },
-    { id: 4, name: '数学', count: 25, lastUsed: '2024-03-08' },
-    { id: 5, name: 'リーディング', count: 20, lastUsed: '2024-03-09' }
-  ];
-
-  // よく使うタグ
-  const frequentTags = allTags
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 5);
   
   // 状態管理
   const [line1, setLine1] = useState(entry.activities[0] || '');
@@ -64,10 +51,14 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [allTags, setAllTags] = useState<TagType[]>([]);
   // パロット関連のstate追加
   const [selectedParrots, setSelectedParrots] = useState<string[]>(entry.parrots || []);
 
   const { showReward } = useReward();
+
+  // よく使うタグ
+  const frequentTags = allTags.slice(0, 5);
 
   // 報酬状態の管理用（useState定義の近くに追加）
   const [rewardState] = useState<{
@@ -181,6 +172,39 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
     }
   }, [rewardState]);
 
+  useEffect(() => {
+    const fetchTags = async () => {
+      if (!user?.id) return;
+  
+      const { data, error } = await supabase
+        .from('tags')
+        .select('tag_id, name, usage_count, last_used_at')
+        .eq('created_by', user.id)
+        .order('usage_count', { ascending: false })
+        .limit(20);
+
+      console.log("取得されたタグ一覧:", data);
+
+      if (error) {
+        console.error("タグの取得エラー:", error);
+        return;
+      }
+  
+      const converted = (data ?? []).map(tag => ({
+        id: tag.tag_id as number,
+        name: tag.name as string,
+        count: tag.usage_count as number,
+        lastUsed: tag.last_used_at as string
+      }));
+  
+      setAllTags(converted);
+    };
+  
+    if (isOpen) {
+      fetchTags();
+    }
+  }, [isOpen, user]);
+  
   // モーダル外クリックハンドラー
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
@@ -663,7 +687,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
                       onClick={() => handleAddTag(tag.name)}
                       className={styles.frequentTag}
                     >
-                      <span>{tag.name}</span>
+                      <span>#{tag.name}</span>
                       <span className={styles.tagCount}>
                         {tag.count}
                       </span>
