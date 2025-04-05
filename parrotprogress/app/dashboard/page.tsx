@@ -95,76 +95,79 @@ export default function Dashboard() {
 
   // ページ読み込み時にユーザー情報とチケット情報を取得
   useEffect(() => {
+    console.log('📦 [Dashboard] refreshKey による再取得: refreshKey =', refreshKey);
+  
     const fetchUserData = async () => {
       try {
         setIsLoadingUserStatus(true);
         setIsLoadingTickets(true);
-        
-        // 現在ログイン中のユーザー情報を取得
+  
+        console.log('📤 Supabase からユーザー情報・チケット情報の再取得開始');
+  
         const { data: { user } } = await supabase.auth.getUser();
-        
+        console.log('👤 現在のユーザー:', user);
+  
         if (!user) {
-          console.error('ユーザーが認証されていません');
+          console.error('❌ ユーザーが認証されていません');
           setIsLoadingUserStatus(false);
           setIsLoadingTickets(false);
           return;
         }
-        
-        // ユーザーIDに基づいてユーザー情報を取得
+  
         const { data: userData, error: userError } = await supabase
           .from('users')
           .select('level, total_xp, streak')
           .eq('id', user.id)
           .single();
-        
+  
         if (userError) {
-          console.error('ユーザー情報の取得に失敗しました:', userError);
+          console.error('❌ ユーザー情報の取得に失敗:', userError);
         } else if (userData) {
-          // 日記の総エントリー数を取得（実際のアプリではここでSupabaseから取得）
-          const mockTotalDiaryEntries = 42; // 仮の値
-          
-          // レベル情報を計算
+          console.log('✅ ユーザーデータ取得成功:', userData);
+  
+          const mockTotalDiaryEntries = 42;
+  
           const levelInfo = calculateLevelInfo(userData.total_xp, userData.level);
-          
-          // ユーザーステータスを更新
+  
           setUserStatus({
             level: levelInfo.level,
             currentXP: levelInfo.currentXP,
             nextLevelXP: levelInfo.nextLevelXP,
-            dailyXP: 280, // 仮の値
+            dailyXP: 280,
             dailyGoalXP: 500,
             totalDiaryEntries: mockTotalDiaryEntries,
             streak: userData.streak || 0,
-            ranking: getRankFromStreak(userData.streak || 0)
+            ranking: getRankFromStreak(userData.streak || 0),
           });
         }
-        
-        // チケット情報を取得
+  
         const { data: ticketData, error: ticketError } = await supabase
           .from('gacha_tickets')
           .select('ticket_count')
           .eq('user_id', user.id)
           .single();
-        
+  
         if (ticketError) {
-          console.error('チケット情報の取得に失敗しました:', ticketError);
+          console.error('❌ チケット情報の取得に失敗:', ticketError);
           setTicketCount(0);
         } else if (ticketData) {
+          console.log('🎟️ チケットデータ取得成功:', ticketData);
           setTicketCount(ticketData.ticket_count);
         } else {
+          console.warn('⚠️ チケットデータが存在しません。');
           setTicketCount(0);
         }
       } catch (error) {
-        console.error('データ取得中にエラーが発生しました:', error);
+        console.error('❌ データ取得中の例外:', error);
       } finally {
         setIsLoadingUserStatus(false);
         setIsLoadingTickets(false);
       }
     };
-    
+  
     fetchUserData();
   }, [supabase, refreshKey]);
-
+  
   //#region Handlers
   /**
    * 活動履歴のセルがクリックされたときのハンドラ

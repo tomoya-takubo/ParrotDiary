@@ -66,10 +66,65 @@ const Diary: React.FC<DiaryProps> = ({ onSave }) => {
   });
 
   // データ再取得関数
-  const reloadData = useCallback(() => {
-    setReloadTrigger(prev => prev + 1);
-  }, []);
-
+  const reloadData = useCallback(async () => {
+    if (!authUser?.id) return;
+  
+    try {
+      const { data: diaryData, error: diaryError } = await supabase
+        .from('diary_entries')
+        .select('*')
+        .eq('user_id', authUser.id)
+        .order('recorded_at', { ascending: false });
+  
+      if (diaryError) throw diaryError;
+  
+      const entriesWithTagsAndParrots: DiaryEntryType[] = [];
+  
+      if (diaryData && diaryData.length > 0) {
+        for (const entry of diaryData) {
+          let tags: string[] = [];
+          let parrots: string[] = [];
+  
+          try {
+            const parrotUrls = await getEntryParrots(entry.entry_id as string);
+            parrots = Array.isArray(parrotUrls) ? parrotUrls : [];
+  
+            const { data: tagUsages } = await supabase
+              .from('tag_usage_histories')
+              .select('tag_id')
+              .eq('entry_id', entry.entry_id as string)
+              .eq('user_id', authUser.id);
+  
+            const tagIds = tagUsages?.map(t => t.tag_id).filter(Boolean) || [];
+  
+            if (tagIds.length > 0) {
+              const { data: tagData } = await supabase
+                .from('tags')
+                .select('name')
+                .in('tag_id', tagIds);
+  
+              tags = tagData?.map(t => t.name).filter(Boolean) || [];
+            }
+          } catch (e) {
+            console.error('再取得中のタグ・パロット取得エラー:', e);
+          }
+  
+          entriesWithTagsAndParrots.push({
+            ...entry,
+            tags,
+            parrots,
+          });
+        }
+      }
+  
+      console.log('🆕 reloadData() によって再取得された日記:', entriesWithTagsAndParrots);
+      setDiaryEntries(entriesWithTagsAndParrots);
+  
+    } catch (err) {
+      console.error('reloadData() 実行中のエラー:', err);
+    }
+  }, [authUser]);
+  
   // useEffect内からポモドーロ関連の取得処理を削除
   useEffect(() => {
     const handleAuth = async () => {

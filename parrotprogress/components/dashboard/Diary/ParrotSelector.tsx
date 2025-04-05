@@ -31,6 +31,7 @@ interface ParrotSelectorProps {
   onParrotsChange: (parrots: string[]) => void;
   maxParrots?: number;
   compact?: boolean; // コンパクト表示モード
+  forceOpen?: boolean; // ← 追加
 }
 
 // キャッシュするパロットデータの型
@@ -50,7 +51,8 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
   selectedParrots,
   onParrotsChange,
   maxParrots = 1,
-  compact = false
+  compact = false,
+  forceOpen = false,
 }) => {
   const [availableParrots, setAvailableParrots] = useState<ParrotType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -215,16 +217,22 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
   // ドロップダウンの外側をクリックしたときに閉じる
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (!forceOpen && dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setShowParrotDropdown(false);
       }
     };
-
+  
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, []);
+  }, [forceOpen]);
+  
+  useEffect(() => {
+    if (forceOpen) {
+      setShowParrotDropdown(true); // モーダル表示時に展開
+    }
+  }, [forceOpen]);
 
   // パロットの選択/解除
   const toggleParrot = (parrot: ParrotType) => {
@@ -332,7 +340,7 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
         ))}
 
         {/* 追加ボタン - 最大数未満の場合のみ表示 */}
-        {selectedParrots.length < maxParrots && (
+        {!forceOpen && selectedParrots.length < maxParrots && (
           <div 
             className={styles.addParrotButton}
             onClick={handleAddButtonClick}

@@ -495,18 +495,22 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
               });
             }
   
-            const { data: typeData } = await supabase
-              .from('acquisition_type_master')
-              .select('id')
-              .eq('name', '日記作成')
-              .maybeSingle();
-  
-            if (typeData?.id) {
+            const { data: typeData, error: typeError } = await supabase
+            .from('acquisition_type_master')
+            .select('acquisition_type_id')
+            .filter('name', 'eq', '日記作成') // ← .eq() の代わりに .filter() を使う
+            .maybeSingle();
+          
+            if (typeError) {
+              console.error('🎫 acquisition_type_master の取得エラー:', typeError);
+            }
+            
+            if (typeData?.acquisition_type_id) {
               await supabase.from('ticket_acquisition_history').insert({
                 user_id: user.id,
                 ticket_count: ticketsAmount,
                 acquired_at: isoString,
-                acquisition_type_id: typeData.id
+                acquisition_type_id: typeData.acquisition_type_id
               });
             }
           }
@@ -526,9 +530,20 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
         });
       }
   
-      onSave?.();
-      onClose();
-  
+      // ✅ 完全に成功している場合のみ、更新トリガーを送る
+      if (entryId) {
+        console.log('✅ 保存完了: entryId =', entryId);
+        console.log('✅ 報酬: XP =', xpAmount, 'チケット =', ticketsAmount);
+        console.log('✅ onSave 実行直前');
+
+        await new Promise(resolve => setTimeout(resolve, 500)); // ← DB反映待ち
+
+        onSave?.(); // ← ここがちゃんと呼ばれているか見る
+        console.log('✅ onSave 実行後');
+        onClose();
+        console.log('✅ モーダルを閉じました');
+      }
+
     } catch (err) {
       console.error('保存エラー:', err);
       setFormError('日記の保存に失敗しました。もう一度お試しください。');
@@ -724,7 +739,9 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
                 userId={user.id}
                 selectedParrots={selectedParrots}
                 onParrotsChange={setSelectedParrots}
-                maxParrots={1}
+                maxParrots={10}
+                compact={false}
+                forceOpen={true} // ← 新しく追加するprops
               />
             )}
           </div>
