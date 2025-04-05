@@ -461,12 +461,16 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
           const { shouldLevelUp, newLevel: calculatedLevel } = checkLevelUp(newTotalXp, currentLevel);
           newLevel = calculatedLevel;
   
-          await supabase.from('users').update({
+          const { error: xpError } = await supabase.from('users').update({
             total_xp: newTotalXp,
             level: shouldLevelUp ? newLevel : currentLevel,
             updated_at: isoString
           }).eq('id', user.id);
-  
+          
+          if (xpError) {
+            console.error('XP更新失敗:', xpError);
+          }
+
           await supabase.from('user_experience').insert({
             user_id: user.id,
             xp_amount: xpAmount,
@@ -483,16 +487,24 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
               .single();
   
             if (ticketData) {
-              await supabase.from('gacha_tickets').update({
+              const { error: updateError } = await supabase.from('gacha_tickets').update({
                 ticket_count: (ticketData?.ticket_count as number) + ticketsAmount,
                 last_updated: isoString
               }).eq('user_id', user.id);
+
+              if (updateError) {
+                console.error('🎫 チケット更新エラー（update）:', updateError);
+              }
             } else {
-              await supabase.from('gacha_tickets').insert({
+              const { error: insertError } = await supabase.from('gacha_tickets').insert({
                 user_id: user.id,
                 ticket_count: ticketsAmount,
                 last_updated: isoString
               });
+
+              if (insertError) {
+                console.error('🎫 チケット挿入エラー（insert）:', insertError);
+              }
             }
   
             const { data: typeData, error: typeError } = await supabase

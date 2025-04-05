@@ -234,17 +234,23 @@ export default function Dashboard() {
         .single();
         
       if (error) {
-        console.error('チケット情報の取得に失敗しました:', error);
+        console.error('❌ チケット情報の取得に失敗しました:', error);
         return;
       }
-      
+  
+      console.log('🎟️ チケット再取得成功（updateTicketCount）:', data?.ticket_count);
+  
       // ローカルのチケットカウントを更新
       setTicketCount(data ? data.ticket_count : 0);
     } catch (error) {
-      console.error('チケット更新中にエラーが発生しました:', error);
+      console.error('❌ チケット更新中にエラーが発生しました:', error);
     }
   };
-  
+
+  useEffect(() => {
+    updateTicketCount();
+  }, [refreshKey]);
+
   // ガチャを閉じる関数
   const closeGacha = () => {
     setShowGachaModal(false);
@@ -387,6 +393,9 @@ export default function Dashboard() {
         <ActivityHistory 
           onCellClick={handleActivityCellClick} 
           isGachaOpen={showGachaModal} 
+          onSave={() => {
+            setRefreshKey(k => k + 1); // ← 追加
+          }}
         />
 
         {/* 3行日記 */}

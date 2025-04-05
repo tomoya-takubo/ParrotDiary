@@ -11,6 +11,7 @@ type ActivityHistoryProps = {
   onCellClick?: (date: string) => void;
   width?: string | number;
   isGachaOpen?: boolean;
+  onSave?: () => void; // ← 追加
 };
 
 type DBDiaryEntry = {
@@ -57,7 +58,8 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const ActivityHistory: React.FC<ActivityHistoryProps> = ({ 
   onCellClick, 
   width = '100%',
-  isGachaOpen = false
+  isGachaOpen = false,
+  onSave, // ← これを追加！
 }) => {
   const { user, session, isLoading: authLoading } = useAuth();
   
@@ -447,9 +449,10 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
   const handleEditComplete = () => {
     setIsEditModalOpen(false);
     setEditingEntry(null);
-    refreshData(); // データを再取得して表示を更新
+    refreshData(); // ← 自分自身のカレンダー再取得
+    onSave?.(); // ← page.tsx に通知して refreshKey を増やす！
   };
-  //#endregion
+    //#endregion
 
   return (
           <div className={`${styles.container} ${isGachaOpen ? styles.gachaOpen : ''}`} style={{ width }} ref={containerRef}>
