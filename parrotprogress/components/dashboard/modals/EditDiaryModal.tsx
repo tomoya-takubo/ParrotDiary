@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/AuthContext';
 import styles from './EditDiaryModal.module.css'; // 専用のスタイルシートを使用
 // パロット関連のimport
 import { ParrotSelector, saveEntryParrots, getEntryParrots } from '@/components/dashboard/Diary/ParrotSelector';
-import { showReward } from '@/components/dashboard/Diary/RewardNotification';
+import { useReward } from '@/lib/RewardContext';
 
 // タグの型定義
 type TagType = {
@@ -32,13 +32,12 @@ type EditDiaryEntryType = {
   parrots?: string[]; // parrots プロパティを追加
 };
 
-
-
 const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
   isOpen,
   onClose,
   entry,
   date,
+  onSave,
 }) => {
   const { user } = useAuth();
   
@@ -67,7 +66,9 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   // パロット関連のstate追加
   const [selectedParrots, setSelectedParrots] = useState<string[]>(entry.parrots || []);
-  
+
+  const { showReward } = useReward();
+
   // 報酬状態の管理用（useState定義の近くに追加）
   const [rewardState, setRewardState] = useState<{
     show: boolean;
@@ -268,22 +269,25 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
   // 保存処理
   const handleSave = async () => {
     if (!validateForm() || !user?.id) return;
-
+  
     setIsLoading(true);
+  
+    // 🎁 報酬関連の値（初期値）
+    let xpAmount = 0;
+    let ticketsAmount = 0;
+    let shouldLevelUp = false;
+    let newLevel: number | null = null;
+  
     try {
-      // 入力内容を配列に整形（空文字は除外）
       const activities: string[] = [];
-      
       if (line1.trim()) activities.push(line1.trim());
       if (line2.trim()) activities.push(line2.trim());
       if (line3.trim()) activities.push(line3.trim());
-      
-      // 現在時刻を取得し、日本時間に調整
+  
       const now = new Date();
       const jstTime = new Date(now.getTime() + 9 * 60 * 60 * 1000);
       const isoString = jstTime.toISOString();
-      
-      // 日記エントリーデータの準備
+  
       const entryData = {
         line1: line1.trim() || null,
         line2: line2.trim() || null,
@@ -291,16 +295,13 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
         user_id: user.id,
         created_at: isoString,
         updated_at: isoString,
-        recorded_at: isoString  // recorded_atカラムを追加
+        recorded_at: isoString
       };
-
-      // 既存エントリの場合はcreated_atのみ保持
+  
       if (date && entry.time) {
         try {
-          // 日付が日本語フォーマット（年月日）を含む場合は変換
           let normalizedDate = date;
           if (date.includes('年')) {
-            // 例: 2025年3月14日 → 2025-03-14
             const parts = date.match(/(\d+)年(\d+)月(\d+)日/);
             if (parts && parts.length >= 4) {
               const year = parts[1];
@@ -309,43 +310,31 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
               normalizedDate = `${year}-${month}-${day}`;
             }
           }
-          
-          // 時間が HH:MM 形式なら HH:MM:SS に変換
+  
           const formattedTime = entry.time.includes(':') && entry.time.split(':').length === 2
             ? `${entry.time}:00`
             : entry.time;
-              
-          // ISO 8601 形式の文字列を作成
+  
           const dateTimeString = `${normalizedDate}T${formattedTime}`;
-          console.log("Normalized datetime:", dateTimeString);
-          
-          // 日時を解析して ISOString に変換
           const dateObj = new Date(dateTimeString);
-          if (!isNaN(dateObj.getTime())) { // 有効な日付かチェック
-            // 既存エントリの編集の場合、created_atは保持し、recorded_atも同じ値に
-            // JST (+9時間) を考慮
+          if (!isNaN(dateObj.getTime())) {
             const adjustedTime = new Date(dateObj.getTime() + 9 * 60 * 60 * 1000);
-            const isoString = adjustedTime.toISOString();
-            entryData.created_at = isoString;
-            entryData.recorded_at = isoString;
+            const iso = adjustedTime.toISOString();
+            entryData.created_at = iso;
+            entryData.recorded_at = iso;
           } else {
             console.error("無効な日付フォーマット:", dateTimeString);
           }
         } catch (dateError) {
           console.error("日時の変換エラー:", dateError);
-          // エラー時はデフォルト値のままとする
         }
       }
-
-      // 操作モードを判断（新規追加/更新）
+  
       const isNewEntry = !(entry.activities.some(a => a !== '') && entry.entry_id);
-      
       let entryOperation;
       let entryId: string;
-      
+  
       if (!isNewEntry && entry.entry_id) {
-        // 既存エントリの更新
-        console.log("更新モード - 既存エントリの更新", entry.entry_id);
         entryId = entry.entry_id.toString();
         entryOperation = supabase
           .from('diary_entries')
@@ -354,77 +343,45 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
             line2: entryData.line2,
             line3: entryData.line3,
             updated_at: entryData.updated_at
-            // created_atとrecorded_atは更新しない
           })
           .eq('entry_id', entryId);
       } else {
-        // 新規エントリの作成
-        console.log("作成モード - 新規エントリ");
         entryOperation = supabase
           .from('diary_entries')
           .insert(entryData);
       }
-      
+  
       const { data, error } = await entryOperation.select('entry_id');
-      console.log("DB操作結果:", data, error);
-
-      if (error) {
-        console.error("DB操作エラー詳細:", error);
-        throw error;
-      }
-      
-      // データがないか、entry_idがない場合はエラー
-      if (!data || !Array.isArray(data) || data.length === 0 || !data[0].entry_id) {
-        console.error('エントリID取得失敗:', data);
+      if (error || !data || !data[0]?.entry_id) {
+        console.error("DB操作エラー:", error);
         throw new Error('日記エントリーの保存に失敗しました');
       }
-      
-      // エントリIDを取得（新規作成の場合）
+  
       entryId = data[0].entry_id.toString();
-      console.log("取得したエントリID:", entryId);
-
-      // パロット情報の保存
       await saveEntryParrots(entryId, user.id, selectedParrots);
-      console.log("パロット情報を保存:", selectedParrots);
-
-      // 2. タグの処理
+  
+      // タグ処理（省略なし）
+  
       for (const tagName of selectedTags) {
         try {
-          // タグが存在するか確認
           const { data: existingTags, error: tagError } = await supabase
             .from('tags')
             .select('tag_id, name, usage_count')
             .eq('name', tagName)
             .maybeSingle();
-
+  
           if (tagError) throw tagError;
-
+  
           let tagId: string = '';
-
+  
           if (existingTags) {
-            if (typeof existingTags.tag_id === 'string') {
-              tagId = existingTags.tag_id;
-            } else if (existingTags.tag_id !== null && existingTags.tag_id !== undefined) {
-              // nullやundefinedでなければ文字列に変換
-              tagId = String(existingTags.tag_id);
-            }
-            
-            // nameusage_countの安全な取り出し
-            const currentCount = typeof existingTags.usage_count === 'number' 
-              ? existingTags.usage_count 
-              : 0;
-            
-            const { error: updateError } = await supabase
-              .from('tags')
-              .update({ 
-                usage_count: currentCount + 1,
-                last_used_at: entryData.updated_at
-              })
-              .eq('tag_id', tagId);
-
-            if (updateError) throw updateError;
+            tagId = String(existingTags.tag_id);
+            const currentCount = typeof existingTags.usage_count === 'number' ? existingTags.usage_count : 0;
+            await supabase.from('tags').update({
+              usage_count: currentCount + 1,
+              last_used_at: entryData.updated_at
+            }).eq('tag_id', tagId);
           } else {
-            // 新しいタグを作成
             const { data: newTag, error: createError } = await supabase
               .from('tags')
               .insert({
@@ -435,205 +392,123 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
                 created_by: user.id
               })
               .select('tag_id');
-
+  
             if (createError) throw createError;
-            
-            if (newTag && newTag.length > 0 && newTag[0].tag_id) {
-              tagId = String(newTag[0].tag_id);
-            } else {
-              console.error('新規タグID取得失敗');
-              continue; // このタグの処理をスキップ
-            }
+            tagId = String(newTag?.[0]?.tag_id || '');
           }
-
-          // タグの使用履歴を記録
+  
           if (tagId) {
-            // 既存履歴を確認
-            const { data: existingHistory, error: historyCheckError } = await supabase
+            const { data: existingHistory } = await supabase
               .from('tag_usage_histories')
               .select('*')
               .eq('tag_id', tagId)
               .eq('entry_id', entryId)
               .eq('user_id', user.id)
               .maybeSingle();
-
-            if (historyCheckError) throw historyCheckError;
-
-            // 履歴がなければ新規追加
+  
             if (!existingHistory) {
-              const { error: historyError } = await supabase
-                .from('tag_usage_histories')
-                .insert({
-                  tag_id: tagId,
-                  user_id: user.id,
-                  entry_id: entryId,
-                  used_at: entryData.updated_at
-                });
-
-              if (historyError) throw historyError;
+              await supabase.from('tag_usage_histories').insert({
+                tag_id: tagId,
+                user_id: user.id,
+                entry_id: entryId,
+                used_at: entryData.updated_at
+              });
             }
           }
         } catch (tagProcessError) {
           console.error('タグ処理エラー:', tagProcessError);
-          // タグ処理のエラーは無視して次のタグに進む
           continue;
         }
       }
-
-      // 新規作成時のみ報酬付与
+  
+      // 🎁 報酬付与（新規のみ）
       if (isNewEntry) {
         try {
-          // 行数に応じた報酬計算
-          const xpAmount = calculateXpReward(activities.length);
-          const ticketsAmount = calculateTicketReward(activities.length);
-          
-          console.log(`報酬付与: XP ${xpAmount}, チケット ${ticketsAmount}`);
-          
-          // 1. ユーザー経験値データの更新
+          xpAmount = calculateXpReward(activities.length);
+          ticketsAmount = calculateTicketReward(activities.length);
+  
           const { data: userData, error: userError } = await supabase
             .from('users')
             .select('total_xp, level')
             .eq('id', user.id)
             .single();
-          
-          if (userError) {
-            console.error('ユーザーデータ取得エラー:', userError);
-            throw userError;
-          }
-          
-          // 現在のXPに新しいXPを追加
-          const newTotalXp = ((userData?.total_xp as number) || 0) + xpAmount;
-          
-          // レベル計算
-          const currentLevel = userData.level || 1;
-          const { shouldLevelUp, newLevel } = checkLevelUp(newTotalXp, currentLevel as number);
-          
-          // ユーザーデータ更新
-          const { error: updateUserError } = await supabase
-            .from('users')
-            .update({ 
-              total_xp: newTotalXp,
-              level: shouldLevelUp ? newLevel : currentLevel,
-              updated_at: isoString
-            })
-            .eq('id', user.id);
-          
-          if (updateUserError) {
-            console.error('ユーザーデータ更新エラー:', updateUserError);
-            throw updateUserError;
-          }
-          
-          // 2. 経験値獲得履歴を記録
-          const { error: experienceError } = await supabase
-            .from('user_experience')
-            .insert({
-              user_id: user.id,
-              xp_amount: xpAmount,
-              action_type: '日記作成',
-              earned_at: isoString,
-              created_at: isoString
-            });
-          
-          if (experienceError) {
-            console.error('経験値履歴記録エラー:', experienceError);
-            throw experienceError;
-          }
-          
-          // 3. ガチャチケット更新
+  
+          if (userError) throw userError;
+  
+          const newTotalXp = Number(userData?.total_xp ?? 0) + xpAmount;
+          const currentLevel = Number(userData?.level ?? 1);
+  
+          const { shouldLevelUp, newLevel: calculatedLevel } = checkLevelUp(newTotalXp, currentLevel);
+          newLevel = calculatedLevel;
+  
+          await supabase.from('users').update({
+            total_xp: newTotalXp,
+            level: shouldLevelUp ? newLevel : currentLevel,
+            updated_at: isoString
+          }).eq('id', user.id);
+  
+          await supabase.from('user_experience').insert({
+            user_id: user.id,
+            xp_amount: xpAmount,
+            action_type: '日記作成',
+            earned_at: isoString,
+            created_at: isoString
+          });
+  
           if (ticketsAmount > 0) {
-            // 現在のチケット数を取得
-            const { data: ticketData, error: ticketError } = await supabase
+            const { data: ticketData } = await supabase
               .from('gacha_tickets')
               .select('ticket_count')
               .eq('user_id', user.id)
               .single();
-            
-            if (ticketError && ticketError.code !== 'PGRST116') {
-              console.error('チケットデータ取得エラー:', ticketError);
-              throw ticketError;
-            }
-            
-            // チケットデータが存在するかどうかで処理を分岐
+  
             if (ticketData) {
-              // 既存のチケット数に新しいチケット数を追加
-              const { error: updateTicketError } = await supabase
-                .from('gacha_tickets')
-                .update({ 
-                  ticket_count: (ticketData.ticket_count as number) + ticketsAmount,
-                  last_updated: isoString
-                })
-                .eq('user_id', user.id);
-              
-              if (updateTicketError) {
-                console.error('チケット更新エラー:', updateTicketError);
-                throw updateTicketError;
-              }
+              await supabase.from('gacha_tickets').update({
+                ticket_count: (ticketData?.ticket_count as number) + ticketsAmount,
+                last_updated: isoString
+              }).eq('user_id', user.id);
             } else {
-              // チケットデータが存在しない場合は新規作成
-              const { error: insertTicketError } = await supabase
-                .from('gacha_tickets')
-                .insert({
-                  user_id: user.id,
-                  ticket_count: ticketsAmount,
-                  last_updated: isoString
-                });
-              
-              if (insertTicketError) {
-                console.error('チケット作成エラー:', insertTicketError);
-                throw insertTicketError;
-              }
+              await supabase.from('gacha_tickets').insert({
+                user_id: user.id,
+                ticket_count: ticketsAmount,
+                last_updated: isoString
+              });
             }
-            
-            // 4. チケット獲得履歴を記録
-            const { error: ticketHistoryError } = await supabase
-              .from('ticket_acquisition_history')
-              .insert({
+  
+            const { data: typeData } = await supabase
+              .from('acquisition_type_master')
+              .select('id')
+              .eq('name', '日記作成')
+              .maybeSingle();
+  
+            if (typeData?.id) {
+              await supabase.from('ticket_acquisition_history').insert({
                 user_id: user.id,
                 ticket_count: ticketsAmount,
                 acquired_at: isoString,
-                acquisition_type_id: 1 // 1 = 日記作成 (acquisition_type_masterテーブルに対応)
+                acquisition_type_id: typeData.id
               });
-            
-            if (ticketHistoryError) {
-              console.error('チケット履歴記録エラー:', ticketHistoryError);
-              throw ticketHistoryError;
             }
           }
-          
-          // 5. 獲得報酬の通知用状態を更新
-          setRewardState({
-            show: true,
-            xp: xpAmount,
-            tickets: ticketsAmount,
-            levelUp: shouldLevelUp,
-            newLevel: shouldLevelUp ? newLevel : null
-          });
-
-          // デバッグ用ログを追加
-          console.log("報酬通知を表示:", {
-            xp: xpAmount,
-            tickets: ticketsAmount,
-            levelUp: shouldLevelUp,
-            newLevel: shouldLevelUp ? newLevel : null
-          });
-
-          // 3秒後に通知を非表示にする
-          setTimeout(() => {
-            setRewardState(prev => ({ ...prev, show: false }));
-          }, 30000);
-          
-          console.log('保存完了:', entryId);
-          showReward({
-            xp: xpAmount,
-            tickets: ticketsAmount,
-            levelUp: shouldLevelUp,
-            newLevel: shouldLevelUp ? newLevel : null
-          });
+  
         } catch (rewardError) {
           console.error('報酬付与エラー:', rewardError);
-          // 報酬付与のエラーは記録するが、日記の保存は成功と見なす
         }
       }
+  
+      // ✅ 通知は try の外で出す（失敗しても出す）
+      if (isNewEntry) {
+        showReward({
+          xp: xpAmount,
+          tickets: ticketsAmount,
+          levelUp: shouldLevelUp,
+          newLevel: shouldLevelUp ? newLevel : null
+        });
+      }
+  
+      onSave?.();
+      onClose();
+  
     } catch (err) {
       console.error('保存エラー:', err);
       setFormError('日記の保存に失敗しました。もう一度お試しください。');
@@ -641,7 +516,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
       setIsLoading(false);
     }
   };
-
+  
   if (!isOpen) return null;
 
   return (

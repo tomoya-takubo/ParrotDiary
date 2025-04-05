@@ -40,6 +40,10 @@ export default function Dashboard() {
   });
   const [isLoadingUserStatus, setIsLoadingUserStatus] = useState<boolean>(true);
 
+  // useStateで更新トリガーを追加
+  const [refreshKey, setRefreshKey] = useState(0);
+
+
   // レベルに基づいて必要なXPを計算する関数
   const calculateRequiredXpForLevel = (level: number): number => {
     // レベルごとの必要XPの計算式（例: 基本値 × レベル^1.5）
@@ -159,7 +163,7 @@ export default function Dashboard() {
     };
     
     fetchUserData();
-  }, [supabase]);
+  }, [supabase, refreshKey]);
 
   //#region Handlers
   /**
@@ -248,7 +252,7 @@ export default function Dashboard() {
       <div className={styles.contentContainer}>
         {/* ヘッダー */}
         <div className={styles.headerContainer}>
-          <h1 className={styles.appTitle}>ぱろっとぷろぐれす</h1>
+          <h1 className={styles.appTitle}>ぱろっとだいありー</h1>
           <div className={styles.navButtons}>
             {/* ログアウトボタンを追加 */}
             <button 
@@ -383,8 +387,8 @@ export default function Dashboard() {
         />
 
         {/* 3行日記 */}
-        <Diary />
-
+        <Diary onSave={() => setRefreshKey(k => k + 1)} />
+          
         {/* モーダルコンポーネント */}
         {/* ガチャアニメーションコンポーネント */}
         <GachaAnimation

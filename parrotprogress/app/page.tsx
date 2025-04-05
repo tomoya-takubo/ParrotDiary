@@ -29,7 +29,7 @@ export default function Home() {
     <main className={styles.container}>
       <div className={styles.wrapper}>
         <div className={styles.hero}>
-          <h1 className={styles.title}> ぱろっとぷろぐれす </h1>
+          <h1 className={styles.title}> ぱろっとだいありー </h1>
           <p className={styles.subtitle}>PartyParrotと一緒に楽しく継続</p>
           <div className={styles.heroParrot}>
             {gifUrl && <Image src={gifUrl} alt="Party Parrot" width={400} height={400}/>}
@@ -41,24 +41,14 @@ export default function Home() {
         <div className={styles.featureGrid}>
           <div className={styles.featureCard}>
             <div className={styles.featureIcon}>
-              <div className={`${styles.iconWrapper} ${styles.iconBlue}`}>
-                <Timer className="w-6 h-6" />
-              </div>
-              <h3 className={styles.featureTitle}>集中タイマー</h3>
-            </div>
-            <p className={styles.featureDescription}>
-              25分の集中タイムで効率的に作業。達成するたびにPartyParrotがお祝いとコインをプレゼント！
-            </p>
-          </div>
-          <div className={styles.featureCard}>
-            <div className={styles.featureIcon}>
               <div className={`${styles.iconWrapper} ${styles.iconPurple}`}>
                 <BookOpen className="w-6 h-6" />
               </div>
               <h3 className={styles.featureTitle}>3行日記</h3>
             </div>
             <p className={styles.featureDescription}>
-              シンプルな3行で今日を振り返り。継続でPartyParrotから特別なメッセージが届きます！
+              シンプルな3行で今日を振り返り。<br />
+              活動記録カレンダーで過去の記録数や日記を確認できます。
             </p>
           </div>
           <div className={styles.featureCard}>
@@ -69,7 +59,8 @@ export default function Home() {
               <h3 className={styles.featureTitle}>PartyParrotガチャ</h3>
             </div>
             <p className={styles.featureDescription}>
-              獲得したコインでレアなPartyParrotをゲット！特殊能力を活用して作業効率アップ！
+              獲得したチケットでレアなPartyParrotをゲット！<br />
+              個性的なPartyParrotをたくさん集めよう！
             </p>
           </div>
         </div>
