@@ -103,14 +103,14 @@ const Diary: React.FC<DiaryProps> = ({ onSave }) => {
                 .select('name')
                 .in('tag_id', tagIds);
   
-              tags = tagData?.map(t => t.name).filter(Boolean) || [];
+              tags = (tagData as { name: string }[]).map(t => t.name).filter(Boolean) || [];
             }
           } catch (e) {
             console.error('再取得中のタグ・パロット取得エラー:', e);
           }
   
           entriesWithTagsAndParrots.push({
-            ...entry,
+            ...(entry as DiaryEntryType),
             tags,
             parrots,
           });
