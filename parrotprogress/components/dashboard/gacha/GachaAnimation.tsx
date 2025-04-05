@@ -820,7 +820,10 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                 initial={{ scale: 0.5, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.5, opacity: 0 }}
-                className="rounded-xl p-6 w-full max-w-3xl relative overflow-hidden shadow-2xl bg-white"
+                className="rounded-xl p-6 w-full max-w-3xl relative overflow-hidden shadow-2xl"
+                style={{
+                  background: "linear-gradient(135deg, #e0f2fe, #f0f9ff)", // 淡い青系の背景
+                }}
               >
                 {error ? (
                 // エラー表示
@@ -833,88 +836,96 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                     閉じる
                   </button>
                 </div>
+              // ガチャを回すモーダル - 淡い色合いの背景でスタイリング
               ) : !showResult && !showingSingleResult && !processing && tickets > 0 ? (
                 // ガチャ回数選択UI
-                <div className="py-8 text-center">
-                  <h3 className="text-xl font-bold mb-6">ガチャを回す</h3>
+                <div className="py-8 text-center relative">
+                  <div className="absolute inset-0 rounded-xl" style={{
+                    background: "linear-gradient(135deg, #dbeafe, #ede9fe, #fce7f3)", // 淡い青紫ピンクのグラデーション
+                    backgroundSize: '200% 200%',
+                  }}></div>
                   
-                  <div className="mb-6">
-                    <p className="text-gray-600 mb-2">現在のチケット: <span className="font-bold text-blue-600">{tickets}枚</span></p>
-                  </div>
-                  
-                  {/* クイックアクセスボタン */}
-                  <div className="grid grid-cols-2 gap-3 mb-6">
-                    <button
-                      onClick={() => runMultiGacha(5)}
-                      disabled={tickets < 5}
-                      className={`py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg shadow-md ${tickets < 5 ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'}`}
-                    >
-                      5連ガチャ
-                    </button>
-                    <button
-                      onClick={() => runMultiGacha(10)}
-                      disabled={tickets < 10}
-                      className={`py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg shadow-md ${tickets < 10 ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'}`}
-                    >
-                      10連ガチャ
-                    </button>
-                  </div>
-                  
-                  {/* カスタム回数セレクター */}
-                  <div className="mb-5">
-                    <p className="text-gray-700 mb-2">カスタム回数</p>
+                  <div className="relative z-10">
+                    <h3 className="text-xl font-bold mb-6 text-gray-800">ガチャを回す</h3>
                     
-                    <div className="flex items-center justify-center gap-4 mt-2">
-                      <button 
-                        onClick={decreaseGachaCount}
-                        disabled={gachaCount <= 1}
-                        className={`w-10 h-10 rounded-full flex items-center justify-center ${gachaCount <= 1 ? 'bg-gray-200 text-gray-400' : 'bg-blue-100 text-blue-600 hover:bg-blue-200'}`}
+                    <div className="mb-6">
+                      <p className="text-gray-700 mb-2">現在のチケット: <span className="font-bold text-blue-600">{tickets}枚</span></p>
+                    </div>
+                    
+                    {/* クイックアクセスボタン */}
+                    <div className="grid grid-cols-2 gap-3 mb-6">
+                      <button
+                        onClick={() => runMultiGacha(5)}
+                        disabled={tickets < 5}
+                        className={`py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg shadow-md ${tickets < 5 ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'}`}
                       >
-                        <ChevronLeft size={20} />
+                        5連ガチャ
+                      </button>
+                      <button
+                        onClick={() => runMultiGacha(10)}
+                        disabled={tickets < 10}
+                        className={`py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg shadow-md ${tickets < 10 ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'}`}
+                      >
+                        10連ガチャ
+                      </button>
+                    </div>
+                    
+                    {/* カスタム回数セレクター */}
+                    <div className="mb-5">
+                      <p className="text-gray-700 mb-2">カスタム回数</p>
+                      
+                      <div className="flex items-center justify-center gap-4 mt-2">
+                        <button 
+                          onClick={decreaseGachaCount}
+                          disabled={gachaCount <= 1}
+                          className={`w-10 h-10 rounded-full flex items-center justify-center ${gachaCount <= 1 ? 'bg-gray-200 text-gray-400' : 'bg-blue-100 text-blue-600 hover:bg-blue-200'}`}
+                        >
+                          <ChevronLeft size={20} />
+                        </button>
+                        
+                        <div className="flex flex-col items-center">
+                          <span className="text-3xl font-bold text-blue-600">{gachaCount}</span>
+                          <span className="text-sm text-gray-500">回数</span>
+                        </div>
+                        
+                        <button 
+                          onClick={increaseGachaCount}
+                          disabled={gachaCount >= 10 || gachaCount >= tickets}
+                          className={`w-10 h-10 rounded-full flex items-center justify-center ${gachaCount >= 10 || gachaCount >= tickets ? 'bg-gray-200 text-gray-400' : 'bg-blue-100 text-blue-600 hover:bg-blue-200'}`}
+                        >
+                          <ChevronRight size={20} />
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-col gap-3">
+                      <button 
+                        onClick={() => runMultiGacha(gachaCount)}
+                        className="w-full py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg hover:opacity-90 shadow-lg"
+                      >
+                        {gachaCount}回ガチャを回す
                       </button>
                       
-                      <div className="flex flex-col items-center">
-                        <span className="text-3xl font-bold text-blue-600">{gachaCount}</span>
-                        <span className="text-sm text-gray-500">回数</span>
-                      </div>
+                      <button 
+                        onClick={singleGachaAnimation}
+                        className="w-full py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:opacity-90 shadow-lg"
+                      >
+                        1回だけ回す
+                      </button>
                       
                       <button 
-                        onClick={increaseGachaCount}
-                        disabled={gachaCount >= 10 || gachaCount >= tickets}
-                        className={`w-10 h-10 rounded-full flex items-center justify-center ${gachaCount >= 10 || gachaCount >= tickets ? 'bg-gray-200 text-gray-400' : 'bg-blue-100 text-blue-600 hover:bg-blue-200'}`}
+                        onClick={handleCloseGacha}
+                        className="w-full py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 mt-2"
                       >
-                        <ChevronRight size={20} />
+                        キャンセル
                       </button>
                     </div>
                   </div>
-                  
-                  <div className="flex flex-col gap-3">
-                    <button 
-                      onClick={() => runMultiGacha(gachaCount)}
-                      className="w-full py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg hover:opacity-90 shadow-lg"
-                    >
-                      {gachaCount}回ガチャを回す
-                    </button>
-                    
-                    <button 
-                      onClick={singleGachaAnimation}
-                      className="w-full py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:opacity-90 shadow-lg"
-                    >
-                      1回だけ回す
-                    </button>
-                    
-                    <button 
-                      onClick={handleCloseGacha}
-                      className="w-full py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 mt-2"
-                    >
-                      キャンセル
-                    </button>
-                  </div>
                 </div>
               ) : processing ? (
-                // ガチャ処理中のアニメーション（既存のアニメーションを流用）
+                // ガチャ処理中のアニメーション - 白枠なし
                 <div className="py-12 text-center relative">
-                  {/* 背景アニメーション */}
+                  {/* 背景アニメーション - 完全着色 */}
                   <motion.div
                     animate={{
                       backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
@@ -924,9 +935,9 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                       repeat: Infinity,
                       ease: "linear"
                     }}
-                    className="absolute inset-0 opacity-25"
+                    className="absolute inset-0 rounded-xl"
                     style={{
-                      background: "linear-gradient(to right, #3b82f6, #8b5cf6)",
+                      background: "linear-gradient(to right, #dbeafe, #c7d2fe)",
                       backgroundSize: '200% 100%',
                     }}
                   />
@@ -941,7 +952,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                         repeat: Infinity,
                         ease: "linear"
                       }}
-                      className="w-32 h-32 mx-auto bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center shadow-lg"
+                      className="w-32 h-32 mx-auto bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center shadow-lg"
                     >
                       {gifUrl && <Image src={gifUrl} alt="Party Parrot" width={400} height={400}/>}
                     </motion.div>
@@ -953,34 +964,34 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                         duration: 1,
                         repeat: Infinity
                       }}
-                      className="mt-4 text-gray-600 font-medium"
+                      className="mt-4 text-gray-700 font-medium"
                     >
                       ✨ パロットを探しています... ✨
                     </motion.p>
                   </div>
                 </div>
+              ) : showingSingleResult && currentSingleParrot ? (
+                // 単一ガチャの結果表示 - 白枠なし、淡い背景
+                <div className="relative py-6">
+                  {/* 背景のグラデーション - 透明度を25%に戻して淡い色に */}
+                  <motion.div
+                    animate={{
+                      backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+                    }}
+                    transition={{
+                      duration: 5,
+                      repeat: Infinity,
+                      ease: "linear"
+                    }}
+                    className="absolute inset-0 opacity-25 rounded-xl"
+                    style={{
+                      background: rarityConfigs[currentSingleParrot.rarityType].bgGradient,
+                      backgroundSize: '200% 100%',
+                    }}
+                  />
 
-                ) : showingSingleResult && currentSingleParrot ? (
-                  // 単一ガチャの結果表示 - 背景を淡い色に戻す
-                  <div className="relative py-6">
-                    {/* 背景のグラデーション - 透明度を戻す */}
-                    <motion.div
-                      animate={{
-                        backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
-                      }}
-                      transition={{
-                        duration: 5,
-                        repeat: Infinity,
-                        ease: "linear"
-                      }}
-                      className="absolute inset-0 opacity-25"
-                      style={{
-                        background: rarityConfigs[currentSingleParrot.rarityType].bgGradient,
-                        backgroundSize: '200% 100%',
-                      }}
-                    />
-                    <div className="relative text-center z-10">
-                      <div className="py-8">
+                  <div className="relative text-center z-10">
+                    <div className="py-8">
                       {/* パーティクルエフェクト */}
                       <Particles config={rarityConfigs[currentSingleParrot.rarityType]} />
                       
@@ -1102,18 +1113,18 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                   </div>
                 </div>
               ) : showDetail && detailParrot ? (
-                // パロット詳細表示 - 背景を淡い色に戻す
+                // パロット詳細表示 - 白枠なし、淡い背景
                 <div className="relative py-6">
                   {/* 閉じるボタン */}
                   <button 
                     onClick={closeDetail}
-                    className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 p-2 z-20"
+                    className="absolute top-2 right-2 text-gray-600 hover:text-gray-900 p-2 z-20"
                   >
                     <X size={20} />
                   </button>
                   
                   <div className="flex flex-col items-center text-center">
-                    {/* 背景のグラデーション - 透明度を戻す */}
+                    {/* 背景のグラデーション - 透明度を25%に戻して淡い色に */}
                     <motion.div
                       animate={{
                         backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
@@ -1217,13 +1228,13 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                   </div>
                 </div>
               ) : showResult ? (
-                // グリッド表示のガチャ結果 - 背景色を追加
+                // グリッド表示のガチャ結果 - 白枠なし、淡い背景
                 <div className="py-6 relative">
-                  {/* 背景グラデーション - 淡い色に変更 */}
+                  {/* 背景グラデーション - 完全着色 */}
                   <div 
-                    className="absolute inset-0 opacity-25 rounded-xl"
+                    className="absolute inset-0 rounded-xl"
                     style={{
-                      background: "linear-gradient(135deg, #93c5fd, #c7d2fe, #fce7f3)",
+                      background: "linear-gradient(135deg, #e0f2fe, #ddd6fe, #fbcfe8)",
                       backgroundSize: '200% 200%',
                     }}
                   />
@@ -1256,7 +1267,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                     )}
                   </div>
                 </div>
-                ) : (
+              ) : (
                 // ロード中表示
                 <div className="py-8 text-center">
                   <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>

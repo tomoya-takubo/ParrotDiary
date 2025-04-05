@@ -225,7 +225,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
   // カレンダーグリッドの生成（月間カレンダー形式）
   const generateCalendarGrid = () => {
     const today = new Date();
-    const todayStr = formatDateForComparison(today.toISOString());
+    const todayStr = formatDateString(today);
     
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
@@ -327,12 +327,13 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
   //#region ヘルパー関数
   // 日付文字列をYYYY-MM-DD形式に変換
   const formatDateString = (date: Date): string => {
+    // クライアントのローカルタイムゾーンで日付部分だけを取得
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
-  
+    
   // 日付を表示形式に変換（例: 2024年3月15日）
   const formatDisplayDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -378,9 +379,10 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
   // 現在の日本時間をISO形式で取得する関数
   const getJSTISOString = () => {
     const now = new Date();
-    return new Date(now.getTime() + (9 * 60 * 60 * 1000)).toISOString();
+    // 日本時間の日付部分だけを返す
+    return formatDateString(now);
   };
-  //#endregion
+    //#endregion
 
   //#region イベントハンドラー
   // セルクリックのハンドラー
@@ -549,7 +551,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
         date={selectedDate ? formatDisplayDate(selectedDate) : null}
         entries={modalEntries}
         onDataUpdated={refreshData}
-        isToday={selectedDate === formatDateForComparison(getJSTISOString())}
+        isToday={selectedDate === formatDateString(new Date())}
         onEditEntry={handleEditEntry}
       />
       
