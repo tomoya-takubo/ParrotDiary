@@ -154,6 +154,159 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
     setGifUrl(url);
   }, []);
 
+  // 以下のコードのみを残し、他のvisibilitychange関連のuseEffectをすべて削除します
+  useEffect(() => {
+    // タブの可視性変更時のハンドラ - 単一のuseEffectだけでこれを扱う
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('タブがアクティブになりました');
+        
+        // 状態をチェックして結果表示を復元
+        if (currentRarity && selectedParrot) {
+          console.log('ガチャ結果表示を復元します', { currentRarity, selectedParrot: selectedParrot.name });
+          
+          // 強制的に状態を再設定
+          setSpinning(false);
+          
+          // 状態更新後に再レンダリングを強制
+          requestAnimationFrame(() => {
+            setShowResult(true);
+            
+            // DOMを直接強制更新
+            setTimeout(() => {
+              // ID付きの要素を選択（HTMLにこれらのIDを追加する必要あり）
+              const resultContainer = document.getElementById('gacha-result-container');
+              const okButton = document.getElementById('gacha-ok-button');
+              
+              if (resultContainer) {
+                resultContainer.style.opacity = '1';
+                resultContainer.style.transform = 'scale(1)';
+              }
+              
+              if (okButton) {
+                okButton.style.display = 'inline-block';
+                okButton.style.opacity = '1';
+              }
+            }, 50);
+          });
+        }
+      }
+    };
+    
+    // セッションストレージにも保存
+    if (currentRarity && selectedParrot) {
+      sessionStorage.setItem('gachaState', JSON.stringify({
+        currentRarity,
+        selectedParrot,
+        showResult: true
+      }));
+    }
+    
+    // イベントリスナーの登録（一箇所だけ）
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [currentRarity, selectedParrot, showResult]);
+
+  // 状態変更時にセッションストレージに保存
+  useEffect(() => {
+    if (currentRarity && selectedParrot) {
+      const state = {
+        currentRarity,
+        selectedParrot,
+        showResult
+      };
+      sessionStorage.setItem('gachaState', JSON.stringify(state));
+    }
+  }, [currentRarity, selectedParrot, showResult]);
+
+  // コンポーネントマウント時に状態を復元
+  useEffect(() => {
+    if (isOpen) {
+      const savedState = sessionStorage.getItem('gachaState');
+      if (savedState) {
+        try {
+          const state = JSON.parse(savedState);
+          if (!currentRarity && !selectedParrot) {
+            setCurrentRarity(state.currentRarity);
+            setSelectedParrot(state.selectedParrot);
+            setShowResult(state.showResult);
+            setSpinning(false);
+          }
+        } catch (e) {
+          console.error('ガチャ状態の復元エラー:', e);
+        }
+      }
+    }
+  }, [isOpen]);
+
+  // 一時的なデバッグ用のコード - UIに状態を表示
+  useEffect(() => {
+    console.log('現在の状態:', { 
+      showResult, 
+      spinning, 
+      currentRarity: currentRarity?.toString(),
+      selectedParrot: selectedParrot?.name
+    });
+  }, [showResult, spinning, currentRarity, selectedParrot]);
+
+  // AnimatePresenceの挙動を制御する追加のuseEffect
+  useEffect(() => {
+    // currentRarityがある場合にレンダリングを強制
+    if (currentRarity && !showResult && !spinning) {
+      // スピン中のフラグをリセット
+      setSpinning(false);
+      
+      // レンダリングループを避けるため、直前の状態を確認
+      const wasShowing = sessionStorage.getItem('wasShowingResult');
+      if (wasShowing === 'true') {
+        // 遅延をつけてから結果表示を有効化
+        setTimeout(() => {
+          setShowResult(true);
+        }, 200);
+      }
+    }
+    
+    // 状態変更を記録
+    if (showResult) {
+      sessionStorage.setItem('wasShowingResult', 'true');
+    }
+  }, [currentRarity, showResult, spinning]);
+
+  // isOpenの変更時に確実にリセット
+  useEffect(() => {
+    if (!isOpen) {
+      // モーダルが閉じられたときは状態をリセット
+      sessionStorage.removeItem('gachaState');
+      sessionStorage.removeItem('wasShowingResult');
+      setShowResult(false);
+      setSpinning(false);
+      setCurrentRarity(null);
+      setSelectedParrot(null);
+    } else if (isOpen) {
+      // モーダルが開かれた時、保存された状態を復元
+      const savedState = sessionStorage.getItem('gachaState');
+      if (savedState) {
+        try {
+          const state = JSON.parse(savedState);
+          // 強制的に状態を復元
+          setCurrentRarity(state.currentRarity);
+          setSelectedParrot(state.selectedParrot);
+          setSpinning(false);
+          
+          // 少し遅延させて結果表示を有効化
+          setTimeout(() => {
+            setShowResult(true);
+          }, 100);
+        } catch (e) {
+          console.error('状態復元エラー:', e);
+        }
+      }
+    }
+  }, [isOpen]);
+
   // ユーザーのチケット情報を取得
   const fetchTickets = async () => {
     if (!user) {
@@ -545,6 +698,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
    * 状態をリセットして閉じる
    */
   const handleCloseGacha = () => {
+    sessionStorage.removeItem('gachaState'); // セッションストレージをクリア
     setShowResult(false);
     setSpinning(false);
     setCurrentRarity(null);
@@ -558,6 +712,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
    */
   const closeGacha = () => {
     if (!showResult) return;
+    sessionStorage.removeItem('gachaState'); // セッションストレージをクリア
     setShowResult(false);
     setSpinning(false);
     setCurrentRarity(null);
@@ -656,6 +811,8 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                     ) : (
                       // 結果表示
                       <motion.div
+                        id="gacha-result-container" // IDを追加
+                        key={`result-${Date.now()}`} // 強制的に再レンダリング
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         transition={{
@@ -775,6 +932,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
 
                         {/* OKボタン */}
                         <motion.button
+                          id="gacha-ok-button" // IDを追加
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           transition={{ delay: 0.6 }}
