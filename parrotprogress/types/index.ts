@@ -23,8 +23,6 @@ export type UserStatus = {
   level: number;
   currentXP: number;
   nextLevelXP: number;
-  dailyXP: number;
-  dailyGoalXP: number;
   totalDiaryEntries: number;
   streak: number;
   ranking: string;

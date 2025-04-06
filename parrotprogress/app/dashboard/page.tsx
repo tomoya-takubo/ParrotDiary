@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Star, Gift, Book, Award, LogOut } from 'lucide-react';
+import { Star, Gift, Book, Award, LogOut, Shield, Medal, Trophy } from 'lucide-react';
 import styles from './page.module.css';
 import { useRouter } from 'next/navigation';
 import { signOut } from '@/lib/authentication';
@@ -32,12 +32,48 @@ export default function Dashboard() {
     level: 1,
     currentXP: 0,
     nextLevelXP: 1000,
-    dailyXP: 0,
-    dailyGoalXP: 500,
     totalDiaryEntries: 0,
     streak: 0,
     ranking: 'ブロンズ'
   });
+
+  const getRankStyle = (rank: string) => {
+    switch (rank) {
+      case 'ブロンズ':
+        return {
+          icon: Shield,
+          gradient: 'linear-gradient(135deg, #cd7f32, #a65c00)', // 🔶 銅色グラデ
+          subtext: 'シルバーまであと10日'
+        };
+      case 'シルバー':
+        return {
+          icon: Medal,
+          gradient: 'linear-gradient(135deg, #cbd5e0, #a0aec0)', // シルバー風
+          subtext: 'ゴールドまであと30日'
+        };
+      case 'ゴールド':
+        return {
+          icon: Trophy,
+          gradient: 'linear-gradient(135deg, #fbbf24, #f59e0b)', // ゴールド
+          subtext: 'プラチナまであと60日'
+        };
+      case 'プラチナ':
+        return {
+          icon: Star,
+          gradient: 'linear-gradient(135deg, #a78bfa, #8b5cf6)', // プラチナ感
+          subtext: '最高ランクです！'
+        };
+      default:
+        return {
+          icon: Shield,
+          gradient: 'linear-gradient(135deg, #e2e8f0, #cbd5e0)',
+          subtext: ''
+        };
+    }
+  };
+
+  const rankStyle = getRankStyle(userStatus.ranking);
+
   const [isLoadingUserStatus, setIsLoadingUserStatus] = useState<boolean>(true);
 
   // useStateで更新トリガーを追加
@@ -120,23 +156,40 @@ export default function Dashboard() {
         if (userError) {
           console.error('ユーザー情報の取得に失敗しました:', userError);
         } else if (userData) {
-          // 日記の総エントリー数を取得（実際のアプリではここでSupabaseから取得）
-          const mockTotalDiaryEntries = 42; // 仮の値
           
-          // レベル情報を計算
-          const levelInfo = calculateLevelInfo(userData.total_xp, userData.level);
-          
-          // ユーザーステータスを更新
-          setUserStatus({
-            level: levelInfo.level,
-            currentXP: levelInfo.currentXP,
-            nextLevelXP: levelInfo.nextLevelXP,
-            dailyXP: 280, // 仮の値
-            dailyGoalXP: 500,
-            totalDiaryEntries: mockTotalDiaryEntries,
-            streak: userData.streak || 0,
-            ranking: getRankFromStreak(userData.streak || 0)
-          });
+          // ✅ user_streaks（継続記録）の取得と判定
+          const { data: streakData } = await supabase
+          .from('user_streaks')
+          .select('login_streak_count, last_login_date')
+          .eq('user_id', user.id)
+          .single();
+
+          let loginStreak = 0;
+          if (streakData?.last_login_date) {
+          const today = new Date();
+          const lastLogin = new Date(streakData.last_login_date);
+          const diffInDays = Math.floor((today.getTime() - lastLogin.getTime()) / (1000 * 60 * 60 * 24));
+          loginStreak = diffInDays <= 1 ? streakData.login_streak_count : 0;
+          }
+
+          // ✅ 日記件数の取得
+          const { count: diaryCount } = await supabase
+          .from('diary_entries')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+
+          if (userData) {
+            const levelInfo = calculateLevelInfo(userData.total_xp, userData.level);
+
+            setUserStatus({
+              level: levelInfo.level,
+              currentXP: levelInfo.currentXP,
+              nextLevelXP: levelInfo.nextLevelXP,
+              totalDiaryEntries: diaryCount || 0,
+              streak: loginStreak,
+              ranking: getRankFromStreak(loginStreak)
+            });
+          }
         }
         
         // チケット情報を取得
@@ -382,14 +435,11 @@ export default function Dashboard() {
                 gradient: 'linear-gradient(135deg, #a78bfa, #8b5cf6)'
               },
               {
-                icon: Star,
+                icon: rankStyle.icon,
                 title: 'ランク',
                 value: isLoadingUserStatus ? '読込中...' : userStatus.ranking,
-                subtext: userStatus.ranking === 'ブロンズ' ? 'シルバーまであと10日' : 
-                         userStatus.ranking === 'シルバー' ? 'ゴールドまであと30日' : 
-                         userStatus.ranking === 'ゴールド' ? 'プラチナまであと60日' : 
-                         '最高ランクです！',
-                gradient: 'linear-gradient(135deg, #fbbf24, #f59e0b)'
+                subtext: rankStyle.subtext,
+                gradient: rankStyle.gradient
               }
             ].map((stat, index) => (
               <div key={index} className={styles.statItem}>

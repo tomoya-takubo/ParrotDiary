@@ -1,7 +1,7 @@
 import { Metadata } from "next"
 import { AuthProvider } from '@/lib/AuthContext';
 import "./globals.css"
-import { RewardProvider, useReward } from '@/lib/RewardContext';
+import { RewardProvider } from '@/lib/RewardContext';
 import RewardNotification from "@/components/dashboard/Diary/RewardNotification";
 
 export const metadata: Metadata = {
