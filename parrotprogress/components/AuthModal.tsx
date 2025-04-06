@@ -247,25 +247,40 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         
         if (error) throw error;
         
-        // Step 2: 最終ログイン時間を更新
+        // Step 2: ユーザーテーブルとストリークテーブルのログイン関連フィールドを更新
         if (data.user?.id) {
+          const now = new Date();
+          const nowIso = now.toISOString();
+
           try {
-            // usersテーブルのログイン関連フィールドを更新
-            const { error: updateError } = await supabase
+            // users テーブルの更新
+            const { error: usersError } = await supabase
               .from('users')
-              .update({ 
-                last_login_at: new Date().toISOString(), // 最終ログイン時刻
-                updated_at: new Date().toISOString()     // 更新日時
+              .update({
+                last_login_at: nowIso,
+                updated_at: nowIso
               })
               .eq('id', data.user.id);
-              
-            if (updateError) {
-              console.error('ログイン時間更新エラー:', updateError);
-              // 致命的ではないのでスローせず、続行
+
+            if (usersError) {
+              console.error('usersテーブルの更新エラー:', usersError);
             }
-          } catch (updateError) {
-            console.error('ログイン時間更新中にエラー:', updateError);
-            // 致命的ではないのでスローせず、続行
+
+            // user_streaks テーブルの更新
+            const { error: streaksError } = await supabase
+              .from('user_streaks')
+              .update({
+                last_login_date: nowIso,
+                updated_at: nowIso
+              })
+              .eq('user_id', data.user.id);
+
+            if (streaksError) {
+              console.error('user_streaksテーブルの更新エラー:', streaksError);
+            }
+
+          } catch (error) {
+            console.error('ログイン情報更新中にエラー:', error);
           }
         }
 

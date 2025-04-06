@@ -739,6 +739,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
    * 状態をリセットして閉じる
    */
   const handleCloseGacha = () => {
+    sessionStorage.removeItem('gachaState'); // セッションストレージをクリア
     setShowResult(false);
     setGachaResults([]);
     setShowDetail(false);

@@ -1,7 +1,7 @@
 // lib/authentication.ts
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { AuthError, Session, User } from '@supabase/supabase-js';
-import { Database } from '../types/supabase';
+import { Database } from '@/types/supabase';
 
 export type AuthResponse = {
   success: boolean;
@@ -51,12 +51,17 @@ export const signUpWithEmail = async (
           console.error("usersテーブル挿入エラー:", usersError);
           throw usersError;
         }
+
+        // 現在時刻を取得
+        const nowJST = new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString();
         
         // ユーザー経験値の初期設定
         const { error: expError } = await supabase.from('user_experience').insert({
           user_id: data.user.id,
-          xp_total: 0,
-          level: 1,
+          xp_amount: 0,
+          action_type: '初期登録',
+          earned_at: nowJST,
+          created_at: nowJST,
         });
         
         if (expError) {
@@ -67,10 +72,13 @@ export const signUpWithEmail = async (
         // ユーザーストリークの初期設定
         const { error: streakError } = await supabase.from('user_streaks').insert({
           user_id: data.user.id,
-          streak_count: 0,
-          last_activity_at: new Date().toISOString(),
+          login_streak_count: 0,     // ✅ 実在カラム
+          login_max_streak: 0,       // ✅ 実在カラム
+          last_login_date: nowJST,   // ✅ 実在カラム（UTCなら new Date().toISOString() でもOK）
+          created_at: nowJST,
+          updated_at: nowJST
         });
-        
+                
         if (streakError) {
           console.error("user_streaksテーブル挿入エラー:", streakError);
           throw streakError;
@@ -153,7 +161,7 @@ export const signInWithEmail = async (
         created_at: now.toISOString(),
         expires_at: expiresAt.toISOString(),
       });
-      
+
       if (sessionError) {
         console.error("セッション記録エラー:", sessionError);
       }
