@@ -169,12 +169,35 @@ export default function Dashboard() {
 
           let loginStreak = 0;
           if (streakData?.last_login_date) {
-          const today = new Date();
-          const lastLogin = new Date(streakData.last_login_date);
-          const diffInDays = Math.floor((today.getTime() - lastLogin.getTime()) / (1000 * 60 * 60 * 24));
-          loginStreak = diffInDays <= 1 ? streakData.login_streak_count : 0;
+            const today = new Date();
+            const lastLogin = new Date(streakData.last_login_date);
+            const diffInDays = Math.floor((today.getTime() - lastLogin.getTime()) / (1000 * 60 * 60 * 24));
+            loginStreak = diffInDays <= 1 ? streakData.login_streak_count : 0;
+          
+            // 🔽 ここから追記 🔽
+            if (diffInDays >= 1) {
+              const nowIso = today.toISOString();
+              const updatedStreak = diffInDays === 1 ? streakData.login_streak_count + 1 : 1;
+          
+              const { error: streakUpdateError } = await supabase
+                .from('user_streaks')
+                .update({
+                  login_streak_count: updatedStreak,
+                  last_login_date: nowIso,
+                  updated_at: nowIso
+                })
+                .eq('user_id', user.id);
+          
+              if (streakUpdateError) {
+                console.error('❌ streak更新エラー:', streakUpdateError);
+              } else {
+                console.log('✅ streakを更新しました:', updatedStreak);
+                loginStreak = updatedStreak;
+              }
+            }
+            // 🔼 ここまで追記 🔼
           }
-
+          
           // ✅ 日記件数の取得
           const { count: diaryCount } = await supabase
           .from('diary_entries')
