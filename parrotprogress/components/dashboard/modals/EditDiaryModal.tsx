@@ -740,9 +740,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
           </div>
 
           {/* パロット選択セクション */}
-          <div className={styles.modalParrotSection}>
-            <div className={styles.modalParrotTitle}>パロット</div>
-            
+          <div className={styles.modalParrotSection}>            
             {/* パロットセレクターコンポーネント */}
             {user && (
               <ParrotSelector

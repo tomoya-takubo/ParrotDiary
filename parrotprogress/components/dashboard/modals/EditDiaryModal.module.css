@@ -28,7 +28,7 @@
 
 /* モーダルヘッダー */
 .modalHeader {
-  margin-bottom: 24px;
+  margin-bottom: 8px;
 }
 
 .modalTitle {
@@ -40,13 +40,13 @@
 .modalContent {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .entryTimestamp {
   font-size: 14px;
   color: #718096;
-  margin-bottom: 8px;
+  margin-bottom: 0;
 }
 
 /* 入力グループ */
@@ -68,10 +68,13 @@
 
 .textInput {
   width: 100%;
-  padding: 8px 51px 8px 12px; /* ← 右側に余白を追加 */
+  padding: 8px 51px 8px 12px;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   font-size: 16px;
+  height: 38px; /* 高さを固定する */
+  box-sizing: border-box; /* パディングを含めたサイズ計算に */
+  line-height: 1.5; /* 行の高さを統一 */
 }
 
 .textInput:focus {
@@ -108,10 +111,10 @@
 
 /* タグセクション */
 .tagSection {
-  margin-top: 8px;
+  margin-top: 4px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 4px;
 }
 
 /* タグ入力コンテナ */
@@ -125,8 +128,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  height: 38px; /* 高さを統一 */
 }
-
 /* タグアイコン */
 .tagIcon {
   color: #94a3b8;
@@ -311,7 +314,7 @@
   font-size: 16px;
   gap: 8px;
   transition: background-color 0.2s;
-  margin-top: 24px;
+  margin-top: 4px;
 }
 
 .recordButton:hover {
@@ -327,7 +330,7 @@
 
 /* パロットセクションのスタイル */
 .modalParrotSection {
-  margin-top: 24px;
+  margin-top: 6px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -338,7 +341,7 @@
 .modalParrotTitle {
   font-size: 14px;
   color: #64748b;
-  margin-bottom: 8px;
+  margin-bottom: 0;
 }
 
 /* パロット選択エリアのスタイル */
@@ -460,3 +463,4 @@
   from { opacity: 1; }
   to { opacity: 0; }
 }
+

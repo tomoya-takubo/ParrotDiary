@@ -178,7 +178,7 @@
 
 /* 人気タグセクション */
 .popularTagsSection {
-  margin-bottom: 12px;
+  margin-bottom: 2px;
 }
 
 .popularTagsTitle {
@@ -404,3 +404,4 @@
 .emptyParrotSlot:hover {
   background-color: #e2e8f0;
 }
+

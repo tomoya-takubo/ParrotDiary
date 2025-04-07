@@ -74,7 +74,6 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [showParrotDropdown, setShowParrotDropdown] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory] = useState<string | null>(null);
   const [pageSize] = useState(8); // 一度に表示するパロットの数
   const [currentPage, setCurrentPage] = useState(0);
@@ -344,11 +343,7 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
 
   // パロットをフィルタリングする関数
   const filteredParrots = availableParrots.filter(parrot => {
-    // 検索条件とカテゴリーでフィルタリング
-    const matchesSearch = !searchTerm || 
-      (parrot.name && parrot.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (parrot.description && parrot.description.toLowerCase().includes(searchTerm.toLowerCase()));
-      
+    // 検索条件を削除し、カテゴリーとタグのみでフィルタリング
     const matchesCategory = !selectedCategory || 
       selectedCategory === 'all' || 
       parrot.category_id === selectedCategory;
@@ -357,7 +352,7 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
     const matchesTag = !selectedTag || 
       (parrot.tags && parrot.tags.some(tag => tag.parrot_tag_name === selectedTag));
       
-    return matchesSearch && matchesCategory && matchesTag;
+    return matchesCategory && matchesTag;
   });
 
   // ページング用のパロット (現在のページに表示するパロットのみ)
@@ -475,21 +470,6 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
               </button>
             </div>
           
-            {/* 検索フィールド */}
-            <div className={styles.searchContainer}>
-              <Search size={14} className={styles.searchIcon} />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setCurrentPage(0); // 検索時にページをリセット
-                }}
-                placeholder="パロットを検索..."
-                className={styles.searchInput}
-              />
-            </div>
-
             {/* 人気タグセクション */}
             <PopularTagsSection />
           </div>
@@ -525,10 +505,8 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
               ))
             ) : (
               <div className={styles.noParrotsMessage}>
-                {searchTerm ? 
                   '検索条件に一致するパロットがありません' : 
                   'パロットがありません'
-                }
               </div>
             )}
             
