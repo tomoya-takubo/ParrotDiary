@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
-import { X, Search, Plus } from 'lucide-react';
+import { X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './ParrotSelector.module.css';
 
@@ -505,8 +505,7 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
               ))
             ) : (
               <div className={styles.noParrotsMessage}>
-                  '検索条件に一致するパロットがありません' : 
-                  'パロットがありません'
+                  &apos;パロットがありません&apos;
               </div>
             )}
             
