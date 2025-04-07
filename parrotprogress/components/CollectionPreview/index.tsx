@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase';
 import ParrotIcon from '../ParrotIcon';
 import styles from './styles.module.css';
 import { useAuth } from '@/lib/AuthContext'; // 認証コンテキストをインポート
+import Image from 'next/image';
 
 // 型定義を UUID に対応させる
 type Parrot = {
@@ -84,7 +85,7 @@ export default function CollectionPreview() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(24); // デフォルトのアイテム数
   const [totalPages, setTotalPages] = useState(1);
-  
+
   // AuthContextからユーザー情報を取得
   const { user, isLoading: authLoading } = useAuth();
 
@@ -94,7 +95,7 @@ export default function CollectionPreview() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const { data: parrotData, error: parrotError } = await supabase
         .from('parrots')
         .select(`
@@ -102,14 +103,14 @@ export default function CollectionPreview() {
           rarity:rarity_id(*),
           user_parrots(*)
         `);
-  
+
       if (parrotError) {
         console.error('パロットデータ取得エラー:', parrotError);
         setError('パロットデータの取得に失敗しました。');
         setLoading(false);
         return;
       }
-      
+
       if (parrotData && Array.isArray(parrotData)) {
         // 型安全な方法でデータを処理
         const processedParrots: Parrot[] = ((parrotData as unknown) as RawParrot[]).map((item: RawParrot, index: number) => {
@@ -128,11 +129,11 @@ export default function CollectionPreview() {
             },
             user_parrots: Array.isArray(item.user_parrots)
               ? item.user_parrots.map((up) => ({
-                  user_id: up.user_id,
-                  parrot_id: up.parrot_id,
-                  obtained_at: up.obtained_at,
-                  obtain_count: up.obtain_count,
-                }))
+                user_id: up.user_id,
+                parrot_id: up.parrot_id,
+                obtained_at: up.obtained_at,
+                obtain_count: up.obtain_count,
+              }))
               : [],
             obtained: !!(
               userId &&
@@ -141,10 +142,10 @@ export default function CollectionPreview() {
             ),
             tags: [], // タグ情報の初期化
           };
-        
+
           return parrot;
         });
-        
+
         // ユーザーがログインしている場合、パロットのタグ情報を取得
         if (userId) {
           try {
@@ -152,7 +153,7 @@ export default function CollectionPreview() {
               .from('user_parrots_tags')
               .select('*')
               .eq('user_id', userId);
-            
+
             if (tagsError) {
               console.error('パロットタグ取得エラー:', tagsError);
             } else if (tagsData && Array.isArray(tagsData)) {
@@ -161,7 +162,7 @@ export default function CollectionPreview() {
                 const parrotTags = tagsData.filter(tag => tag.parrot_id === parrot.parrot_id) as ParrotTag[];
                 parrot.tags = parrotTags;
               });
-                
+
               // すべてのユーザータグを取得して一意のタグリストを作成（フィルタリング用）
               const uniqueTags = [...new Set(tagsData.map(tag => tag.parrot_tag_name as string))].sort() as string[];
               setAllTags(uniqueTags);
@@ -170,14 +171,14 @@ export default function CollectionPreview() {
             console.error('パロットタグ取得例外:', error);
           }
         }
-                
+
         // 表示順でソート
         const sortedParrots = [...processedParrots].sort((a, b) => {
           const displayOrderA = typeof a.display_order === 'number' ? a.display_order : 0;
           const displayOrderB = typeof b.display_order === 'number' ? b.display_order : 0;
           return displayOrderA - displayOrderB;
         });
-        
+
         setParrots(sortedParrots);
       } else {
         setParrots([]);
@@ -209,11 +210,11 @@ export default function CollectionPreview() {
   // リサイズイベントのリスナー設定
   useEffect(() => {
     updateItemsPerPage(); // 初回のサイズ設定
-    
+
     const handleResize = () => {
       updateItemsPerPage();
     };
-    
+
     window.addEventListener('resize', handleResize);
     return () => {
       window.removeEventListener('resize', handleResize);
@@ -224,14 +225,14 @@ export default function CollectionPreview() {
   useEffect(() => {
     const initializeData = async () => {
       setLoading(true);
-      
+
       try {
         // AuthContextのユーザー情報を優先して使用
         if (!authLoading && user) {
           console.log('AuthContextからユーザー情報を取得:', user.id);
           setCurrentUser(user.id);
           setIsAuthenticated(true);
-          
+
           // カテゴリーとパロットデータを並行して読み込み
           await Promise.all([
             loadParrotData(user.id)
@@ -240,13 +241,13 @@ export default function CollectionPreview() {
           // AuthContextでユーザーが取得できない場合は、Supabaseから直接確認
           console.log('Supabaseから直接セッション確認');
           const { data: { session } } = await supabase.auth.getSession();
-          
+
           if (session?.user) {
             // すでにログイン済みの場合は、認証状態をすぐに設定
             console.log('Supabaseセッションからユーザー情報を取得:', session.user.id);
             setCurrentUser(session.user.id);
             setIsAuthenticated(true);
-            
+
             // カテゴリーとパロットデータを並行して読み込み
             await Promise.all([
               loadParrotData(session.user.id)
@@ -263,9 +264,9 @@ export default function CollectionPreview() {
         setLoading(false);
       }
     };
-    
+
     initializeData();
-    
+
     // 認証状態変更リスナー
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('認証状態変更イベント:', event);
@@ -282,7 +283,7 @@ export default function CollectionPreview() {
         loadParrotData(null);
       }
     });
-    
+
     return () => {
       authListener?.subscription.unsubscribe();
     };
@@ -310,16 +311,16 @@ export default function CollectionPreview() {
     // ログインページへリダイレクト
     window.location.href = '/login';
   };
-  
+
   // ページネーション制御関数
   const handlePageChange = (pageNumber: number) => {
     if (pageNumber < 1 || pageNumber > totalPages) return;
     setCurrentPage(pageNumber);
     // ページ上部にスクロール
     window.scrollTo({
-      top: document.querySelector('.'+styles.filterSection)?.getBoundingClientRect().top 
-           ? (document.querySelector('.'+styles.filterSection)?.getBoundingClientRect().top as number) + window.scrollY - 20
-           : 0,
+      top: document.querySelector('.' + styles.filterSection)?.getBoundingClientRect().top
+        ? (document.querySelector('.' + styles.filterSection)?.getBoundingClientRect().top as number) + window.scrollY - 20
+        : 0,
       behavior: 'smooth'
     });
   };
@@ -333,340 +334,340 @@ export default function CollectionPreview() {
       default: return 999;
     }
   };
-  
-// ParrotModal関数の修正部分
 
-// ParrotModal関数の修正部分
+  // ParrotModal関数の修正部分
 
-const ParrotModal = ({ parrot, onClose }: { parrot: Parrot; onClose: () => void }) => {
-  // ユーザーの獲得情報を取得（ログインユーザーのものだけ）
-  const obtainInfo = parrot.user_parrots.find(up => up.user_id === currentUser);
-  
-  // タグ関連の状態
-  const [tags, setTags] = useState<ParrotTag[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [newTagName, setNewTagName] = useState('');
-  const [tagError, setTagError] = useState<string | null>(null);
+  // ParrotModal関数の修正部分
 
-  // タグデータの取得
-  useEffect(() => {
-    const fetchTags = async () => {
+  const ParrotModal = ({ parrot, onClose }: { parrot: Parrot; onClose: () => void }) => {
+    // ユーザーの獲得情報を取得（ログインユーザーのものだけ）
+    const obtainInfo = parrot.user_parrots.find(up => up.user_id === currentUser);
+
+    // タグ関連の状態
+    const [tags, setTags] = useState<ParrotTag[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [newTagName, setNewTagName] = useState('');
+    const [tagError, setTagError] = useState<string | null>(null);
+
+    // タグデータの取得
+    useEffect(() => {
+      const fetchTags = async () => {
+        if (!currentUser || !parrot.parrot_id) return;
+
+        setLoading(true);
+        try {
+          const { data, error } = await supabase
+            .from('user_parrots_tags')
+            .select('*')
+            .eq('user_id', currentUser)
+            .eq('parrot_id', parrot.parrot_id);
+
+          if (error) {
+            console.error('タグ取得エラー:', error);
+            setTagError('タグ情報の取得に失敗しました');
+          } else {
+            setTags((data || []) as ParrotTag[]);
+          }
+        } catch (error) {
+          console.error('タグ取得例外:', error);
+          setTagError('タグ情報の取得中にエラーが発生しました');
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchTags();
+    }, [currentUser, parrot.parrot_id]);
+
+    // 新しいタグを追加する関数
+    const addTag = async () => {
+      if (!newTagName.trim()) return;
       if (!currentUser || !parrot.parrot_id) return;
-      
+
+      // タグ名の長さを制限（たとえば30文字）
+      if (newTagName.length > 30) {
+        setTagError('タグ名は30文字以内にしてください');
+        return;
+      }
+
+      // 同じ名前のタグが既に存在するかチェック
+      if (tags.some(tag => tag.parrot_tag_name.toLowerCase() === newTagName.trim().toLowerCase())) {
+        setTagError('同じ名前のタグが既に存在します');
+        return;
+      }
+
       setLoading(true);
+      setTagError(null);
+
       try {
         const { data, error } = await supabase
           .from('user_parrots_tags')
-          .select('*')
-          .eq('user_id', currentUser)
-          .eq('parrot_id', parrot.parrot_id);
-        
+          .insert([
+            {
+              user_id: currentUser,
+              parrot_id: parrot.parrot_id,
+              parrot_tag_name: newTagName.trim(),
+              executed_at: new Date().toISOString()
+            }
+          ])
+          .select();
+
         if (error) {
-          console.error('タグ取得エラー:', error);
-          setTagError('タグ情報の取得に失敗しました');
-        } else {
-          setTags((data || []) as ParrotTag[]);
+          console.error('タグ追加エラー詳細:', error);
+          setTagError(`タグの追加に失敗しました: ${error.message || 'エラーが発生しました'}`);
+        } else if (data) {
+          // 成功したら、タグリストに新しいタグを追加
+          setTags([...tags, ...(data as ParrotTag[])]);
+          // 入力フィールドをクリア
+          setNewTagName('');
+          // 追加したタグ名を取得
+          const newTagNames = (data as ParrotTag[]).map(tag => tag.parrot_tag_name);
+
+          // 全体のタグリストを更新（絞り込み用）
+          setAllTags(prevTags => {
+            // 重複を避けるために新しい一意のタグリストを作成
+            const updatedTags = [...prevTags];
+            newTagNames.forEach(tagName => {
+              if (!updatedTags.includes(tagName)) {
+                updatedTags.push(tagName);
+              }
+            });
+            // アルファベット順にソート
+            return updatedTags.sort();
+          });
         }
       } catch (error) {
-        console.error('タグ取得例外:', error);
-        setTagError('タグ情報の取得中にエラーが発生しました');
+        console.error('タグ追加例外:', error);
+        setTagError('タグの追加中にエラーが発生しました');
       } finally {
         setLoading(false);
       }
     };
-    
-    fetchTags();
-  }, [currentUser, parrot.parrot_id]);
 
-  // 新しいタグを追加する関数
-  const addTag = async () => {
-    if (!newTagName.trim()) return;
-    if (!currentUser || !parrot.parrot_id) return;
-    
-    // タグ名の長さを制限（たとえば30文字）
-    if (newTagName.length > 30) {
-      setTagError('タグ名は30文字以内にしてください');
-      return;
-    }
-    
-    // 同じ名前のタグが既に存在するかチェック
-    if (tags.some(tag => tag.parrot_tag_name.toLowerCase() === newTagName.trim().toLowerCase())) {
-      setTagError('同じ名前のタグが既に存在します');
-      return;
-    }
-    
-    setLoading(true);
-    setTagError(null);
-    
-    try {
-      const { data, error } = await supabase
-        .from('user_parrots_tags')
-        .insert([
-          {
-            user_id: currentUser,
-            parrot_id: parrot.parrot_id,
-            parrot_tag_name: newTagName.trim(),
-            executed_at: new Date().toISOString()
-          }
-        ])
-        .select();
-      
-      if (error) {
-        console.error('タグ追加エラー詳細:', error);
-        setTagError(`タグの追加に失敗しました: ${error.message || 'エラーが発生しました'}`);
-      } else if (data) {
-        // 成功したら、タグリストに新しいタグを追加
-        setTags([...tags, ...(data as ParrotTag[])]);
-        // 入力フィールドをクリア
-        setNewTagName('');
-        // 追加したタグ名を取得
-        const newTagNames = (data as ParrotTag[]).map(tag => tag.parrot_tag_name);
+    // タグを削除する関数
+    const removeTag = async (tagId: string) => {
+      if (!currentUser) return;
 
-        // 全体のタグリストを更新（絞り込み用）
-        setAllTags(prevTags => {
-          // 重複を避けるために新しい一意のタグリストを作成
-          const updatedTags = [...prevTags];
-          newTagNames.forEach(tagName => {
-            if (!updatedTags.includes(tagName)) {
-              updatedTags.push(tagName);
+      setLoading(true);
+
+      try {
+        const { error } = await supabase
+          .from('user_parrots_tags')
+          .delete()
+          .eq('entry_id', tagId)
+          .eq('user_id', currentUser);
+
+        if (error) {
+          console.error('タグ削除エラー:', error);
+          setTagError('タグの削除に失敗しました');
+        } else {
+          // 削除するタグの名前を保存
+          const tagToRemove = tags.find(tag => tag.entry_id === tagId);
+
+          // モーダル内のタグリストを更新
+          setTags(tags.filter(tag => tag.entry_id !== tagId));
+
+          if (tagToRemove) {
+            // 全体のパロットリストから、このタグ名を使用している他のパロットを検索
+            const isTagUsedElsewhere = parrots.some(p =>
+              p.parrot_id !== parrot.parrot_id &&
+              p.tags?.some(t => t.parrot_tag_name === tagToRemove.parrot_tag_name)
+            );
+
+            // 他に使用されていなければ、絞り込みリストからも削除
+            if (!isTagUsedElsewhere) {
+              setAllTags(prevTags => prevTags.filter(t => t !== tagToRemove.parrot_tag_name));
             }
-          });
-          // アルファベット順にソート
-          return updatedTags.sort();
-        });
-      }
-    } catch (error) {
-      console.error('タグ追加例外:', error);
-      setTagError('タグの追加中にエラーが発生しました');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // タグを削除する関数
-  const removeTag = async (tagId: string) => {
-    if (!currentUser) return;
-    
-    setLoading(true);
-    
-    try {
-      const { error } = await supabase
-        .from('user_parrots_tags')
-        .delete()
-        .eq('entry_id', tagId)
-        .eq('user_id', currentUser);
-      
-      if (error) {
-        console.error('タグ削除エラー:', error);
-        setTagError('タグの削除に失敗しました');
-      } else {
-        // 削除するタグの名前を保存
-        const tagToRemove = tags.find(tag => tag.entry_id === tagId);
-        
-        // モーダル内のタグリストを更新
-        setTags(tags.filter(tag => tag.entry_id !== tagId));
-        
-        if (tagToRemove) {
-          // 全体のパロットリストから、このタグ名を使用している他のパロットを検索
-          const isTagUsedElsewhere = parrots.some(p => 
-            p.parrot_id !== parrot.parrot_id && 
-            p.tags?.some(t => t.parrot_tag_name === tagToRemove.parrot_tag_name)
-          );
-          
-          // 他に使用されていなければ、絞り込みリストからも削除
-          if (!isTagUsedElsewhere) {
-            setAllTags(prevTags => prevTags.filter(t => t !== tagToRemove.parrot_tag_name));
           }
         }
-      }
-    } catch (error) {
-      console.error('タグ削除例外:', error);
-      setTagError('タグの削除中にエラーが発生しました');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getModalClass = () => {
-    if (!parrot.obtained) return styles.modalContentUnobtained;
-    return styles[`modalContent${parrot.rarity.abbreviation}`];
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      addTag();
-    }
-  };
-
-  // ナビゲーション関連の関数
-  const navigateToPreviousParrot = () => {
-    // 獲得済みのパロットのみを対象にする
-    const obtainedParrots = sortedAndFilteredParrots.filter(p => p.obtained);
-    if (obtainedParrots.length <= 1) return;
-    
-    const currentIndex = obtainedParrots.findIndex(p => p.parrot_id === parrot.parrot_id);
-    if (currentIndex === -1) return;
-    
-    const prevIndex = (currentIndex - 1 + obtainedParrots.length) % obtainedParrots.length;
-    setSelectedParrot(obtainedParrots[prevIndex]);
-  };
-
-  const navigateToNextParrot = () => {
-    // 獲得済みのパロットのみを対象にする
-    const obtainedParrots = sortedAndFilteredParrots.filter(p => p.obtained);
-    if (obtainedParrots.length <= 1) return;
-    
-    const currentIndex = obtainedParrots.findIndex(p => p.parrot_id === parrot.parrot_id);
-    if (currentIndex === -1) return;
-    
-    const nextIndex = (currentIndex + 1) % obtainedParrots.length;
-    setSelectedParrot(obtainedParrots[nextIndex]);
-  };
-  
-  // キーボードでのナビゲーション
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') {
-        navigateToPreviousParrot();
-      } else if (e.key === 'ArrowRight') {
-        navigateToNextParrot();
-      } else if (e.key === 'Escape') {
-        onClose();
+      } catch (error) {
+        console.error('タグ削除例外:', error);
+        setTagError('タグの削除中にエラーが発生しました');
+      } finally {
+        setLoading(false);
       }
     };
-    
-    window.addEventListener('keydown', handleKeyDown);
-    
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [parrot.parrot_id]);
 
-  return (
-    <div className={styles.modalOverlay} onClick={onClose}>
-      {/* 左右ナビゲーションボタン（モーダルの外側に配置） */}
-      <div className={styles.modalNavigationWrapper}>
-        <button 
-          className={styles.modalNavButton} 
-          onClick={(e) => {
-            e.stopPropagation(); // オーバーレイクリックによるモーダル閉じを防止
-            navigateToPreviousParrot();
-          }}
-          aria-label="前のパロット"
-        >
-          <ChevronLeft size={24} />
-        </button>
-        
-        {/* モーダルコンテンツ */}
-        <div className={`${styles.modalContent} ${getModalClass()}`} onClick={e => e.stopPropagation()}>
-          <button className={styles.closeButton} onClick={onClose}>×</button>
-          
-          <div className={styles.modalHeader}>
-            <div className={styles.modalIconWrapper}>
-              <ParrotIcon 
-                imageUrl={parrot.image_url}
-                name={parrot.name}
-                obtained={parrot.obtained || false}
-              />
+    const getModalClass = () => {
+      if (!parrot.obtained) return styles.modalContentUnobtained;
+      return styles[`modalContent${parrot.rarity.abbreviation}`];
+    };
+
+    const handleKeyPress = (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addTag();
+      }
+    };
+
+    // ナビゲーション関連の関数
+    const navigateToPreviousParrot = () => {
+      // 獲得済みのパロットのみを対象にする
+      const obtainedParrots = sortedAndFilteredParrots.filter(p => p.obtained);
+      if (obtainedParrots.length <= 1) return;
+
+      const currentIndex = obtainedParrots.findIndex(p => p.parrot_id === parrot.parrot_id);
+      if (currentIndex === -1) return;
+
+      const prevIndex = (currentIndex - 1 + obtainedParrots.length) % obtainedParrots.length;
+      setSelectedParrot(obtainedParrots[prevIndex]);
+    };
+
+    const navigateToNextParrot = () => {
+      // 獲得済みのパロットのみを対象にする
+      const obtainedParrots = sortedAndFilteredParrots.filter(p => p.obtained);
+      if (obtainedParrots.length <= 1) return;
+
+      const currentIndex = obtainedParrots.findIndex(p => p.parrot_id === parrot.parrot_id);
+      if (currentIndex === -1) return;
+
+      const nextIndex = (currentIndex + 1) % obtainedParrots.length;
+      setSelectedParrot(obtainedParrots[nextIndex]);
+    };
+
+    // キーボードでのナビゲーション
+    useEffect(() => {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'ArrowLeft') {
+          navigateToPreviousParrot();
+        } else if (e.key === 'ArrowRight') {
+          navigateToNextParrot();
+        } else if (e.key === 'Escape') {
+          onClose();
+        }
+      };
+
+      window.addEventListener('keydown', handleKeyDown);
+
+      return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    }, [parrot.parrot_id]);
+
+    return (
+      <div className={styles.modalOverlay} onClick={onClose}>
+        {/* 左右ナビゲーションボタン（モーダルの外側に配置） */}
+        <div className={styles.modalNavigationWrapper}>
+          <button
+            className={styles.modalNavButton}
+            onClick={(e) => {
+              e.stopPropagation(); // オーバーレイクリックによるモーダル閉じを防止
+              navigateToPreviousParrot();
+            }}
+            aria-label="前のパロット"
+          >
+            <ChevronLeft size={24} />
+          </button>
+
+          {/* モーダルコンテンツ */}
+          <div className={`${styles.modalContent} ${getModalClass()}`} onClick={e => e.stopPropagation()}>
+            <button className={styles.closeButton} onClick={onClose}>×</button>
+
+            <div className={styles.modalHeader}>
+              <div className={styles.modalIconWrapper}>
+                <ParrotIcon
+                  imageUrl={parrot.image_url}
+                  name={parrot.name}
+                  obtained={parrot.obtained || false}
+                />
+              </div>
+              <div className={styles.modalInfo}>
+                <h2 className={styles.modalTitle}>{parrot.name}</h2>
+                <span
+                  className={`${styles.rarityBadge} ${styles[`rarityBadge${parrot.rarity.abbreviation}`]}`}
+                >
+                  {parrot.rarity.abbreviation}
+                </span>
+              </div>
             </div>
-            <div className={styles.modalInfo}>
-              <h2 className={styles.modalTitle}>{parrot.name}</h2>
-              <span 
-                className={`${styles.rarityBadge} ${styles[`rarityBadge${parrot.rarity.abbreviation}`]}`}
-              >
-                {parrot.rarity.abbreviation}
-              </span>
-            </div>
-          </div>
-          <div className={styles.modalBody}>
-            <p className={styles.description}>{parrot.description}</p>
-            <div className={styles.detailsSection}>
-              <h3>獲得情報</h3>
-              {obtainInfo ? (
-                <>
-                  <div className={styles.detailRow}>
-                    <span>獲得日時</span>
-                    <span>{new Date(obtainInfo.obtained_at).toLocaleString()}</span>
+            <div className={styles.modalBody}>
+              <p className={styles.description}>{parrot.description}</p>
+              <div className={styles.detailsSection}>
+                <h3>獲得情報</h3>
+                {obtainInfo ? (
+                  <>
+                    <div className={styles.detailRow}>
+                      <span>獲得日時</span>
+                      <span>{new Date(obtainInfo.obtained_at).toLocaleString()}</span>
+                    </div>
+                    <div className={styles.detailRow}>
+                      <span>重複獲得</span>
+                      <span>{obtainInfo.obtain_count}回</span>
+                    </div>
+                  </>
+                ) : (
+                  <div className={styles.notObtained}>まだ獲得していません</div>
+                )}
+              </div>
+
+              {/* タグセクション */}
+              {obtainInfo && (
+                <div className={styles.tagsSection}>
+                  <h3>タグ</h3>
+
+                  {tagError && (
+                    <div className={styles.tagError}>
+                      <AlertCircle size={16} />
+                      <span>{tagError}</span>
+                    </div>
+                  )}
+
+                  <div className={styles.tagInputContainer}>
+                    <input
+                      type="text"
+                      placeholder="新しいタグを追加"
+                      value={newTagName}
+                      onChange={(e) => setNewTagName(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      className={styles.tagInput}
+                      disabled={loading}
+                    />
+                    <button
+                      onClick={addTag}
+                      className={styles.addTagButton}
+                      disabled={loading || !newTagName.trim()}
+                    >
+                      追加
+                    </button>
                   </div>
-                  <div className={styles.detailRow}>
-                    <span>重複獲得</span>
-                    <span>{obtainInfo.obtain_count}回</span>
+
+                  <div className={styles.tagsContainer}>
+                    {tags.length === 0 ? (
+                      <p className={styles.noTags}>タグはまだありません</p>
+                    ) : (
+                      tags.map((tag) => (
+                        <div key={tag.entry_id} className={styles.tagItem}>
+                          <span>{tag.parrot_tag_name}</span>
+                          <button
+                            onClick={() => removeTag(tag.entry_id)}
+                            className={styles.removeTagButton}
+                            disabled={loading}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))
+                    )}
                   </div>
-                </>
-              ) : (
-                <div className={styles.notObtained}>まだ獲得していません</div>
+                </div>
               )}
             </div>
-            
-            {/* タグセクション */}
-            {obtainInfo && (
-              <div className={styles.tagsSection}>
-                <h3>タグ</h3>
-                
-                {tagError && (
-                  <div className={styles.tagError}>
-                    <AlertCircle size={16} />
-                    <span>{tagError}</span>
-                  </div>
-                )}
-                
-                <div className={styles.tagInputContainer}>
-                  <input
-                    type="text"
-                    placeholder="新しいタグを追加"
-                    value={newTagName}
-                    onChange={(e) => setNewTagName(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    className={styles.tagInput}
-                    disabled={loading}
-                  />
-                  <button 
-                    onClick={addTag} 
-                    className={styles.addTagButton}
-                    disabled={loading || !newTagName.trim()}
-                  >
-                    追加
-                  </button>
-                </div>
-                
-                <div className={styles.tagsContainer}>
-                  {tags.length === 0 ? (
-                    <p className={styles.noTags}>タグはまだありません</p>
-                  ) : (
-                    tags.map((tag) => (
-                      <div key={tag.entry_id} className={styles.tagItem}>
-                        <span>{tag.parrot_tag_name}</span>
-                        <button 
-                          onClick={() => removeTag(tag.entry_id)}
-                          className={styles.removeTagButton}
-                          disabled={loading}
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            )}
           </div>
+
+          <button
+            className={styles.modalNavButton}
+            onClick={(e) => {
+              e.stopPropagation(); // オーバーレイクリックによるモーダル閉じを防止
+              navigateToNextParrot();
+            }}
+            aria-label="次のパロット"
+          >
+            <ChevronRight size={24} />
+          </button>
         </div>
-        
-        <button 
-          className={styles.modalNavButton} 
-          onClick={(e) => {
-            e.stopPropagation(); // オーバーレイクリックによるモーダル閉じを防止
-            navigateToNextParrot();
-          }}
-          aria-label="次のパロット"
-        >
-          <ChevronRight size={24} />
-        </button>
       </div>
-    </div>
-  );
-};
+    );
+  };
 
   const calculateCollectionProgress = (parrots: Parrot[]) => {
     const total = parrots.length;
@@ -678,7 +679,7 @@ const ParrotModal = ({ parrot, onClose }: { parrot: Parrot; onClose: () => void 
       percentage
     };
   };
-  
+
   const filteredParrots = parrots
     .filter(parrot => {
       // 名前での検索
@@ -688,12 +689,12 @@ const ParrotModal = ({ parrot, onClose }: { parrot: Parrot; onClose: () => void 
       // 獲得済みフィルター
       const obtainedMatch = showObtainedOnly ? parrot.obtained : true;
       // タグによるフィルター
-      const tagMatch = searchTag 
+      const tagMatch = searchTag
         ? parrot.tags && parrot.tags.some(tag => tag.parrot_tag_name === searchTag)
         : true;
-      
+
       return nameMatch && rarityMatch && obtainedMatch && tagMatch;
-     });
+    });
 
   // 並び替え関数
   const sortParrots = (parrots: Parrot[]) => {
@@ -706,14 +707,14 @@ const ParrotModal = ({ parrot, onClose }: { parrot: Parrot; onClose: () => void 
         return [...parrots].sort((a, b) => {
           if (!a.obtained) return 1;  // 未獲得は後ろへ
           if (!b.obtained) return -1;
-          
+
           // 現在のユーザーの獲得情報を取得
           const aObtainedInfo = a.user_parrots.find(up => up.user_id === currentUser);
           const bObtainedInfo = b.user_parrots.find(up => up.user_id === currentUser);
-          
+
           if (!aObtainedInfo) return 1;
           if (!bObtainedInfo) return -1;
-          
+
           try {
             // 獲得日時で並び替え（新しい順）
             const dateA = new Date(aObtainedInfo.obtained_at).getTime();
@@ -737,19 +738,19 @@ const ParrotModal = ({ parrot, onClose }: { parrot: Parrot; onClose: () => void 
   // CollectionPreview関数内に追加
   const loadAllTags = async (userId: string | null) => {
     if (!userId) return;
-    
+
     try {
       const { data, error } = await supabase
         .from('user_parrots_tags')
         .select('parrot_tag_name')
         .eq('user_id', userId)
         .order('parrot_tag_name');
-      
+
       if (error) {
         console.error('タグ取得エラー:', error);
         return;
       }
-      
+
       // 型アサーションを使用して、データを適切な型に変換
       // 重複を削除して一意のタグ名のみを抽出
       const uniqueTags = [...new Set(data?.map(tag => tag.parrot_tag_name as string) || [])] as string[];
@@ -762,12 +763,12 @@ const ParrotModal = ({ parrot, onClose }: { parrot: Parrot; onClose: () => void 
 
   // フィルター適用後のパロットをさらに並び替え
   const sortedAndFilteredParrots = sortParrots(filteredParrots);
-  
+
   // 総ページ数の計算とページネーションデータの準備
   useEffect(() => {
     const pages = Math.ceil(sortedAndFilteredParrots.length / itemsPerPage);
     setTotalPages(pages || 1); // 0の場合は1ページ
-    
+
     // ページ番号が範囲外になった場合、調整
     if (currentPage > pages && pages > 0) {
       setCurrentPage(pages);
@@ -819,46 +820,46 @@ const ParrotModal = ({ parrot, onClose }: { parrot: Parrot; onClose: () => void 
     const getPageNumbers = () => {
       const pageNumbers = [];
       const maxVisiblePages = 5; // 表示するページボタンの最大数
-      
+
       let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
       const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-      
+
       if (endPage - startPage + 1 < maxVisiblePages) {
         startPage = Math.max(1, endPage - maxVisiblePages + 1);
       }
-      
+
       for (let i = startPage; i <= endPage; i++) {
         pageNumbers.push(i);
       }
-      
+
       return pageNumbers;
     };
-    
+
     return (
       <div className={styles.paginationContainer}>
         <div className={styles.paginationInfo}>
           全 {sortedAndFilteredParrots.length} アイテム中 {sortedAndFilteredParrots.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} - {Math.min(currentPage * itemsPerPage, sortedAndFilteredParrots.length)} を表示
         </div>
-        
+
         <div className={styles.paginationControls}>
-          <button 
+          <button
             className={`${styles.paginationButton} ${currentPage === 1 ? styles.disabled : ''}`}
             onClick={() => handlePageChange(1)}
             disabled={currentPage === 1}
           >
             最初
           </button>
-          
-          <button 
+
+          <button
             className={`${styles.paginationButton} ${currentPage === 1 ? styles.disabled : ''}`}
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
           >
             <ChevronLeft size={16} />
           </button>
-          
+
           {getPageNumbers().map(number => (
-            <button 
+            <button
               key={number}
               className={`${styles.paginationButton} ${currentPage === number ? styles.active : ''}`}
               onClick={() => handlePageChange(number)}
@@ -866,16 +867,16 @@ const ParrotModal = ({ parrot, onClose }: { parrot: Parrot; onClose: () => void 
               {number}
             </button>
           ))}
-          
-          <button 
+
+          <button
             className={`${styles.paginationButton} ${currentPage === totalPages ? styles.disabled : ''}`}
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
           >
             <ChevronRight size={16} />
           </button>
-          
-          <button 
+
+          <button
             className={`${styles.paginationButton} ${currentPage === totalPages ? styles.disabled : ''}`}
             onClick={() => handlePageChange(totalPages)}
             disabled={currentPage === totalPages}
@@ -883,10 +884,10 @@ const ParrotModal = ({ parrot, onClose }: { parrot: Parrot; onClose: () => void 
             最後
           </button>
         </div>
-        
+
         <div className={styles.itemsPerPageSelector}>
           <label htmlFor="itemsPerPage">1ページあたり: </label>
-          <select 
+          <select
             id="itemsPerPage"
             value={itemsPerPage}
             onChange={(e) => {
@@ -913,9 +914,9 @@ const ParrotModal = ({ parrot, onClose }: { parrot: Parrot; onClose: () => void 
         <div className={styles.loadingSpinnerWrapper}>
           <div className={styles.loadingSpinner}></div>
           <div className={styles.loadingIconContainer}>
-            <img 
-              src="/parrot-icon.png" 
-              alt="Parrot Icon" 
+            <Image
+              src="/parrot-icon.png"
+              alt="Parrot Icon"
               className={styles.loadingIcon}
               onError={(e) => {
                 // 画像が404の場合は何も表示しない
@@ -937,7 +938,7 @@ const ParrotModal = ({ parrot, onClose }: { parrot: Parrot; onClose: () => void 
         <AlertCircle size={48} className={styles.errorIcon} />
         <h2>エラーが発生しました</h2>
         <p>{error}</p>
-        <button 
+        <button
           className={styles.retryButton}
           onClick={() => window.location.reload()}
         >
@@ -951,7 +952,7 @@ const ParrotModal = ({ parrot, onClose }: { parrot: Parrot; onClose: () => void 
     <div className={styles.container}>
       <div className={styles.titleSection}>
         <h1 className={styles.title}>パロットコレクション</h1>
-        
+
         {/* ダッシュボードに戻るボタン */}
         <button
           onClick={() => window.location.href = '/dashboard'}
@@ -960,7 +961,7 @@ const ParrotModal = ({ parrot, onClose }: { parrot: Parrot; onClose: () => void 
           ダッシュボードに戻る
         </button>
       </div>
-      
+
       {/* 未ログイン時のバナー */}
       {isAuthenticated === false && (
         <div className={styles.loginBanner}>
@@ -976,7 +977,7 @@ const ParrotModal = ({ parrot, onClose }: { parrot: Parrot; onClose: () => void 
           </button>
         </div>
       )}
-      
+
       <div className={styles.progressSection}>
         <div className={styles.progressInfo}>
           <div>
@@ -990,13 +991,13 @@ const ParrotModal = ({ parrot, onClose }: { parrot: Parrot; onClose: () => void 
           </div>
         </div>
         <div className={styles.progressBarContainer}>
-          <div 
-            className={styles.progressBar} 
+          <div
+            className={styles.progressBar}
             style={{ width: `${calculateCollectionProgress(parrots).percentage}%` }}
           />
         </div>
       </div>
-      
+
       <div className={styles.filterSection}>
         <div className={styles.filterHeader}>
           <div className={styles.searchBox}>
@@ -1062,44 +1063,44 @@ const ParrotModal = ({ parrot, onClose }: { parrot: Parrot; onClose: () => void 
             ))}
           </div>
           {isAuthenticated && allTags.length > 0 && (
-          <div className={styles.tagFilter}>
-            <div className={styles.tagFilterLabel}>
-              タグで絞り込み:
-            </div>
-            <select
-              className={styles.tagFilterSelect}
-              value={searchTag || ''}
-              onChange={(e) => setSearchTag(e.target.value || null)}
-            >
-              <option value="">すべてのタグ</option>
-              {allTags.map((tag) => (
-                <option key={tag} value={tag}>
-                  {tag}
-                </option>
-              ))}
-            </select>
-            {searchTag && (
-              <button
-                className={styles.clearTagFilterButton}
-                onClick={() => setSearchTag(null)}
+            <div className={styles.tagFilter}>
+              <div className={styles.tagFilterLabel}>
+                タグで絞り込み:
+              </div>
+              <select
+                className={styles.tagFilterSelect}
+                value={searchTag || ''}
+                onChange={(e) => setSearchTag(e.target.value || null)}
               >
-                クリア
-              </button>
-            )}
-          </div>
-        )}
+                <option value="">すべてのタグ</option>
+                {allTags.map((tag) => (
+                  <option key={tag} value={tag}>
+                    {tag}
+                  </option>
+                ))}
+              </select>
+              {searchTag && (
+                <button
+                  className={styles.clearTagFilterButton}
+                  onClick={() => setSearchTag(null)}
+                >
+                  クリア
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
-      
+
       {/* ページネーション（上部） */}
       {totalPages > 1 && (
         <Pagination />
       )}
-      
+
       <div className={styles.grid}>
         {currentParrots.map((parrot, index) => (
-          <div 
-            key={parrot.parrot_id} 
+          <div
+            key={parrot.parrot_id}
             className={`
               ${styles.parrotCard} 
               ${parrot.obtained ? styles.obtained : ''} 
@@ -1107,12 +1108,12 @@ const ParrotModal = ({ parrot, onClose }: { parrot: Parrot; onClose: () => void 
               ${!isAuthenticated ? styles.notLoggedIn : ''}
             `}
             onClick={() => handleParrotClick(parrot)}
-            title={!isAuthenticated ? "ログインして獲得したパロットを確認しよう" : 
-                   !parrot.obtained ? "まだ獲得していません" : parrot.name}
+            title={!isAuthenticated ? "ログインして獲得したパロットを確認しよう" :
+              !parrot.obtained ? "まだ獲得していません" : parrot.name}
           >
             <div className={styles.iconWrapper}>
-              <ParrotIcon 
-                imageUrl={parrot.image_url} 
+              <ParrotIcon
+                imageUrl={parrot.image_url}
                 name={parrot.name}
                 obtained={isAuthenticated ? (parrot.obtained || false) : false}
               />
@@ -1122,7 +1123,7 @@ const ParrotModal = ({ parrot, onClose }: { parrot: Parrot; onClose: () => void 
               <div className={styles.parrotNameText}>
                 {formatParrotName(parrot.name)}
               </div>
-              <span 
+              <span
                 className={`${styles.rarityBadge} ${styles[`rarityBadge${parrot.rarity.abbreviation}`]}`}
               >
                 {parrot.rarity.abbreviation}
@@ -1140,7 +1141,7 @@ const ParrotModal = ({ parrot, onClose }: { parrot: Parrot; onClose: () => void 
                 </div>
               )}
             </div>
-            
+
             {/* 非ログイン時のロックアイコン（オプション） */}
             {!isAuthenticated && (
               <div className={styles.lockOverlay}>
@@ -1150,18 +1151,18 @@ const ParrotModal = ({ parrot, onClose }: { parrot: Parrot; onClose: () => void 
           </div>
         ))}
       </div>
-      
+
       {/* ページネーション（下部） */}
       {totalPages > 1 && (
         <Pagination />
       )}
-      
+
       {/* 結果が0件の場合のメッセージ */}
       {sortedAndFilteredParrots.length === 0 && (
         <div className={styles.noResults}>
           <AlertCircle size={32} />
           <p>条件に一致するパロットが見つかりませんでした</p>
-          <button 
+          <button
             className={styles.resetButton}
             onClick={() => {
               setSearchQuery('');
@@ -1173,7 +1174,7 @@ const ParrotModal = ({ parrot, onClose }: { parrot: Parrot; onClose: () => void 
           </button>
         </div>
       )}
-      
+
       {selectedParrot && (
         <ParrotModal
           parrot={selectedParrot}

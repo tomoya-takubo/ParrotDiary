@@ -83,12 +83,12 @@ const rarityUUIDToType: Record<string, RarityType> = {
 const getRarityType = (rarityId: string): RarityType => {
   // 念のためtrimを行い、小文字に統一
   const cleanedId = rarityId.trim().toLowerCase();
-  
+
   // 完全一致でマッピングを試みる
   if (rarityUUIDToType[cleanedId]) {
     return rarityUUIDToType[cleanedId];
   }
-  
+
   // 部分一致でマッピングを試みる（最初の8文字で比較）
   const partialId = cleanedId.substring(0, 8);
   for (const [key, value] of Object.entries(rarityUUIDToType)) {
@@ -97,7 +97,7 @@ const getRarityType = (rarityId: string): RarityType => {
       return value;
     }
   }
-  
+
   // フォールバック
   console.warn(`未知のrarity_idです: ${rarityId}`);
   return 'normal';
@@ -168,14 +168,14 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
   const [gifUrl, setGifUrl] = useState<string | null>(null);  // ガチャアニメーションのGIF URL
   const [tickets, setTickets] = useState<number>(0);          // チケット枚数
   const [error, setError] = useState<string | null>(null);    // エラーメッセージ
-  
+
   // 複数ガチャの状態管理
   const [gachaCount, setGachaCount] = useState<number>(1);    // ガチャ回数
   const [gachaResults, setGachaResults] = useState<GachaResult[]>([]);  // ガチャ結果の配列
   const [showDetail, setShowDetail] = useState(false);        // 詳細表示モード
   const [detailParrot, setDetailParrot] = useState<GachaResult | null>(null); // 詳細表示するパロット
   const [allRevealed, setAllRevealed] = useState(false);      // すべての結果が表示されたか
-  
+
   // 単一ガチャ演出用の状態
   const [showingSingleResult, setShowingSingleResult] = useState(false); // 単一ガチャ結果表示
   const [currentSingleParrot, setCurrentSingleParrot] = useState<GachaResult | null>(null); // 単一ガチャのパロット
@@ -221,17 +221,17 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
       setError('ガチャを利用するにはログインが必要です');
       return;
     }
-  
+
     try {
       console.log('チケット情報を取得中...');
       console.log('ユーザーID:', user.id);
-  
+
       const { data, error } = await supabase
         .from('gacha_tickets')
         .select('ticket_count, last_updated')
         .eq('user_id', user.id)
         .single();
-  
+
       if (error) {
         console.error('チケット情報取得エラー:', error);
         if (error.code === 'PGRST116') {
@@ -242,7 +242,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
         setError(`チケット情報の取得に失敗しました: ${error.message}`);
         return;
       }
-  
+
       console.log('取得したチケット情報:', data);
       if (data) {
         // チケット数を状態に設定
@@ -256,11 +256,11 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
       setError(`予期せぬエラーが発生しました: ${(err as Error).message}`);
     }
   };
-  
+
   // 初期チケットレコードを作成
   const createInitialTicketRecord = async () => {
     if (!user) return;
-  
+
     try {
       const { error } = await supabase
         .from('gacha_tickets')
@@ -271,13 +271,13 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
             last_updated: getJSTISOString()
           }
         ]);
-  
+
       if (error) {
         console.error('チケット初期化エラー:', error);
         setError(`チケットの初期化に失敗しました: ${error.message}`);
         return;
       }
-  
+
       console.log('チケットを初期化しました');
       setTickets(5);
     } catch (err) {
@@ -301,20 +301,20 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
   const pullGacha = async (): Promise<{ parrot: Parrot, rarityType: RarityType }> => {
     try {
       const { data: parrots, error } = await supabase.from('parrots').select('*');
-    
+
       if (error || !parrots || parrots.length === 0) {
         throw new Error('パロット取得エラー: ' + error?.message);
       }
-    
+
       const randomIndex = Math.floor(Math.random() * parrots.length);
       const selectedParrot = parrots[randomIndex];
-    
+
       console.log('選択されたパロット:', selectedParrot.name);
       console.log('レアリティID:', selectedParrot.rarity_id);
-    
+
       // 改善されたマッピング関数を使用
       const rarityType = getRarityType(selectedParrot.rarity_id);
-    
+
       return {
         parrot: selectedParrot,
         rarityType
@@ -334,25 +334,25 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
       };
     }
   };
-      
+
   /**
    * チケットを消費する関数
    * @param amount 消費するチケット数
    */
   const consumeTickets = async (amount: number): Promise<boolean> => {
     if (!user) return false;
-    
+
     try {
       // まず最新のチケット情報を取得
       const { data: currentTickets, error: fetchError } = await supabase
-      .from('gacha_tickets')
-      .select('ticket_count')
-      .eq('user_id', user.id)
-      .single();
+        .from('gacha_tickets')
+        .select('ticket_count')
+        .eq('user_id', user.id)
+        .single();
 
       if (fetchError) {
-      console.error('チケット情報の取得に失敗しました:', fetchError);
-      return false;
+        console.error('チケット情報の取得に失敗しました:', fetchError);
+        return false;
       }
 
       // チケットが足りない場合はfalseを返す
@@ -368,7 +368,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
       // チケット数を減らす
       const { error } = await supabase
         .from('gacha_tickets')
-        .update({ 
+        .update({
           ticket_count: newTicketCount,
           last_updated: getJSTISOString()
         })
@@ -394,7 +394,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
    */
   const saveParrotToUser = async (parrot: Parrot): Promise<boolean> => {
     if (!user) return false;
-    
+
     try {
       console.log('パロット保存開始:', parrot);
       console.log('ユーザーID:', user.id, '型:', typeof user.id);
@@ -417,7 +417,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
         // 既に持っている場合はカウントを+1
         const { error: updateError } = await supabase
           .from('user_parrots')
-          .update({ 
+          .update({
             obtain_count: existingParrots[0].obtain_count + 1,
             obtained_at: getJSTISOString() // 最終取得日を更新
           })
@@ -428,7 +428,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
           console.error('パロット更新エラー詳細:', updateError);
           throw new Error('パロット更新エラー: ' + updateError.message);
         }
-        
+
         console.log('既存パロットを更新しました:', parrot.name, '新しい取得数:', existingParrots[0].obtain_count + 1);
       } else {
         // 初めて獲得した場合は新規レコード作成
@@ -445,7 +445,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
           console.error('パロット登録エラー詳細:', insertError);
           throw new Error('パロット登録エラー: ' + insertError.message);
         }
-        
+
         console.log('新しいパロットを登録しました:', parrot.name);
       }
 
@@ -483,17 +483,17 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
       setError('ガチャを実行するにはログインが必要です');
       return;
     }
-    
+
     // チケットがあるか確認
     if (tickets <= 0) {
       console.error('チケット不足エラー。チケット数:', tickets);
       setError('ガチャチケットが不足しています');
       return;
     }
-    
+
     setError(null);
     setProcessing(true);
-    
+
     try {
       // 1. チケットを消費
       const ticketConsumed = await consumeTickets(1);
@@ -506,23 +506,23 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
 
       // 2. ガチャを引く
       const { parrot, rarityType } = await pullGacha();
-      
+
       // 3. パロットをユーザーに登録
       await saveParrotToUser(parrot);
-      
+
       // 4. 単一ガチャの結果表示用のデータをセット
       setCurrentSingleParrot({
         parrot,
         rarityType,
         revealed: true
       });
-      
+
       // 5. アニメーション完了後に単一ガチャの結果表示
       setTimeout(() => {
         setProcessing(false);
         setShowingSingleResult(true);
       }, 2000);
-      
+
     } catch (error) {
       console.error('ガチャ処理エラー:', error);
       setError(`ガチャの実行中にエラーが発生しました: ${(error as Error).message}`);
@@ -538,29 +538,29 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
       setError('ガチャを実行するにはログインが必要です');
       return;
     }
-    
+
     // チケット数が足りるか確認
     if (tickets < count) {
       setError(`チケットが足りません。必要: ${count}枚, 所持: ${tickets}枚`);
       return;
     }
-    
+
     setError(null);
     setProcessing(true);
-    
+
     try {
       // 1. チケットを一括消費
       const ticketsConsumed = await consumeTickets(count);
       if (!ticketsConsumed) {
         throw new Error('チケットの消費に失敗しました');
       }
-      
+
       // チケット消費後、親コンポーネントのコールバックを呼び出して画面更新
       startGacha();
-      
+
       // 2. ガチャ結果を格納する配列
       const results: GachaResult[] = [];
-      
+
       // 3. 指定した回数分ガチャを引く
       for (let i = 0; i < count; i++) {
         const { parrot, rarityType } = await pullGacha();
@@ -569,11 +569,11 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
           rarityType,
           revealed: true // 最初から表示状態にする
         });
-        
+
         // パロットをユーザーに登録
         await saveParrotToUser(parrot);
       }
-      
+
       // 4. 結果を保存して表示モードに切り替え
       setTimeout(() => {
         // 結果を保存して表示モードに切り替え
@@ -596,24 +596,24 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
     // 最大10回まで、かつ持っているチケット数を超えない
     setGachaCount(prev => Math.min(prev + 1, Math.min(maxGacha, tickets)));
   };
-  
+
   // ガチャ回数を減らす
   const decreaseGachaCount = () => {
     setGachaCount(prev => Math.max(prev - 1, 1));
   };
-  
+
   // 詳細表示
   const showParrotDetail = (result: GachaResult) => {
     setDetailParrot(result);
     setShowDetail(true);
   };
-  
+
   // 詳細を閉じる
   const closeDetail = () => {
     setShowDetail(false);
     setDetailParrot(null);
   };
-  
+
   // 単一ガチャ結果を閉じる
   const closeSingleResult = () => {
     setShowingSingleResult(false);
@@ -668,17 +668,17 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
   /**
    * ガチャ結果カードのコンポーネント
    */
-  const ResultCard: React.FC<{ 
-    result: GachaResult, 
-    index: number, 
-    onClick: () => void 
+  const ResultCard: React.FC<{
+    result: GachaResult,
+    index: number,
+    onClick: () => void
   }> = ({ result, onClick }) => {
     return (
       <motion.div
         key={result.parrot.parrot_id} // ← indexではなくparrot_idに
         initial={{ scale: 0.8, opacity: 0 }}
-        animate={result.revealed ? { 
-          scale: 1, 
+        animate={result.revealed ? {
+          scale: 1,
           opacity: 1
           // 回転アニメーションを削除してちかちかしないようにする
         } : { scale: 0.8, opacity: 0.5 }}
@@ -691,9 +691,8 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
         }}
         whileHover={{ scale: 1.05 }}
         onClick={onClick}
-        className={`cursor-pointer overflow-hidden rounded-xl shadow-lg ${
-          result.revealed ? 'bg-white' : 'bg-gray-200'
-        }`}
+        className={`cursor-pointer overflow-hidden rounded-xl shadow-lg ${result.revealed ? 'bg-white' : 'bg-gray-200'
+          }`}
         style={{
           aspectRatio: '1/1'
         }}
@@ -701,30 +700,30 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
         {result.revealed ? (
           <div className="relative w-full h-full flex flex-col items-center justify-center p-1">
             {/* レアリティに応じた背景グラデーション */}
-            <div 
+            <div
               className="absolute inset-0 opacity-20"
               style={{
                 background: rarityConfigs[result.rarityType].bgGradient,
                 backgroundSize: '200% 100%',
               }}
             />
-            
+
             {/* パロット画像 */}
             <div className={`relative w-3/4 h-3/4 rounded-full overflow-hidden bg-gradient-to-r ${rarityConfigs[result.rarityType].colors} p-1`}>
               <div className="bg-white rounded-full w-full h-full flex items-center justify-center">
-                <img 
-                  src={result.parrot.image_url || "/api/placeholder/64/64"} 
-                  alt={result.parrot.name} 
-                  className="w-full h-full object-contain p-1" 
+                <Image
+                  src={result.parrot.image_url || "/api/placeholder/64/64"}
+                  alt={result.parrot.name}
+                  className="w-full h-full object-contain p-1"
                 />
               </div>
             </div>
-            
+
             {/* パロット名 */}
             <div className="w-full text-center mt-1 text-xs font-medium truncate px-1">
               {result.parrot.name}
             </div>
-            
+
             {/* レアリティ表示（星の数） */}
             <div className="flex justify-center mt-1">
               {Array.from({ length: rarityConfigs[result.rarityType].stars }).map((_, i) => (
@@ -766,375 +765,243 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
 
   //#region レンダリング
   return (
-      <AnimatePresence>
-        {isOpen && (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center backdrop-blur-sm z-50"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && (allRevealed || showingSingleResult)) {
+              handleCloseGacha();
+            }
+          }}
+        >
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center backdrop-blur-sm z-50"
-            onClick={(e) => {
-              if (e.target === e.currentTarget && (allRevealed || showingSingleResult)) {
-                handleCloseGacha();
-              }
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.5, opacity: 0 }}
+            className="rounded-xl p-6 w-full max-w-3xl relative overflow-hidden shadow-2xl"
+            style={{
+              background: "linear-gradient(135deg, #e0f2fe, #f0f9ff)", // 淡い青系の背景
             }}
           >
-              <motion.div
-                initial={{ scale: 0.5, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.5, opacity: 0 }}
-                className="rounded-xl p-6 w-full max-w-3xl relative overflow-hidden shadow-2xl"
-                style={{
-                  background: "linear-gradient(135deg, #e0f2fe, #f0f9ff)", // 淡い青系の背景
-                }}
-              >
-                {error ? (
-                // エラー表示
-                <div className="py-8 text-center">
-                  <div className="text-red-500 text-xl mb-4">⚠️ {error}</div>
-                  <button
-                    onClick={handleCloseGacha}
-                    className="px-8 py-3 bg-gradient-to-r from-gray-400 to-gray-500 text-white rounded-lg hover:opacity-90 shadow-lg"
-                  >
-                    閉じる
-                  </button>
-                </div>
+            {error ? (
+              // エラー表示
+              <div className="py-8 text-center">
+                <div className="text-red-500 text-xl mb-4">⚠️ {error}</div>
+                <button
+                  onClick={handleCloseGacha}
+                  className="px-8 py-3 bg-gradient-to-r from-gray-400 to-gray-500 text-white rounded-lg hover:opacity-90 shadow-lg"
+                >
+                  閉じる
+                </button>
+              </div>
               // ガチャを回すモーダル - 淡い色合いの背景でスタイリング
-              ) : !showResult && !showingSingleResult && !processing && tickets > 0 ? (
-                // ガチャ回数選択UI
-                <div className="py-8 text-center relative">
-                  <div className="absolute inset-0 rounded-xl" style={{
-                    background: "linear-gradient(135deg, #dbeafe, #ede9fe, #fce7f3)", // 淡い青紫ピンクのグラデーション
-                    backgroundSize: '200% 200%',
-                  }}></div>
-                  
-                  <div className="relative z-10">
-                    <h3 className="text-xl font-bold mb-6 text-gray-800">ガチャを回す</h3>
-                    
-                    <div className="mb-6">
-                      <p className="text-gray-700 mb-2">現在のチケット: <span className="font-bold text-blue-600">{tickets}枚</span></p>
-                    </div>
-                    
-                    {/* クイックアクセスボタン */}
-                    <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 mb-6">
-                      {[
-                        { count: 10, from: 'from-blue-500', to: 'to-cyan-500' },
-                        { count: 20, from: 'from-green-500', to: 'to-lime-500' },
-                        { count: 30, from: 'from-yellow-500', to: 'to-orange-500' },
-                        { count: 40, from: 'from-pink-500', to: 'to-fuchsia-500' },
-                        { count: 50, from: 'from-purple-500', to: 'to-indigo-500' },
-                      ].map(({ count, from, to }) => (
-                        <button
-                          key={count}
-                          onClick={() => runMultiGacha(count)}
-                          disabled={tickets < count}
-                          className={`py-3 bg-gradient-to-r ${from} ${to} text-white rounded-lg shadow-md ${
-                            tickets < count ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'
+            ) : !showResult && !showingSingleResult && !processing && tickets > 0 ? (
+              // ガチャ回数選択UI
+              <div className="py-8 text-center relative">
+                <div className="absolute inset-0 rounded-xl" style={{
+                  background: "linear-gradient(135deg, #dbeafe, #ede9fe, #fce7f3)", // 淡い青紫ピンクのグラデーション
+                  backgroundSize: '200% 200%',
+                }}></div>
+
+                <div className="relative z-10">
+                  <h3 className="text-xl font-bold mb-6 text-gray-800">ガチャを回す</h3>
+
+                  <div className="mb-6">
+                    <p className="text-gray-700 mb-2">現在のチケット: <span className="font-bold text-blue-600">{tickets}枚</span></p>
+                  </div>
+
+                  {/* クイックアクセスボタン */}
+                  <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 mb-6">
+                    {[
+                      { count: 10, from: 'from-blue-500', to: 'to-cyan-500' },
+                      { count: 20, from: 'from-green-500', to: 'to-lime-500' },
+                      { count: 30, from: 'from-yellow-500', to: 'to-orange-500' },
+                      { count: 40, from: 'from-pink-500', to: 'to-fuchsia-500' },
+                      { count: 50, from: 'from-purple-500', to: 'to-indigo-500' },
+                    ].map(({ count, from, to }) => (
+                      <button
+                        key={count}
+                        onClick={() => runMultiGacha(count)}
+                        disabled={tickets < count}
+                        className={`py-3 bg-gradient-to-r ${from} ${to} text-white rounded-lg shadow-md ${tickets < count ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'
                           }`}
-                        >
-                          {count}連ガチャ
-                        </button>
-                      ))}
-                    </div>
-                    {/* カスタム回数セレクター */}
-                    <div className="mb-5">
-                      <p className="text-gray-700 mb-2">カスタム回数</p>
-                      
-                      <div className="flex items-center justify-center gap-4 mt-2">
-                        <button 
-                          onClick={decreaseGachaCount}
-                          disabled={gachaCount <= 1}
-                          className={`w-10 h-10 rounded-full flex items-center justify-center ${gachaCount <= 1 ? 'bg-gray-200 text-gray-400' : 'bg-blue-100 text-blue-600 hover:bg-blue-200'}`}
-                        >
-                          <ChevronLeft size={20} />
-                        </button>
-                        
-                        <div className="flex flex-col items-center">
-                          <span className="text-3xl font-bold text-blue-600">{gachaCount}</span>
-                          <span className="text-sm text-gray-500">回数</span>
-                        </div>
-                        
-                        <button 
-                          onClick={increaseGachaCount}
-                          disabled={gachaCount >= maxGacha || gachaCount >= tickets}
-                          className={`w-10 h-10 rounded-full flex items-center justify-center ${gachaCount >= maxGacha || gachaCount >= tickets ? 'bg-gray-200 text-gray-400' : 'bg-blue-100 text-blue-600 hover:bg-blue-200'}`}
-                        >
-                          <ChevronRight size={20} />
-                        </button>
+                      >
+                        {count}連ガチャ
+                      </button>
+                    ))}
+                  </div>
+                  {/* カスタム回数セレクター */}
+                  <div className="mb-5">
+                    <p className="text-gray-700 mb-2">カスタム回数</p>
+
+                    <div className="flex items-center justify-center gap-4 mt-2">
+                      <button
+                        onClick={decreaseGachaCount}
+                        disabled={gachaCount <= 1}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center ${gachaCount <= 1 ? 'bg-gray-200 text-gray-400' : 'bg-blue-100 text-blue-600 hover:bg-blue-200'}`}
+                      >
+                        <ChevronLeft size={20} />
+                      </button>
+
+                      <div className="flex flex-col items-center">
+                        <span className="text-3xl font-bold text-blue-600">{gachaCount}</span>
+                        <span className="text-sm text-gray-500">回数</span>
                       </div>
-                    </div>
-                    
-                    <div className="flex flex-col gap-3">
-                      <button 
-                        onClick={() => runMultiGacha(gachaCount)}
-                        className="w-full py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg hover:opacity-90 shadow-lg"
+
+                      <button
+                        onClick={increaseGachaCount}
+                        disabled={gachaCount >= maxGacha || gachaCount >= tickets}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center ${gachaCount >= maxGacha || gachaCount >= tickets ? 'bg-gray-200 text-gray-400' : 'bg-blue-100 text-blue-600 hover:bg-blue-200'}`}
                       >
-                        {gachaCount}回ガチャを回す
-                      </button>
-                      
-                      <button 
-                        onClick={singleGachaAnimation}
-                        className="w-full py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:opacity-90 shadow-lg"
-                      >
-                        1回だけ回す
-                      </button>
-                      
-                      <button 
-                        onClick={handleCloseGacha}
-                        className="w-full py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 mt-2"
-                      >
-                        キャンセル
+                        <ChevronRight size={20} />
                       </button>
                     </div>
                   </div>
+
+                  <div className="flex flex-col gap-3">
+                    <button
+                      onClick={() => runMultiGacha(gachaCount)}
+                      className="w-full py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg hover:opacity-90 shadow-lg"
+                    >
+                      {gachaCount}回ガチャを回す
+                    </button>
+
+                    <button
+                      onClick={singleGachaAnimation}
+                      className="w-full py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:opacity-90 shadow-lg"
+                    >
+                      1回だけ回す
+                    </button>
+
+                    <button
+                      onClick={handleCloseGacha}
+                      className="w-full py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 mt-2"
+                    >
+                      キャンセル
+                    </button>
+                  </div>
                 </div>
-              ) : processing ? (
-                // ガチャ処理中のアニメーション - 白枠なし
-                <div className="py-12 text-center relative">
-                  {/* 背景アニメーション - 完全着色 */}
+              </div>
+            ) : processing ? (
+              // ガチャ処理中のアニメーション - 白枠なし
+              <div className="py-12 text-center relative">
+                {/* 背景アニメーション - 完全着色 */}
+                <motion.div
+                  animate={{
+                    backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+                  }}
+                  transition={{
+                    duration: 5,
+                    repeat: Infinity,
+                    ease: "linear"
+                  }}
+                  className="absolute inset-0 rounded-xl"
+                  style={{
+                    background: "linear-gradient(to right, #dbeafe, #c7d2fe)",
+                    backgroundSize: '200% 100%',
+                  }}
+                />
+
+                <div className="relative z-10">
                   <motion.div
                     animate={{
-                      backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+                      scale: [1, 1.2, 1],
                     }}
                     transition={{
-                      duration: 5,
+                      duration: 0.8,
                       repeat: Infinity,
                       ease: "linear"
                     }}
-                    className="absolute inset-0 rounded-xl"
-                    style={{
-                      background: "linear-gradient(to right, #dbeafe, #c7d2fe)",
-                      backgroundSize: '200% 100%',
-                    }}
-                  />
-                  
-                  <div className="relative z-10">
-                    <motion.div
-                      animate={{
-                        scale: [1, 1.2, 1],
-                      }}
-                      transition={{
-                        duration: 0.8,
-                        repeat: Infinity,
-                        ease: "linear"
-                      }}
-                      className="w-32 h-32 mx-auto bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center shadow-lg"
-                    >
-                      {gifUrl && <Image src={gifUrl} alt="Party Parrot" width={400} height={400}/>}
-                    </motion.div>
-                    <motion.p
-                      animate={{
-                        opacity: [1, 0.5, 1]
-                      }}
-                      transition={{
-                        duration: 1,
-                        repeat: Infinity
-                      }}
-                      className="mt-4 text-gray-700 font-medium"
-                    >
-                      ✨ パロットを探しています... ✨
-                    </motion.p>
-                  </div>
-                </div>
-              ) : showingSingleResult && currentSingleParrot ? (
-                // 単一ガチャの結果表示 - 白枠なし、淡い背景
-                <div className="relative py-6">
-                  {/* 背景のグラデーション - 透明度を25%に戻して淡い色に */}
-                  <motion.div
-                    animate={{
-                      backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
-                    }}
-                    transition={{
-                      duration: 5,
-                      repeat: Infinity,
-                      ease: "linear"
-                    }}
-                    className="absolute inset-0 opacity-25 rounded-xl"
-                    style={{
-                      background: rarityConfigs[currentSingleParrot.rarityType].bgGradient,
-                      backgroundSize: '200% 100%',
-                    }}
-                  />
-
-                  <div className="relative text-center z-10">
-                    <div className="py-8">
-                      {/* パーティクルエフェクト */}
-                      <Particles config={rarityConfigs[currentSingleParrot.rarityType]} />
-                      
-                      {/* パロット表示部分 */}
-                      <motion.div
-                        animate={{
-                          y: [0, -10, 0],
-                          scale: [1, 1.1, 1],
-                        }}
-                        transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                          ease: "easeInOut"
-                        }}
-                        className="relative"
-                      >
-                        <motion.div
-                          animate={{
-                            backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
-                          }}
-                          transition={{
-                            backgroundPosition: {
-                              duration: 5,
-                              repeat: Infinity,
-                              ease: "linear"
-                            }
-                          }}
-                          className={`w-48 h-48 mx-auto rounded-full flex items-center justify-center bg-gradient-to-r ${rarityConfigs[currentSingleParrot.rarityType].colors}`}
-                        >
-                          <div className="bg-white rounded-full p-2">
-                            <img 
-                              src={currentSingleParrot.parrot.image_url || "/api/placeholder/120/120"} 
-                              alt={currentSingleParrot.parrot.name || "Rare Parrot"} 
-                              className="w-32 h-32" 
-                            />
-                          </div>
-                        </motion.div>
-                      </motion.div>
-
-                      {/* パロット情報表示 */}
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
-                        className="mt-6"
-                      >
-                        {/* レアリティタイトル */}
-                        <motion.div
-                          animate={{
-                            scale: [1, 1.1, 1],
-                          }}
-                          transition={{
-                            duration: 2,
-                            repeat: Infinity,
-                          }}
-                          className={`text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r ${rarityConfigs[currentSingleParrot.rarityType].colors}`}
-                        >
-                          ✨ {rarityConfigs[currentSingleParrot.rarityType].title} ✨
-                        </motion.div>
-
-                        {/* パロット名 */}
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ delay: 0.4 }}
-                          className={`text-xl font-medium mb-4 bg-clip-text text-transparent bg-gradient-to-r ${rarityConfigs[currentSingleParrot.rarityType].colors}`}
-                        >
-                          {currentSingleParrot.parrot.name || "不明なパロット"}
-                        </motion.div>
-
-                        {/* スター表示 */}
-                        <motion.div
-                          animate={{ scale: [1, 1.05, 1] }}
-                          transition={{ duration: 1, repeat: Infinity }}
-                          className="flex justify-center gap-2 mb-4"
-                        >
-                        {Array.from({ length: rarityConfigs[currentSingleParrot.rarityType].stars }).map((_, i) => (
-                            <motion.div
-                              key={i}
-                              animate={{
-                                rotate: [0, 360],
-                                scale: [1, 1.2, 1],
-                              }}
-                              transition={{
-                                duration: 2,
-                                repeat: Infinity,
-                                delay: i * 0.2,
-                              }}
-                            >
-                              <Star className="h-8 w-8 text-yellow-400 fill-current" />
-                            </motion.div>
-                          ))}
-                        </motion.div>
-
-                        {/* パロット説明文（あれば表示） */}
-                        {currentSingleParrot.parrot.description && (
-                          <motion.p
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.5 }}
-                            className="text-gray-600 mt-2 mb-4"
-                          >
-                            {currentSingleParrot.parrot.description}
-                          </motion.p>
-                        )}
-                      </motion.div>
-
-                      {/* OKボタン */}
-                      <motion.button
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.6 }}
-                        onClick={closeSingleResult}
-                        className={`mt-6 px-8 py-3 bg-gradient-to-r ${rarityConfigs[currentSingleParrot.rarityType].colors} text-white rounded-lg hover:opacity-90 shadow-lg z-50 relative`}
-                      >
-                        OK!
-                      </motion.button>
-                    </div>
-                  </div>
-                </div>
-              ) : showDetail && detailParrot ? (
-                // パロット詳細表示 - 白枠なし、淡い背景
-                <div className="relative py-6">
-                  {/* 閉じるボタン */}
-                  <button 
-                    onClick={closeDetail}
-                    className="absolute top-2 right-2 text-gray-600 hover:text-gray-900 p-2 z-20"
+                    className="w-32 h-32 mx-auto bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center shadow-lg"
                   >
-                    <X size={20} />
-                  </button>
-                  
-                  <div className="flex flex-col items-center text-center">
-                    {/* 背景のグラデーション - 透明度を25%に戻して淡い色に */}
+                    {gifUrl && <Image src={gifUrl} alt="Party Parrot" width={400} height={400} />}
+                  </motion.div>
+                  <motion.p
+                    animate={{
+                      opacity: [1, 0.5, 1]
+                    }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity
+                    }}
+                    className="mt-4 text-gray-700 font-medium"
+                  >
+                    ✨ パロットを探しています... ✨
+                  </motion.p>
+                </div>
+              </div>
+            ) : showingSingleResult && currentSingleParrot ? (
+              // 単一ガチャの結果表示 - 白枠なし、淡い背景
+              <div className="relative py-6">
+                {/* 背景のグラデーション - 透明度を25%に戻して淡い色に */}
+                <motion.div
+                  animate={{
+                    backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+                  }}
+                  transition={{
+                    duration: 5,
+                    repeat: Infinity,
+                    ease: "linear"
+                  }}
+                  className="absolute inset-0 opacity-25 rounded-xl"
+                  style={{
+                    background: rarityConfigs[currentSingleParrot.rarityType].bgGradient,
+                    backgroundSize: '200% 100%',
+                  }}
+                />
+
+                <div className="relative text-center z-10">
+                  <div className="py-8">
+                    {/* パーティクルエフェクト */}
+                    <Particles config={rarityConfigs[currentSingleParrot.rarityType]} />
+
+                    {/* パロット表示部分 */}
                     <motion.div
                       animate={{
-                        backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+                        y: [0, -10, 0],
+                        scale: [1, 1.1, 1],
                       }}
                       transition={{
-                        duration: 5,
+                        duration: 2,
                         repeat: Infinity,
-                        ease: "linear"
+                        ease: "easeInOut"
                       }}
-                      className="absolute inset-0 opacity-25 rounded-xl"
-                      style={{
-                        background: rarityConfigs[detailParrot.rarityType].bgGradient,
-                        backgroundSize: '200% 100%',
-                      }}
-                    />
-                    
-                    {/* パーティクルエフェクト */}
-                    <Particles config={rarityConfigs[detailParrot.rarityType]} />
-                    
-                    <div className="relative z-10 max-w-md mx-auto">
-                      {/* パロット画像 */}
+                      className="relative"
+                    >
                       <motion.div
                         animate={{
-                          y: [0, -10, 0],
-                          scale: [1, 1.1, 1],
+                          backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
                         }}
                         transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                          ease: "easeInOut"
+                          backgroundPosition: {
+                            duration: 5,
+                            repeat: Infinity,
+                            ease: "linear"
+                          }
                         }}
-                        className="mb-6"
+                        className={`w-48 h-48 mx-auto rounded-full flex items-center justify-center bg-gradient-to-r ${rarityConfigs[currentSingleParrot.rarityType].colors}`}
                       >
-                        <div className={`w-40 h-40 rounded-full bg-gradient-to-r ${rarityConfigs[detailParrot.rarityType].colors} p-2 mx-auto`}>
-                          <div className="bg-white rounded-full w-full h-full flex items-center justify-center">
-                            <img 
-                              src={detailParrot.parrot.image_url || "/api/placeholder/120/120"} 
-                              alt={detailParrot.parrot.name} 
-                              className="w-32 h-32 object-contain" 
-                            />
-                          </div>
+                        <div className="bg-white rounded-full p-2">
+                          <Image
+                            src={currentSingleParrot.parrot.image_url || "/api/placeholder/120/120"}
+                            alt={currentSingleParrot.parrot.name || "Rare Parrot"}
+                            className="w-32 h-32"
+                          />
                         </div>
                       </motion.div>
-                      
+                    </motion.div>
+
+                    {/* パロット情報表示 */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                      className="mt-6"
+                    >
                       {/* レアリティタイトル */}
                       <motion.div
                         animate={{
@@ -1144,19 +1011,28 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                           duration: 2,
                           repeat: Infinity,
                         }}
-                        className={`text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r ${rarityConfigs[detailParrot.rarityType].colors} text-center`}
+                        className={`text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r ${rarityConfigs[currentSingleParrot.rarityType].colors}`}
                       >
-                        ✨ {rarityConfigs[detailParrot.rarityType].title} ✨
+                        ✨ {rarityConfigs[currentSingleParrot.rarityType].title} ✨
                       </motion.div>
-                      
+
                       {/* パロット名 */}
-                      <div className="text-xl font-medium mb-4 text-center">
-                        {detailParrot.parrot.name}
-                      </div>
-                      
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.4 }}
+                        className={`text-xl font-medium mb-4 bg-clip-text text-transparent bg-gradient-to-r ${rarityConfigs[currentSingleParrot.rarityType].colors}`}
+                      >
+                        {currentSingleParrot.parrot.name || "不明なパロット"}
+                      </motion.div>
+
                       {/* スター表示 */}
-                      <div className="flex justify-center gap-2 mb-4 text-center">
-                        {Array.from({ length: rarityConfigs[detailParrot.rarityType].stars }).map((_, i) => (
+                      <motion.div
+                        animate={{ scale: [1, 1.05, 1] }}
+                        transition={{ duration: 1, repeat: Infinity }}
+                        className="flex justify-center gap-2 mb-4"
+                      >
+                        {Array.from({ length: rarityConfigs[currentSingleParrot.rarityType].stars }).map((_, i) => (
                           <motion.div
                             key={i}
                             animate={{
@@ -1169,92 +1045,213 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                               delay: i * 0.2,
                             }}
                           >
-                            <Star className="h-6 w-6 text-yellow-400 fill-current" />
+                            <Star className="h-8 w-8 text-yellow-400 fill-current" />
                           </motion.div>
                         ))}
-                      </div>
-                      
+                      </motion.div>
+
                       {/* パロット説明文（あれば表示） */}
-                      {detailParrot.parrot.description && (
-                        <div className="text-gray-600 mt-4 mb-6 max-w-xs mx-auto text-center">
-                          {detailParrot.parrot.description}
-                        </div>
-                      )}
-                      
-                      {/* 閉じるボタン */}
-                      <div className="flex justify-center">
-                        <button
-                          onClick={closeDetail}
-                          className={`mt-6 px-8 py-3 bg-gradient-to-r ${rarityConfigs[detailParrot.rarityType].colors} text-white rounded-lg hover:opacity-90 shadow-lg`}
+                      {currentSingleParrot.parrot.description && (
+                        <motion.p
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.5 }}
+                          className="text-gray-600 mt-2 mb-4"
                         >
-                          戻る
-                        </button>
-                      </div>
-                    </div>
+                          {currentSingleParrot.parrot.description}
+                        </motion.p>
+                      )}
+                    </motion.div>
+
+                    {/* OKボタン */}
+                    <motion.button
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.6 }}
+                      onClick={closeSingleResult}
+                      className={`mt-6 px-8 py-3 bg-gradient-to-r ${rarityConfigs[currentSingleParrot.rarityType].colors} text-white rounded-lg hover:opacity-90 shadow-lg z-50 relative`}
+                    >
+                      OK!
+                    </motion.button>
                   </div>
                 </div>
-              ) : showResult ? (
-                // グリッド表示のガチャ結果 - 白枠なし、淡い背景
-                <div className="py-6 relative">
-                  {/* 背景グラデーション - 完全着色 */}
-                  <div 
-                    className="absolute inset-0 rounded-xl"
+              </div>
+            ) : showDetail && detailParrot ? (
+              // パロット詳細表示 - 白枠なし、淡い背景
+              <div className="relative py-6">
+                {/* 閉じるボタン */}
+                <button
+                  onClick={closeDetail}
+                  className="absolute top-2 right-2 text-gray-600 hover:text-gray-900 p-2 z-20"
+                >
+                  <X size={20} />
+                </button>
+
+                <div className="flex flex-col items-center text-center">
+                  {/* 背景のグラデーション - 透明度を25%に戻して淡い色に */}
+                  <motion.div
+                    animate={{
+                      backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+                    }}
+                    transition={{
+                      duration: 5,
+                      repeat: Infinity,
+                      ease: "linear"
+                    }}
+                    className="absolute inset-0 opacity-25 rounded-xl"
                     style={{
-                      background: "linear-gradient(135deg, #e0f2fe, #ddd6fe, #fbcfe8)",
-                      backgroundSize: '200% 200%',
+                      background: rarityConfigs[detailParrot.rarityType].bgGradient,
+                      backgroundSize: '200% 100%',
                     }}
                   />
-                  
-                  <div className="relative z-10">
-                    <h3 className="text-xl font-bold mb-6 text-center text-gray-800">ガチャ結果</h3>
-                    
-                    {/* グリッド表示 */}
-                    <div className="max-h-[80vh] overflow-y-auto overflow-x-hidden">
-                      <div className="grid grid-cols-5 gap-3">
-                        {gachaResults.map((result, index) => (
-                          <motion.div
-                            key={result.parrot.parrot_id}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: result.revealed ? 1 : 0.4 }}
-                            transition={{ duration: 0.3 }}
-                          >
-                            <ResultCard
-                              result={result}
-                              index={index}
-                              onClick={() => showParrotDetail(result)}
-                            />
-                          </motion.div>
-                        ))}
+
+                  {/* パーティクルエフェクト */}
+                  <Particles config={rarityConfigs[detailParrot.rarityType]} />
+
+                  <div className="relative z-10 max-w-md mx-auto">
+                    {/* パロット画像 */}
+                    <motion.div
+                      animate={{
+                        y: [0, -10, 0],
+                        scale: [1, 1.1, 1],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                      className="mb-6"
+                    >
+                      <div className={`w-40 h-40 rounded-full bg-gradient-to-r ${rarityConfigs[detailParrot.rarityType].colors} p-2 mx-auto`}>
+                        <div className="bg-white rounded-full w-full h-full flex items-center justify-center">
+                          <Image
+                            src={detailParrot.parrot.image_url || "/api/placeholder/120/120"}
+                            alt={detailParrot.parrot.name}
+                            className="w-32 h-32 object-contain"
+                          />
+                        </div>
                       </div>
+                    </motion.div>
+
+                    {/* レアリティタイトル */}
+                    <motion.div
+                      animate={{
+                        scale: [1, 1.1, 1],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                      }}
+                      className={`text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r ${rarityConfigs[detailParrot.rarityType].colors} text-center`}
+                    >
+                      ✨ {rarityConfigs[detailParrot.rarityType].title} ✨
+                    </motion.div>
+
+                    {/* パロット名 */}
+                    <div className="text-xl font-medium mb-4 text-center">
+                      {detailParrot.parrot.name}
                     </div>
-                    
-                    {/* 完了ボタン */}
-                    {allRevealed && (
-                      <div className="flex justify-center mt-4">
-                        <button
-                          onClick={handleCloseGacha}
-                          className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:opacity-90 shadow-lg"
+
+                    {/* スター表示 */}
+                    <div className="flex justify-center gap-2 mb-4 text-center">
+                      {Array.from({ length: rarityConfigs[detailParrot.rarityType].stars }).map((_, i) => (
+                        <motion.div
+                          key={i}
+                          animate={{
+                            rotate: [0, 360],
+                            scale: [1, 1.2, 1],
+                          }}
+                          transition={{
+                            duration: 2,
+                            repeat: Infinity,
+                            delay: i * 0.2,
+                          }}
                         >
-                          完了
-                        </button>
+                          <Star className="h-6 w-6 text-yellow-400 fill-current" />
+                        </motion.div>
+                      ))}
+                    </div>
+
+                    {/* パロット説明文（あれば表示） */}
+                    {detailParrot.parrot.description && (
+                      <div className="text-gray-600 mt-4 mb-6 max-w-xs mx-auto text-center">
+                        {detailParrot.parrot.description}
                       </div>
                     )}
+
+                    {/* 閉じるボタン */}
+                    <div className="flex justify-center">
+                      <button
+                        onClick={closeDetail}
+                        className={`mt-6 px-8 py-3 bg-gradient-to-r ${rarityConfigs[detailParrot.rarityType].colors} text-white rounded-lg hover:opacity-90 shadow-lg`}
+                      >
+                        戻る
+                      </button>
+                    </div>
                   </div>
                 </div>
-              ) : (
-                // ロード中表示
-                <div className="py-8 text-center">
-                  <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
-                  <p className="text-gray-600">ガチャを準備中...</p>
+              </div>
+            ) : showResult ? (
+              // グリッド表示のガチャ結果 - 白枠なし、淡い背景
+              <div className="py-6 relative">
+                {/* 背景グラデーション - 完全着色 */}
+                <div
+                  className="absolute inset-0 rounded-xl"
+                  style={{
+                    background: "linear-gradient(135deg, #e0f2fe, #ddd6fe, #fbcfe8)",
+                    backgroundSize: '200% 200%',
+                  }}
+                />
+
+                <div className="relative z-10">
+                  <h3 className="text-xl font-bold mb-6 text-center text-gray-800">ガチャ結果</h3>
+
+                  {/* グリッド表示 */}
+                  <div className="max-h-[80vh] overflow-y-auto overflow-x-hidden">
+                    <div className="grid grid-cols-5 gap-3">
+                      {gachaResults.map((result, index) => (
+                        <motion.div
+                          key={result.parrot.parrot_id}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: result.revealed ? 1 : 0.4 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <ResultCard
+                            result={result}
+                            index={index}
+                            onClick={() => showParrotDetail(result)}
+                          />
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 完了ボタン */}
+                  {allRevealed && (
+                    <div className="flex justify-center mt-4">
+                      <button
+                        onClick={handleCloseGacha}
+                        className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:opacity-90 shadow-lg"
+                      >
+                        完了
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
-            </motion.div>
+              </div>
+            ) : (
+              // ロード中表示
+              <div className="py-8 text-center">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                <p className="text-gray-600">ガチャを準備中...</p>
+              </div>
+            )}
           </motion.div>
-        )}
-      </AnimatePresence>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
   //#endregion
 };
 
 export default GachaAnimation;
-

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Gift, X } from 'lucide-react';
 import type { GachaResult } from '@/types';
 import styles from './GachaModal.module.css';
+import Image from 'next/image';
 
 type GachaModalProps = {
   isOpen: boolean;
@@ -50,16 +51,16 @@ const GachaModal: React.FC<GachaModalProps> = ({ isOpen, onClose, tickets = 3 })
   if (!isOpen) return null;
 
   return (
-    <div 
-      className={styles.modalOverlay} 
+    <div
+      className={styles.modalOverlay}
       onClick={handleOverlayClick}
     >
       <div className={styles.modalContainer}>
         {/* ヘッダー */}
         <div className={styles.modalHeader}>
           <h2 className={styles.modalTitle}>ガチャ</h2>
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             className={styles.closeButton}
           >
             <X size={24} />
@@ -95,9 +96,9 @@ const GachaModal: React.FC<GachaModalProps> = ({ isOpen, onClose, tickets = 3 })
         {/* 結果表示 */}
         {animationState === 'result' && result && (
           <div className={styles.resultState}>
-            <img 
-              src={result.image} 
-              alt={result.name} 
+            <Image
+              src={result.image}
+              alt={result.name}
               className={styles.resultImage}
             />
             <h3 className={styles.resultTitle}>{result.name}</h3>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { X, Calendar, Clock, Edit2 } from 'lucide-react';
 import styles from './DiaryModal.module.css';
 import { getEntryParrots } from '@/components/dashboard/Diary/ParrotSelector';
+import Image from 'next/image';
 
 // ActivityHistoryで使用する日記エントリー型
 type ActivityDiaryEntry = {
@@ -183,7 +184,7 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
                   {entry.parrots && entry.parrots.length > 0 && (
                     <div className={styles.parrotContainer}>
                       {entry.parrots.map((parrot, parrotIndex) => (
-                        <img 
+                        <Image 
                           key={parrotIndex}
                           src={parrot}
                           alt={`Parrot ${parrotIndex + 1}`}
