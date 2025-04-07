@@ -76,7 +76,7 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
   const [showParrotDropdown, setShowParrotDropdown] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory] = useState<string | null>(null);
-  const [pageSize] = useState(16); // 一度に表示するパロットの数
+  const [pageSize] = useState(8); // 一度に表示するパロットの数
   const [currentPage, setCurrentPage] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [popularTags, setPopularTags] = useState<ParrotTag[]>([]);
@@ -427,37 +427,37 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
 
   return (
     <div className={containerClass}>
+      {/* 選択中のパロットを表示 */}
       <div className={styles.selectedParrotsPreview}>
-        {/* 選択中のパロットを表示 */}
-        {selectedParrots.map((parrotImageUrl, index) => (
+        {/* 固定数の枠を作成（例：最大5つなら） */}
+        {Array(maxParrots).fill(null).map((_, index) => (
           <div key={index} className={styles.selectedParrotItem}>
-            <Image
-              src={parrotImageUrl}
-              alt={`Selected Parrot ${index + 1}`}
-              width={compact ? 20 : 24}
-              height={compact ? 20 : 24}
-              className={styles.parrotGif}
-            />
-            <button
-              onClick={() => removeParrot(parrotImageUrl)}
-              className={styles.removeParrotButton}
-              aria-label="Remove parrot"
-            >
-              <X size={compact ? 8 : 10} />
-            </button>
+            {selectedParrots[index] ? (
+              <>
+                <Image
+                  src={selectedParrots[index]}
+                  alt={`Selected Parrot ${index + 1}`}
+                  width={compact ? 20 : 24}
+                  height={compact ? 20 : 24}
+                  className={styles.parrotGif}
+                />
+                <button
+                  onClick={() => removeParrot(selectedParrots[index])}
+                  className={styles.removeParrotButton}
+                  aria-label="Remove parrot"
+                >
+                  <X size={compact ? 8 : 10} />
+                </button>
+              </>
+            ) : (
+              // 未選択の場合は空の枠を表示
+              <div 
+                className={styles.emptyParrotSlot}
+                onClick={handleAddButtonClick}
+              />
+            )}
           </div>
         ))}
-
-        {/* 追加ボタン - 最大数未満の場合のみ表示 */}
-        {!forceOpen && selectedParrots.length < maxParrots && (
-          <div 
-            className={styles.addParrotButton}
-            onClick={handleAddButtonClick}
-            title="パロットを追加"
-          >
-            <Plus size={compact ? 12 : 14} />
-          </div>
-        )}
       </div>
 
       {/* パロット選択ドロップダウン - 追加ボタンをクリックすると表示/非表示が切り替わる */}
