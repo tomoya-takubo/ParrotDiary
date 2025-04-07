@@ -756,7 +756,6 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
 
   //#region レンダリング
   return (
-    <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -1243,7 +1242,6 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
   );
   //#endregion
 };
