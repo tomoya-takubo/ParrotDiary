@@ -749,7 +749,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
                 userId={user.id}
                 selectedParrots={selectedParrots}
                 onParrotsChange={setSelectedParrots}
-                maxParrots={10}
+                maxParrots={5}
                 compact={false}
                 forceOpen={true} // ← 新しく追加するprops
               />
