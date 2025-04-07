@@ -7,7 +7,6 @@ import { supabase } from '@/lib/supabase';
 import ParrotIcon from '../ParrotIcon';
 import styles from './styles.module.css';
 import { useAuth } from '@/lib/AuthContext'; // 認証コンテキストをインポート
-import Image from 'next/image';
 
 // 型定義を UUID に対応させる
 type Parrot = {
@@ -914,7 +913,7 @@ export default function CollectionPreview() {
         <div className={styles.loadingSpinnerWrapper}>
           <div className={styles.loadingSpinner}></div>
           <div className={styles.loadingIconContainer}>
-            <Image
+            <img
               src="/parrot-icon.png"
               alt="Parrot Icon"
               className={styles.loadingIcon}

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Gift, X } from 'lucide-react';
 import type { GachaResult } from '@/types';
 import styles from './GachaModal.module.css';
-import Image from 'next/image';
 
 type GachaModalProps = {
   isOpen: boolean;
@@ -96,7 +95,7 @@ const GachaModal: React.FC<GachaModalProps> = ({ isOpen, onClose, tickets = 3 })
         {/* 結果表示 */}
         {animationState === 'result' && result && (
           <div className={styles.resultState}>
-            <Image
+            <img
               src={result.image}
               alt={result.name}
               className={styles.resultImage}

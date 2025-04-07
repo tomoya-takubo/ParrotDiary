@@ -711,7 +711,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
             {/* パロット画像 */}
             <div className={`relative w-3/4 h-3/4 rounded-full overflow-hidden bg-gradient-to-r ${rarityConfigs[result.rarityType].colors} p-1`}>
               <div className="bg-white rounded-full w-full h-full flex items-center justify-center">
-                <Image
+                <img
                   src={result.parrot.image_url || "/api/placeholder/64/64"}
                   alt={result.parrot.name}
                   className="w-full h-full object-contain p-1"
@@ -986,7 +986,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                         className={`w-48 h-48 mx-auto rounded-full flex items-center justify-center bg-gradient-to-r ${rarityConfigs[currentSingleParrot.rarityType].colors}`}
                       >
                         <div className="bg-white rounded-full p-2">
-                          <Image
+                          <img
                             src={currentSingleParrot.parrot.image_url || "/api/placeholder/120/120"}
                             alt={currentSingleParrot.parrot.name || "Rare Parrot"}
                             className="w-32 h-32"
@@ -1124,7 +1124,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                     >
                       <div className={`w-40 h-40 rounded-full bg-gradient-to-r ${rarityConfigs[detailParrot.rarityType].colors} p-2 mx-auto`}>
                         <div className="bg-white rounded-full w-full h-full flex items-center justify-center">
-                          <Image
+                          <img
                             src={detailParrot.parrot.image_url || "/api/placeholder/120/120"}
                             alt={detailParrot.parrot.name}
                             className="w-32 h-32 object-contain"

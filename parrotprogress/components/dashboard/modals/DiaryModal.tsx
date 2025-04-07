@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { X, Calendar, Clock, Edit2 } from 'lucide-react';
 import styles from './DiaryModal.module.css';
 import { getEntryParrots } from '@/components/dashboard/Diary/ParrotSelector';
-import Image from 'next/image';
 
 // ActivityHistoryで使用する日記エントリー型
 type ActivityDiaryEntry = {
@@ -24,24 +23,24 @@ type DiaryModalProps = {
   onEditEntry?: (entry: ActivityDiaryEntry) => void;
 };
 
-const DiaryModal: React.FC<DiaryModalProps> = ({ 
-  isOpen, 
-  onClose, 
-  date, 
-  entries, 
+const DiaryModal: React.FC<DiaryModalProps> = ({
+  isOpen,
+  onClose,
+  date,
+  entries,
   isToday,
   onEditEntry
 }) => {
   // エントリーごとのパロット情報を管理する状態
   const [entriesWithParrots, setEntriesWithParrots] = useState<ActivityDiaryEntry[]>(entries);
-  
+
   // モーダルが開いた時にパロット情報を取得
   useEffect(() => {
     if (!isOpen) return;
 
     const fetchParrots = async () => {
       console.log("パロット情報取得開始:", entries.length, "件のエントリー");
-      
+
       try {
         const updatedEntries = await Promise.all(
           entries.map(async (entry) => {
@@ -49,9 +48,9 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
             if (entry.entry_id) {
               try {
                 const entryIdStr = String(entry.entry_id);
-                
+
                 const parrotUrls = await getEntryParrots(entryIdStr);
-                
+
                 if (Array.isArray(parrotUrls) && parrotUrls.length > 0) {
                   return {
                     ...entry,
@@ -62,11 +61,11 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
                 console.error(`パロット取得エラー:`, error);
               }
             }
-            
+
             return entry;
           })
         );
-        
+
         setEntriesWithParrots(updatedEntries);
       } catch (error) {
         console.error("パロット取得中にエラー発生:", error);
@@ -103,7 +102,7 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       className={styles.modalOverlay}
       onClick={handleOverlayClick}
     >
@@ -114,8 +113,8 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
             <Calendar className={styles.diaryIcon} size={24} />
             <h2 className={styles.modalTitle}>{date}の記録</h2>
           </div>
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             className={styles.closeButton}
           >
             <X size={24} />
@@ -125,7 +124,7 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
         {/* 記録追加ボタンを上に移動 */}
         {isToday && (
           <div className={styles.addRecordTop}>
-            <button 
+            <button
               className={styles.addRecordButton}
               onClick={handleAddRecordClick}
             >
@@ -165,26 +164,26 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
                     </button>
                   </div>
                 </div>
-                
+
                 {/* アクティビティリストとパロット表示 */}
                 <div className={styles.entryContent}>
                   {/* アクティビティリスト */}
                   <div className={styles.activitiesSection}>
                     {entry.activities.filter(Boolean).map((activity, actIndex) => (
-                      <div 
-                        key={actIndex} 
+                      <div
+                        key={actIndex}
                         className={styles.activityItem}
                       >
                         {activity}
                       </div>
                     ))}
                   </div>
-                
+
                   {/* パロットGIFの表示 - imgタグを使用 */}
                   {entry.parrots && entry.parrots.length > 0 && (
                     <div className={styles.parrotContainer}>
                       {entry.parrots.map((parrot, parrotIndex) => (
-                        <Image 
+                        <img
                           key={parrotIndex}
                           src={parrot}
                           alt={`Parrot ${parrotIndex + 1}`}
