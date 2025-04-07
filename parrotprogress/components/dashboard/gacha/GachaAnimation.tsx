@@ -72,11 +72,35 @@ interface GachaResult {
 //#region レアリティ設定
 // 数値レアリティとレアリティタイプのマッピング
 // 従来通り1,2,3,4を使用
-const numericRarityToType: Record<string, RarityType> = {
-  '88b7a9af-c650-49f1-89cf-f18ee48c120f': 'normal',
-  'b9e8a05b-e8fb-4cf8-98ad-deeac0027c83': 'ultra_rare',
-  'ea093042-a369-4426-8e6a-eb4a4aec91c7': 'super_rare',
-  'fdfbfbe1-42dc-4f98-acf4-8f70aa7d4f8c': 'rare',
+const rarityUUIDToType: Record<string, RarityType> = {
+  '88b7a9a1-c650-49f1-89cf-f18ee48c120f': 'normal',
+  'b9e8a015-e81b-4cf8-98ad-deaec2007c83': 'ultra_rare',
+  'ea093042-a369-4442-8e6a-eba4a42ec117': 'super_rare',
+  'fdbfbbe1-42dc-4f98-acf4-8f70aa7d4f8c': 'rare',
+};
+
+// より堅牢なマッピング関数
+const getRarityType = (rarityId: string): RarityType => {
+  // 念のためtrimを行い、小文字に統一
+  const cleanedId = rarityId.trim().toLowerCase();
+  
+  // 完全一致でマッピングを試みる
+  if (rarityUUIDToType[cleanedId]) {
+    return rarityUUIDToType[cleanedId];
+  }
+  
+  // 部分一致でマッピングを試みる（最初の8文字で比較）
+  const partialId = cleanedId.substring(0, 8);
+  for (const [key, value] of Object.entries(rarityUUIDToType)) {
+    if (key.toLowerCase().includes(partialId)) {
+      console.log(`部分一致でマッピングしました: ${cleanedId} -> ${value}`);
+      return value;
+    }
+  }
+  
+  // フォールバック
+  console.warn(`未知のrarity_idです: ${rarityId}`);
+  return 'normal';
 };
 
 /**
@@ -277,22 +301,20 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
   const pullGacha = async (): Promise<{ parrot: Parrot, rarityType: RarityType }> => {
     try {
       const { data: parrots, error } = await supabase.from('parrots').select('*');
-  
+    
       if (error || !parrots || parrots.length === 0) {
         throw new Error('パロット取得エラー: ' + error?.message);
       }
-  
+    
       const randomIndex = Math.floor(Math.random() * parrots.length);
       const selectedParrot = parrots[randomIndex];
-  
+    
       console.log('選択されたパロット:', selectedParrot.name);
       console.log('レアリティID:', selectedParrot.rarity_id);
-  
-      const rarityType = numericRarityToType[selectedParrot.rarity_id];
-      if (!rarityType) {
-        throw new Error(`未定義のrarity_idです: ${selectedParrot.rarity_id}`);
-      }
-  
+    
+      // 改善されたマッピング関数を使用
+      const rarityType = getRarityType(selectedParrot.rarity_id);
+    
       return {
         parrot: selectedParrot,
         rarityType
@@ -312,7 +334,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
       };
     }
   };
-  
+      
   /**
    * チケットを消費する関数
    * @param amount 消費するチケット数
