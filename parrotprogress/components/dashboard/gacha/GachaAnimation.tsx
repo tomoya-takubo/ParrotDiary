@@ -72,11 +72,11 @@ interface GachaResult {
 //#region レアリティ設定
 // 数値レアリティとレアリティタイプのマッピング
 // 従来通り1,2,3,4を使用
-const numericRarityToType: Record<number, RarityType> = {
-  1: "normal",      // N
-  2: "rare",        // R
-  3: "super_rare",  // SR
-  4: "ultra_rare"   // UR
+const numericRarityToType: Record<string, RarityType> = {
+  '88b7a9af-c650-49f1-89cf-f18ee48c120f': 'normal',
+  'b9e8a05b-e8fb-4cf8-98ad-deeac0027c83': 'ultra_rare',
+  'ea093042-a369-4426-8e6a-eb4a4aec91c7': 'super_rare',
+  'fdfbfbe1-42dc-4f98-acf4-8f70aa7d4f8c': 'rare',
 };
 
 /**
@@ -276,47 +276,35 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
      */
   const pullGacha = async (): Promise<{ parrot: Parrot, rarityType: RarityType }> => {
     try {
-      // 1. 全パロットを取得
-      const { data: parrots, error } = await supabase
-        .from('parrots')
-        .select('*');
+      const { data: parrots, error } = await supabase.from('parrots').select('*');
   
       if (error || !parrots || parrots.length === 0) {
         throw new Error('パロット取得エラー: ' + error?.message);
       }
   
-      // 2. ランダムにパロットを1つ選択
       const randomIndex = Math.floor(Math.random() * parrots.length);
       const selectedParrot = parrots[randomIndex];
-      
-      // 3. レアリティIDを出力（デバッグ用）
+  
       console.log('選択されたパロット:', selectedParrot.name);
-      console.log('レアリティID (UUID):', selectedParrot.rarity_id, '型:', typeof selectedParrot.rarity_id);
-      
-      // 開発中は実際のUUIDとレアリティの対応がわからないため、
-      // 一時的にランダムなレアリティを割り当てる
-      const tempNumericRarity = Math.floor(Math.random() * 4) + 1; // 1から4のランダムな数値
-      const tempRarityType = numericRarityToType[tempNumericRarity];
-      
-      console.log('一時的に割り当てられた数値レアリティ:', tempNumericRarity);
-      console.log('一時的に割り当てられたレアリティタイプ:', tempRarityType);
-      
-      // 本番環境では以下のコードを使用
-      // const rarityType = getRarityTypeFromUUID(selectedParrot.rarity_id);
-      
+      console.log('レアリティID:', selectedParrot.rarity_id);
+  
+      const rarityType = numericRarityToType[selectedParrot.rarity_id];
+      if (!rarityType) {
+        throw new Error(`未定義のrarity_idです: ${selectedParrot.rarity_id}`);
+      }
+  
       return {
         parrot: selectedParrot,
-        rarityType: tempRarityType // 開発中はランダムに割り当てる
+        rarityType
       };
     } catch (error) {
       console.error('パロット抽選エラー:', error);
-      // エラー時はデフォルト値を返す
       return {
         parrot: {
           parrot_id: "1",
           name: "Unknown Parrot",
           category_id: null,
-          rarity_id: "1", // 文字列型に変更
+          rarity_id: "1",
           description: null,
           image_url: null
         },
@@ -324,7 +312,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
       };
     }
   };
-
+  
   /**
    * チケットを消費する関数
    * @param amount 消費するチケット数
