@@ -1,4 +1,5 @@
 'use client';
+
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AuthModal from './AuthModal';
@@ -32,13 +33,13 @@ export default function StartButton() {
     try {
       // すでにローディング中なら何もしない
       if (isLoading) return;
-      
+
       // ボタンクリック時にローディング状態を設定
       setIsLoading(true);
-      
+
       // ボタンクリック時に改めて認証状態を確認
       const { data } = await supabase.auth.getSession();
-      
+
       if (data.session) {
         // 認証済みの場合はダッシュボードへリダイレクト
         router.push('/dashboard');
@@ -62,25 +63,26 @@ export default function StartButton() {
 
   return (
     <>
-      <button 
+      <button
         className={styles.button}
         onClick={handleButtonClick}
         disabled={isLoading}
       >
         {isLoading ? 'ロード中...' : 'はじめる'}
       </button>
-      <AuthModal 
-        isOpen={isModalOpen} 
+
+      <AuthModal
+        isOpen={isModalOpen}
         onClose={handleModalClose}
         key={isModalOpen ? 'open' : 'closed'}
       />
-      
+
       {/* グローバルローディングオーバーレイ - 認証確認中またはボタンが無効化されている時に表示 */}
       {isLoading && (
         <div className={styles.globalOverlay}>
           {/* オーバーレイの内容はローディング中のみシンプルに保つ */}
         </div>
       )}
-  </>
+    </>
   );
 }
