@@ -8,6 +8,7 @@ export type AuthResponse = {
   error?: string;
   user?: User | null;
   session?: Session | null;
+  message?: string; // message プロパティを追加
 };
 
 /**
@@ -201,18 +202,71 @@ export const sendPasswordResetEmail = async (email: string): Promise<AuthRespons
   const supabase = createClientComponentClient<Database>();
   
   try {
+    // リセットメール送信時に正確なリダイレクトURLを設定
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth/reset-password`,
     });
     
     if (error) throw error;
     
-    return { success: true };
+    return { 
+      success: true,
+      message: 'パスワードリセット用のメールを送信しました。メールをご確認ください。'
+    };
   } catch (error) {
     console.error('パスワードリセットエラー:', error);
     return {
       success: false,
       error: error instanceof AuthError ? error.message : '予期せぬエラーが発生しました',
+    };
+  }
+};
+
+/**
+ * パスワードを更新
+ */
+export const updatePassword = async (password: string): Promise<AuthResponse> => {
+  const supabase = createClientComponentClient<Database>();
+  
+  try {
+    console.log("パスワード更新プロセス開始");
+    
+    // 現在のセッションを確認
+    const { data: sessionData } = await supabase.auth.getSession();
+    console.log("セッション確認結果:", { hasSession: !!sessionData.session });
+    
+    if (!sessionData.session) {
+      console.error("セッションが存在しません");
+      return {
+        success: false,
+        error: 'セッションが無効です。再度パスワードリセットを依頼してください。',
+        message: 'セッションが無効です。再度パスワードリセットを依頼してください。'
+      };
+    }
+    
+    // パスワード更新実行
+    console.log("Supabase Auth updateUser 呼び出し");
+    const { data, error } = await supabase.auth.updateUser({ 
+      password 
+    });
+    
+    if (error) {
+      console.error("パスワード更新エラー:", error);
+      throw error;
+    }
+    
+    console.log("パスワード更新成功");
+    return { 
+      success: true,
+      user: data.user,
+      message: 'パスワードが正常に更新されました'
+    };
+  } catch (error) {
+    console.error('パスワード更新処理エラー:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : '予期せぬエラーが発生しました',
+      message: 'パスワードの更新中にエラーが発生しました。再度お試しください。'
     };
   }
 };
@@ -253,26 +307,6 @@ export const getCurrentUser = async (): Promise<User | null> => {
   const supabase = createClientComponentClient<Database>();
   const { data } = await supabase.auth.getUser();
   return data.user;
-};
-
-/**
- * パスワードを更新
- */
-export const updatePassword = async (password: string): Promise<AuthResponse> => {
-  const supabase = createClientComponentClient<Database>();
-  
-  try {
-    const { error } = await supabase.auth.updateUser({ password });
-    if (error) throw error;
-    
-    return { success: true };
-  } catch (error) {
-    console.error('パスワード更新エラー:', error);
-    return {
-      success: false,
-      error: error instanceof AuthError ? error.message : '予期せぬエラーが発生しました',
-    };
-  }
 };
 
 // middlewareでのセッション検証のためのヘルパー関数

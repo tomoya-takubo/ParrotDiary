@@ -54,6 +54,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
    * @param e - フォーム送信イベント
    */
   const handleAuthSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    console.log('フォーム送信イベント発生');
     e.preventDefault();
     
     //#region バリデーション関数
@@ -82,8 +83,22 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     //#endregion
 
     // 基本的な入力検証
-    if (!validateEmail(email) || !validatePassword(password)) return;
-    
+    // リセットモード特有のバリデーション
+    if (modalMode === 'reset') {
+      if (!validateEmail(email)) {
+        console.log('リセットモード: メールバリデーションエラー');
+        return;
+      }
+      console.log('リセットモード: メールバリデーション通過');
+    } else {
+      // 通常のバリデーション（サインインとサインアップ用）
+      if (!validateEmail(email) || !validatePassword(password)) {
+        console.log('通常モード: バリデーションエラー');
+        return;
+      }
+      console.log('通常モード: バリデーション通過');
+    }
+
     // 送信処理の開始
     setIsLoading(true);
 
@@ -301,25 +316,36 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         //#endregion
         
       } else if (modalMode === 'reset') {
-        //#region パスワードリセット処理
+        console.log('パスワードリセット処理開始', { email });
+      
         // パスワードリセットメール送信
+        console.log('Supabase resetPasswordForEmail 呼び出し前');
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/auth/reset-password` // リセット後のリダイレクト先
+          redirectTo: `${window.location.origin}/auth/reset-password`
         });
+        console.log('Supabase resetPasswordForEmail 呼び出し後', { error });
         
         if (error) throw error;
-
+        
+        // 即時アラートを表示 (デバッグ用)
+        alert('パスワードリセット用のメールを送信しました。メールに記載されたリンクをクリックして、パスワードの再設定を行ってください。');
+        
         // 成功フィードバック
         setFormFeedback({
           type: 'success',
-          message: 'パスワードリセット用のメールを送信しました。'
+          message: 'パスワードリセット用のメールを送信しました。メールに記載されたリンクをクリックして、パスワードの再設定を行ってください。'
         });
         
-        // 3秒後にモーダルを閉じる
-        setTimeout(() => {
-          onClose();
-        }, 3000);
-        //#endregion
+        // ローディング状態を即時解除してUIを更新
+        setIsLoading(false);
+        
+        console.log('フィードバックメッセージを設定:', 'パスワードリセット用のメールを送信しました');
+        
+        // モーダルを閉じる前に少し待つ
+        await new Promise(resolve => setTimeout(resolve, 7000));
+        
+        console.log('タイムアウト実行: モーダルを閉じる');
+        onClose();
       }
       //#endregion
     } catch (error) {
@@ -370,6 +396,25 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   //#region タブ切り替え時にフォームをリセット
   const handleModeChange = (mode: ModalMode) => {
+    // フィードバックメッセージが表示されている場合は、モード変更をブロック
+    if (formFeedback && formFeedback.type === 'success') {
+      console.log('成功フィードバック表示中のため、モード変更をブロックします');
+      return;
+    }
+
+    // フォームに入力があり、フィードバックがない場合のみ確認ダイアログを表示
+    if (hasFormInput() && !formFeedback && mode !== modalMode) {
+      if (!window.confirm('入力内容が破棄されます。よろしいですか？')) {
+        return; // キャンセルされた場合は何もしない
+      }
+    }
+  
+    // フィードバックメッセージが表示されている場合は、モード変更をブロック
+    if (formFeedback && formFeedback.type === 'success') {
+      console.log('成功フィードバック表示中のため、モード変更をブロックします');
+      return;
+    }
+    
     setModalMode(mode);
     setEmail('');
     setPassword('');
@@ -389,6 +434,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setEmailError('');
     setFormFeedback(null);
     setModalMode('signin');
+    setIsLoading(false); // ローディング状態も確実にリセット
   };
   //#endregion
 
@@ -550,6 +596,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     }
   }, [isOpen, router, onClose, supabase.auth]);
 
+  console.log('現在のモーダルモード:', modalMode);
+
   if (!isOpen) return null;
 
   return (
@@ -604,8 +652,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                     type="submit" 
                     className={styles.submitButton}
                     disabled={isLoading}
-                  >
-                    {isLoading ? (
+                    onClick={() => console.log('ボタンがクリックされました')}
+>                 {isLoading ? (
                       <span className={styles.loadingText}>送信中...</span>
                     ) : '送信する'}
                   </button>
@@ -638,18 +686,26 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                     アカウント作成
                   </button>
                 </div>
-                {formFeedback && (
-                  <div className={`${styles.feedbackWrapper} ${
-                    formFeedback.type === 'success' ? 
-                    styles.feedbackSuccess : 
-                    styles.feedbackError
-                  }`}>
-                    <div className={styles.feedbackContent}>
-                      {formFeedback.type === 'success' ? '✓ ' : '⚠ '}
-                      {formFeedback.message}
+                  {formFeedback && (
+                    <div 
+                      className={`${styles.feedbackWrapper} ${formFeedback.type === 'success' ? styles.feedbackSuccess : styles.feedbackError}`}
+                      style={{ 
+                        display: 'block', 
+                        margin: '15px 0',
+                        padding: '10px 15px',
+                        borderRadius: '4px',
+                        border: `1px solid ${formFeedback.type === 'success' ? '#4caf50' : '#f44336'}`,
+                        backgroundColor: formFeedback.type === 'success' ? 'rgba(76, 175, 80, 0.1)' : 'rgba(244, 67, 54, 0.1)',
+                        color: formFeedback.type === 'success' ? '#2e7d32' : '#d32f2f',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      <div className={styles.feedbackContent}>
+                        {formFeedback.type === 'success' ? '✓ ' : '⚠ '}
+                        {formFeedback.message}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
                   <form className={styles.form} onSubmit={handleAuthSubmit}>
                   {/* メールアドレス入力部 */}
                   <div className={styles.formGroup}>
