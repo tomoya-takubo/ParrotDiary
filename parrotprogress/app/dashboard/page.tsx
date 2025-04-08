@@ -37,60 +37,57 @@ export default function Dashboard() {
     ranking: 'ブロンズ'
   });
 
+  // useStateで更新トリガーを追加
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [isLoadingUserStatus, setIsLoadingUserStatus] = useState<boolean>(true);
+  
+  // ランクの閾値を定義
+  const RANK_THRESHOLDS = {
+    SILVER: 10,
+    GOLD: 30,
+    PLATINUM: 60
+  };
+
   const getRankStyle = (rank: string) => {
     switch (rank) {
       case 'ブロンズ':
         return {
           icon: Shield,
-          gradient: 'linear-gradient(135deg, #cd7f32, #a65c00)', // 🔶 銅色グラデ
-          subtext: 'シルバーまであと10日'
+          gradient: 'linear-gradient(135deg, #cd7f32, #a65c00)' // 銅色グラデ
         };
       case 'シルバー':
         return {
           icon: Medal,
-          gradient: 'linear-gradient(135deg, #cbd5e0, #a0aec0)', // シルバー風
-          subtext: 'ゴールドまであと30日'
+          gradient: 'linear-gradient(135deg, #cbd5e0, #a0aec0)' // シルバー風
         };
       case 'ゴールド':
         return {
           icon: Trophy,
-          gradient: 'linear-gradient(135deg, #fbbf24, #f59e0b)', // ゴールド
-          subtext: 'プラチナまであと60日'
+          gradient: 'linear-gradient(135deg, #fbbf24, #f59e0b)' // ゴールド
         };
       case 'プラチナ':
         return {
           icon: Star,
-          gradient: 'linear-gradient(135deg, #a78bfa, #8b5cf6)', // プラチナ感
-          subtext: '最高ランクです！'
+          gradient: 'linear-gradient(135deg, #a78bfa, #8b5cf6)' // プラチナ感
         };
       default:
         return {
           icon: Shield,
-          gradient: 'linear-gradient(135deg, #e2e8f0, #cbd5e0)',
-          subtext: ''
+          gradient: 'linear-gradient(135deg, #e2e8f0, #cbd5e0)'
         };
     }
   };
 
-  const rankStyle = getRankStyle(userStatus.ranking);
-
-  const [isLoadingUserStatus, setIsLoadingUserStatus] = useState<boolean>(true);
-
-  // useStateで更新トリガーを追加
-  const [refreshKey, setRefreshKey] = useState(0);
-
-
   // レベルに基づいて必要なXPを計算する関数
   const calculateRequiredXpForLevel = (level: number): number => {
-    // レベルごとの必要XPの計算式（例: 基本値 × レベル^1.5）
     return Math.floor(1000 * Math.pow(level, 1.5));
   };
   
   // 連続ログイン日数からランクを決定する関数
   const getRankFromStreak = (streak: number): string => {
-    if (streak >= 60) return 'プラチナ';
-    if (streak >= 30) return 'ゴールド';
-    if (streak >= 10) return 'シルバー';
+    if (streak >= RANK_THRESHOLDS.PLATINUM) return 'プラチナ';
+    if (streak >= RANK_THRESHOLDS.GOLD) return 'ゴールド';
+    if (streak >= RANK_THRESHOLDS.SILVER) return 'シルバー';
     return 'ブロンズ';
   };
   
@@ -100,7 +97,6 @@ export default function Dashboard() {
     currentXP: number, 
     nextLevelXP: number 
   } => {
-    // データベースのレベルをベースに計算
     const level = currentLevel;
     
     // 累積XPの計算（現在のレベルまでに必要だったXP）
@@ -115,8 +111,6 @@ export default function Dashboard() {
     // 次のレベルに必要な経験値
     const nextLevelRequiredXp = calculateRequiredXpForLevel(level);
     
-    // もし現在の経験値が次のレベルに必要な経験値を超えていたら、
-    // データベースのレベルが最新でない可能性があるため、警告をログに出す
     if (currentLevelXp >= nextLevelRequiredXp) {
       console.warn('データベースのレベルが最新ではない可能性があります。レベルアップ処理が必要かもしれません。');
     }
@@ -129,10 +123,44 @@ export default function Dashboard() {
   };
   //#endregion
 
+  // ===== サブテキスト生成関数 =====
+  
+  // ランクに応じたサブテキストを生成する関数
+  const getRankSubtext = (streak: number): string => {
+    if (streak >= RANK_THRESHOLDS.PLATINUM) {
+      return '最高ランクです！';
+    } else if (streak >= RANK_THRESHOLDS.GOLD) {
+      const daysToNextRank = RANK_THRESHOLDS.PLATINUM - streak;
+      return `プラチナまであと${daysToNextRank}日`;
+    } else if (streak >= RANK_THRESHOLDS.SILVER) {
+      const daysToNextRank = RANK_THRESHOLDS.GOLD - streak;
+      return `ゴールドまであと${daysToNextRank}日`;
+    } else {
+      const daysToNextRank = RANK_THRESHOLDS.SILVER - streak;
+      return `シルバーまであと${daysToNextRank}日`;
+    }
+  };
+
+  // 継続記録のサブテキストを生成する関数
+  const getStreakSubtext = (streak: number): string => {
+    if (streak === 0) return '今日から始めましょう！';
+    if (streak < 7) return '一週間を目指しましょう！';
+    if (streak < 30) return '継続中、その調子！';
+    if (streak < 100) return 'もっともっと！まだまだいける！！';
+    return 'すごい継続力です！';
+  };
+
+  // 日記総記録数のサブテキストを生成する関数
+  const getDiarySubtext = (count: number): string => {
+    if (count === 0) return '最初の記録を作成しましょう！';
+    if (count < 10) return 'コツコツ記録していきましょう！';
+    if (count < 50) return '継続は力なり！';
+    if (count < 100) return '素晴らしい記録数です！';
+    return '記録の達人です！';
+  };
+
   // ページ読み込み時にユーザー情報とチケット情報を取得
   useEffect(() => {
-    console.log('📦 [Dashboard] refreshKey による再取得: refreshKey =', refreshKey);
-  
     const fetchUserData = async () => {
       try {
         setIsLoadingUserStatus(true);
@@ -150,6 +178,7 @@ export default function Dashboard() {
           return;
         }
   
+        // ユーザー基本情報の取得
         const { data: userData, error: userError } = await supabase
           .from('users')
           .select('level, total_xp, streak')
@@ -161,63 +190,96 @@ export default function Dashboard() {
         } else if (userData) {
           
           // ✅ user_streaks（継続記録）の取得と判定
-          const { data: streakData } = await supabase
-          .from('user_streaks')
-          .select('login_streak_count, last_login_date')
-          .eq('user_id', user.id)
-          .single();
-
           let loginStreak = 0;
-          if (streakData?.last_login_date) {
-            const today = new Date();
-            const lastLogin = new Date(streakData.last_login_date);
-            const diffInDays = Math.floor((today.getTime() - lastLogin.getTime()) / (1000 * 60 * 60 * 24));
-            loginStreak = diffInDays <= 1 ? streakData.login_streak_count : 0;
           
-            // 🔽 ここから追記 🔽
-            if (diffInDays >= 1) {
-              const nowIso = today.toISOString();
-              const updatedStreak = diffInDays === 1 ? streakData.login_streak_count + 1 : 1;
-          
-              const { error: streakUpdateError } = await supabase
-                .from('user_streaks')
-                .update({
-                  login_streak_count: updatedStreak,
-                  last_login_date: nowIso,
-                  updated_at: nowIso
-                })
-                .eq('user_id', user.id);
-          
-              if (streakUpdateError) {
-                console.error('❌ streak更新エラー:', streakUpdateError);
-              } else {
-                console.log('✅ streakを更新しました:', updatedStreak);
-                loginStreak = updatedStreak;
+          try {
+            const { data: streakData, error: streakError } = await supabase
+              .from('user_streaks')
+              .select('login_streak_count, last_login_date')
+              .eq('user_id', user.id)
+              .single();
+  
+            console.log('🔍 取得したuser_streaksテーブルデータ:', streakData, streakError);
+            
+            if (streakError) {
+              console.error('❌ ストリークデータの取得に失敗:', streakError);
+            } else if (streakData) {
+              // 確実に数値として扱う
+              loginStreak = streakData.login_streak_count || 0;
+              console.log('✅ 取得したログインストリーク:', loginStreak);
+  
+              // 連続ログイン更新処理
+              if (streakData.last_login_date) {
+                const today = new Date();
+                const lastLogin = new Date(streakData.last_login_date);
+                const diffInDays = Math.floor((today.getTime() - lastLogin.getTime()) / (1000 * 60 * 60 * 24));
+                
+                console.log('📅 前回ログインからの日数:', diffInDays);
+                
+                if (diffInDays >= 1) {
+                  const nowIso = today.toISOString();
+                  const updatedStreak = diffInDays === 1 ? streakData.login_streak_count + 1 : 1;
+              
+                  const { error: streakUpdateError } = await supabase
+                    .from('user_streaks')
+                    .update({
+                      login_streak_count: updatedStreak,
+                      last_login_date: nowIso,
+                      updated_at: nowIso
+                    })
+                    .eq('user_id', user.id);
+              
+                  if (streakUpdateError) {
+                    console.error('❌ streak更新エラー:', streakUpdateError);
+                  } else {
+                    console.log('✅ streakを更新しました:', updatedStreak);
+                    loginStreak = updatedStreak; // 更新された値を使用
+                  }
+                }
               }
             }
-            // 🔼 ここまで追記 🔼
+          } catch (streakError) {
+            console.error('❌ ストリークデータ取得中の例外:', streakError);
           }
           
           // ✅ 日記件数の取得
-          const { count: diaryCount } = await supabase
-          .from('diary_entries')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id);
+          const { count: diaryCount, error: diaryCountError } = await supabase
+            .from('diary_entries')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', user.id);
+
+          if (diaryCountError) {
+            console.error('❌ 日記件数取得エラー:', diaryCountError);
+          }
+          
+          console.log('📓 日記件数:', diaryCount);
 
           if (userData) {
             const levelInfo = calculateLevelInfo(userData.total_xp, userData.level);
+            const currentRank = getRankFromStreak(loginStreak);
+            
+            console.log('📊 計算後のユーザーステータス:', {
+              level: levelInfo.level,
+              currentXP: levelInfo.currentXP,
+              nextLevelXP: levelInfo.nextLevelXP,
+              totalDiaryEntries: diaryCount || 0,
+              streak: loginStreak,
+              ranking: currentRank
+            });
 
+            // ステート更新
             setUserStatus({
               level: levelInfo.level,
               currentXP: levelInfo.currentXP,
               nextLevelXP: levelInfo.nextLevelXP,
               totalDiaryEntries: diaryCount || 0,
               streak: loginStreak,
-              ranking: getRankFromStreak(loginStreak)
+              ranking: currentRank
             });
           }
         }
   
+        // チケット情報の取得
         const { data: ticketData, error: ticketError } = await supabase
           .from('gacha_tickets')
           .select('ticket_count')
@@ -248,16 +310,12 @@ export default function Dashboard() {
   //#region Handlers
   /**
    * 活動履歴のセルがクリックされたときのハンドラ
-   * 選択された日付の日記データをSupabaseから取得し、モーダルで表示する
    */
   const handleActivityCellClick = (date: string) => {
-    // ガチャモーダルが開いている場合は処理を中断
     if (showGachaModal) {
       return;
     }
-    
     console.log(`セルがクリックされました: ${date}`);
-            
   };
 
   // ログアウト処理を行うハンドラ
@@ -267,7 +325,6 @@ export default function Dashboard() {
       const response = await signOut();
       
       if (response.success) {
-        // ログアウト成功時にホームページへリダイレクト
         router.push('/');
       } else {
         console.error('ログアウトエラー:', response.error);
@@ -283,7 +340,6 @@ export default function Dashboard() {
   //#endregion
 
   // ガチャを開始する関数
-  // startGacha関数を簡素化
   const startGacha = async () => {
     if (ticketCount <= 0) {
       alert('チケットがありません。活動を行ってチケットを獲得してください。');
@@ -292,10 +348,9 @@ export default function Dashboard() {
     setShowGachaModal(true);
   };
 
-  // ガチャ完了後に画面のチケット数を更新する関数を追加
+  // ガチャ完了後に画面のチケット数を更新する関数
   const updateTicketCount = async () => {
     try {
-      // 現在ログイン中のユーザー情報を取得
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
@@ -303,7 +358,6 @@ export default function Dashboard() {
         return;
       }
       
-      // 最新のチケット情報を取得
       const { data, error } = await supabase
         .from('gacha_tickets')
         .select('ticket_count')
@@ -316,8 +370,6 @@ export default function Dashboard() {
       }
   
       console.log('🎟️ チケット再取得成功（updateTicketCount）:', data?.ticket_count);
-  
-      // ローカルのチケットカウントを更新
       setTicketCount(data ? data.ticket_count : 0);
     } catch (error) {
       console.error('❌ チケット更新中にエラーが発生しました:', error);
@@ -333,6 +385,9 @@ export default function Dashboard() {
     setShowGachaModal(false);
   };
 
+  // 現在のランクスタイルを取得
+  const rankStyle = getRankStyle(userStatus.ranking);
+
   return (
     <div className={styles.pageContainer}>
       <div className={styles.contentContainer}>
@@ -340,7 +395,7 @@ export default function Dashboard() {
         <div className={styles.headerContainer}>
           <h1 className={styles.appTitle}>ぱろっとだいありー</h1>
           <div className={styles.navButtons}>
-            {/* ログアウトボタンを追加 */}
+            {/* ログアウトボタン */}
             <button 
               className={`${styles.navButton}`}
               onClick={handleLogout}
@@ -350,10 +405,6 @@ export default function Dashboard() {
               <span>{isLoggingOut ? 'ログアウト中...' : 'ログアウト'}</span>
             </button>
             <div className={styles.divider}></div>
-            {/* <button className={styles.navButton}>
-              <Star size={20} />
-              <span>統計</span>
-            </button> */}
             <button 
               className={`${styles.navButton} ${styles.primaryButton}`}
               onClick={() => router.push('/collection')}
@@ -400,7 +451,6 @@ export default function Dashboard() {
               <button 
                 className={styles.gachaButton} 
                 onClick={startGacha}
-                // ガチャモーダルが開いているときはボタンを無効化
                 disabled={showGachaModal || isLoadingTickets}
               >
                 <div className={styles.ticketContainer}>
@@ -421,45 +471,68 @@ export default function Dashboard() {
         {/* 統計カード */}
         <div className={styles.statsCard}>
           <div className={styles.statsGrid}>
-            {[
-              {
-                icon: Book,
-                title: '日記総記録数',
-                value: isLoadingUserStatus ? '読込中...' : `${userStatus.totalDiaryEntries}件`,
-                subtext: '継続は力なり！',
-                gradient: 'linear-gradient(135deg, #60a5fa, #3b82f6)'
-              },
-              {
-                icon: Award,
-                title: '継続記録',
-                value: isLoadingUserStatus ? '読込中...' : `${userStatus.streak}日連続`,
-                subtext: '自己ベスト更新中！',
-                gradient: 'linear-gradient(135deg, #a78bfa, #8b5cf6)'
-              },
-              {
-                icon: rankStyle.icon,
-                title: 'ランク',
-                value: isLoadingUserStatus ? '読込中...' : userStatus.ranking,
-                subtext: rankStyle.subtext,
-                gradient: rankStyle.gradient
-              }
-            ].map((stat, index) => (
-              <div key={index} className={styles.statItem}>
-                <div className={styles.statHeader}>
-                  <div 
-                    className={styles.statIconContainer}
-                    style={{ background: stat.gradient }}
-                  >
-                    <stat.icon size={20} />
-                  </div>
-                  <div className={styles.statInfo}>
-                    <div className={styles.statLabel}>{stat.title}</div>
-                    <div className={styles.statValue}>{stat.value}</div>
+            {/* 日記総記録数 */}
+            <div className={styles.statItem}>
+              <div className={styles.statHeader}>
+                <div 
+                  className={styles.statIconContainer}
+                  style={{ background: 'linear-gradient(135deg, #60a5fa, #3b82f6)' }}
+                >
+                  <Book size={20} />
+                </div>
+                <div className={styles.statInfo}>
+                  <div className={styles.statLabel}>日記総記録数</div>
+                  <div className={styles.statValue}>
+                    {isLoadingUserStatus ? '読込中...' : `${userStatus.totalDiaryEntries}件`}
                   </div>
                 </div>
-                <div className={styles.statDescription}>{stat.subtext}</div>
               </div>
-            ))}
+              <div className={styles.statDescription}>
+                {isLoadingUserStatus ? '読込中...' : getDiarySubtext(userStatus.totalDiaryEntries)}
+              </div>
+            </div>
+            
+            {/* 継続記録 */}
+            <div className={styles.statItem}>
+              <div className={styles.statHeader}>
+                <div 
+                  className={styles.statIconContainer}
+                  style={{ background: 'linear-gradient(135deg, #a78bfa, #8b5cf6)' }}
+                >
+                  <Award size={20} />
+                </div>
+                <div className={styles.statInfo}>
+                  <div className={styles.statLabel}>継続記録</div>
+                  <div className={styles.statValue}>
+                    {isLoadingUserStatus ? '読込中...' : `${userStatus.streak}日連続`}
+                  </div>
+                </div>
+              </div>
+              <div className={styles.statDescription}>
+                {isLoadingUserStatus ? '読込中...' : getStreakSubtext(userStatus.streak)}
+              </div>
+            </div>
+            
+            {/* ランク */}
+            <div className={styles.statItem}>
+              <div className={styles.statHeader}>
+                <div 
+                  className={styles.statIconContainer}
+                  style={{ background: rankStyle.gradient }}
+                >
+                  <rankStyle.icon size={20} />
+                </div>
+                <div className={styles.statInfo}>
+                  <div className={styles.statLabel}>ランク</div>
+                  <div className={styles.statValue}>
+                    {isLoadingUserStatus ? '読込中...' : userStatus.ranking}
+                  </div>
+                </div>
+              </div>
+              <div className={styles.statDescription}>
+                {isLoadingUserStatus ? '読込中...' : getRankSubtext(userStatus.streak)}
+              </div>
+            </div>
           </div>
         </div>
       
@@ -468,20 +541,19 @@ export default function Dashboard() {
           onCellClick={handleActivityCellClick} 
           isGachaOpen={showGachaModal} 
           onSave={() => {
-            setRefreshKey(k => k + 1); // ← 追加
+            setRefreshKey(k => k + 1);
           }}
         />
 
         {/* 3行日記 */}
         <Diary key={`diary-${refreshKey}`} onSave={() => setRefreshKey(k => k + 1)} />
 
-        {/* モーダルコンポーネント */}
         {/* ガチャアニメーションコンポーネント */}
         <GachaAnimation
-        isOpen={showGachaModal}
-        startGacha={updateTicketCount}
-        onClose={closeGacha}
-      />        
+          isOpen={showGachaModal}
+          startGacha={updateTicketCount}
+          onClose={closeGacha}
+        />        
       </div>
     </div>
   );
