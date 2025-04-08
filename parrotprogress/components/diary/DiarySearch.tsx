@@ -592,29 +592,10 @@ const DiarySearch = () => {
               )}
             </div>
             
-            {/* ページネーション */}
+            {/* 下部ページネーション */}
             {filteredEntries.length > 0 && (
               <div className={styles.pagination}>
-                {/* 前のページボタン */}
-                <button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className={`${styles.paginationButton} ${styles.paginationArrow}`}
-                >
-                  <ChevronLeft size={16} />
-                </button>
-                
-                {/* ページ番号 */}
                 {renderPageNumbers()}
-                
-                {/* 次のページボタン */}
-                <button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className={`${styles.paginationButton} ${styles.paginationArrow}`}
-                >
-                  <ChevronRight size={16} />
-                </button>
               </div>
             )}
           </>
