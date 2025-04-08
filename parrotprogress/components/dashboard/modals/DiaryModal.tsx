@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { X, Calendar, Clock, Edit2 } from 'lucide-react';
 import styles from './DiaryModal.module.css';
-import { getEntryParrots } from '@/components/dashboard/Diary/ParrotSelector';
 
 // ActivityHistoryで使用する日記エントリー型
 type ActivityDiaryEntry = {
@@ -31,11 +30,7 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
   isToday,
   onEditEntry
 }) => {
-  // parrotsLoaded状態を追加
-  const [parrotsLoaded] = useState(false);
-  // エントリーごとのパロット情報を管理する状態
-  const [entriesWithParrots] = useState<ActivityDiaryEntry[]>([]);
-  
+
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       onClose();
