@@ -5,6 +5,8 @@ import { createClient } from '@supabase/supabase-js';
 import DiaryModal from '@/components/dashboard/modals/DiaryModal';
 import { useAuth } from '@/lib/AuthContext';
 import EditDiaryModal from '@/components/dashboard/modals/EditDiaryModal';
+import { getEntryParrots } from '@/components/dashboard/Diary/ParrotSelector';
+
 
 //#region 型定義
 type ActivityHistoryProps = {
@@ -346,6 +348,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
   };
   
   // DBデータをモーダル表示用データに変換
+  // convertToModalEntry 関数を確認・修正
   const convertToModalEntry = async (dbEntry: DBDiaryEntry): Promise<ModalDiaryEntry> => {
     const recordedTime = new Date(dbEntry.recorded_at);
     const hours = String(recordedTime.getHours()).padStart(2, '0');
@@ -355,15 +358,15 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
     const activities = [dbEntry.line1];
     if (dbEntry.line2) activities.push(dbEntry.line2);
     if (dbEntry.line3) activities.push(dbEntry.line3);
-  
+
     let tags: string[] = [];
-  
+
     try {
       const { data: tagUsages } = await supabase
         .from('tag_usage_histories')
         .select('tag_id')
         .eq('entry_id', dbEntry.entry_id);
-  
+
       const tagIds = tagUsages?.map(t => t.tag_id).filter(Boolean);
       if (tagIds && tagIds.length > 0) {
         const { data: tagNames } = await supabase
@@ -375,17 +378,31 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
     } catch (error) {
       console.error('タグ取得エラー:', error);
     }
-  
+
+    // パロット情報を取得
+    let parrots: string[] = [];
+    try {
+      if (dbEntry.entry_id) {
+        const entryId = String(dbEntry.entry_id);
+        const parrotUrls = await getEntryParrots(entryId);
+        if (Array.isArray(parrotUrls) && parrotUrls.length > 0) {
+          parrots = parrotUrls;
+        }
+      }
+    } catch (error) {
+      console.error('パロット取得エラー:', error);
+    }
+
     return {
       time: timeStr,
       tags: tags.length > 0 ? tags : ['3行日記'], // タグがないときのフォールバック
       activities,
       created_at: dbEntry.created_at,
       entry_id: dbEntry.entry_id,
-      parrots: []
+      parrots // パロット情報を追加
     };
   };
-    
+
   // 月を変更する関数
   const changeMonth = (increment: number) => {
     setCurrentDate(prevDate => {
@@ -399,6 +416,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
 
   //#region イベントハンドラー
   // セルクリックのハンドラー
+  // handleCellClick関数を非同期関数に変更
   const handleCellClick = async (cell: CellData) => {
     if (isGachaOpen) return;
   
@@ -409,16 +427,33 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
     }
   
     const entries = entriesByDate[cell.date] || [];
+    
     if (entries.length === 0) {
       setModalEntries([]);
+      setShowModal(true); // 空の場合はすぐに表示
     } else {
-      const modalData = await Promise.all(entries.map(convertToModalEntry));
-      setModalEntries(modalData);
+      try {
+        console.log("パロット情報取得開始:", entries.length, "件のエントリー");
+        
+        // モーダルエントリーに変換（パロット情報も取得）
+        const modalData = await Promise.all(entries.map(convertToModalEntry));
+        
+        // デバッグのためにパロット情報の確認
+        modalData.forEach((entry, index) => {
+          console.log(`エントリー ${index} のパロット情報:`, entry.parrots);
+        });
+        
+        setModalEntries(modalData);
+        setShowModal(true);
+      } catch (error) {
+        console.error("エントリー変換中にエラーが発生しました:", error);
+        // エラー時も何かしらの結果を表示する
+        setModalEntries([]); 
+        setShowModal(true);
+      }
     }
-  
-    setShowModal(true);
   };
-    
+
   // モーダルを閉じるハンドラー
   const handleCloseModal = () => {
     setShowModal(false);

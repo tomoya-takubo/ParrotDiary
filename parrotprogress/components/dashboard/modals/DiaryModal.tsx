@@ -27,54 +27,15 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
   isOpen, 
   onClose, 
   date, 
-  entries, 
+  entries, // すでにパロット情報を含むエントリー
   isToday,
   onEditEntry
 }) => {
+  // parrotsLoaded状態を追加
+  const [parrotsLoaded] = useState(false);
   // エントリーごとのパロット情報を管理する状態
-  const [entriesWithParrots, setEntriesWithParrots] = useState<ActivityDiaryEntry[]>(entries);
+  const [entriesWithParrots] = useState<ActivityDiaryEntry[]>([]);
   
-  // モーダルが開いた時にパロット情報を取得
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const fetchParrots = async () => {
-      console.log("パロット情報取得開始:", entries.length, "件のエントリー");
-      
-      try {
-        const updatedEntries = await Promise.all(
-          entries.map(async (entry) => {
-            // entry_idがある場合のみパロット情報を取得
-            if (entry.entry_id) {
-              try {
-                const entryIdStr = String(entry.entry_id);
-                
-                const parrotUrls = await getEntryParrots(entryIdStr);
-                
-                if (Array.isArray(parrotUrls) && parrotUrls.length > 0) {
-                  return {
-                    ...entry,
-                    parrots: parrotUrls
-                  };
-                }
-              } catch (error) {
-                console.error(`パロット取得エラー:`, error);
-              }
-            }
-            
-            return entry;
-          })
-        );
-        
-        setEntriesWithParrots(updatedEntries);
-      } catch (error) {
-        console.error("パロット取得中にエラー発生:", error);
-      }
-    };
-
-    fetchParrots();
-  }, [isOpen, entries]);
-
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -136,8 +97,8 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
 
         {/* エントリーリスト */}
         <div className={styles.entriesContainer}>
-          {entriesWithParrots.length > 0 ? (
-            entriesWithParrots.map((entry, index) => (
+          {entries.length > 0 ? (
+            entries.map((entry, index) => (
               <div key={index} className={styles.entryCard}>
                 {/* エントリーヘッダー */}
                 <div className={styles.entryHeader}>
@@ -180,20 +141,23 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
                   </div>
                 
                   {/* パロットGIFの表示 - imgタグを使用 */}
-                  {entry.parrots && entry.parrots.length > 0 && (
+                  {entry.parrots && entry.parrots.length > 0 ? (
                     <div className={styles.parrotContainer}>
-                      {entry.parrots.map((parrot, parrotIndex) => (
-                        <img 
-                          key={parrotIndex}
-                          src={parrot}
-                          alt={`Parrot ${parrotIndex + 1}`}
-                          width={24}
-                          height={24}
-                          className={styles.parrotGif}
-                        />
-                      ))}
+                      {entry.parrots.map((parrot, parrotIndex) => {
+                        console.log(`パロット表示: ${parrot}`); // デバッグ用
+                        return (
+                          <img 
+                            key={parrotIndex}
+                            src={parrot}
+                            alt={`Parrot ${parrotIndex + 1}`}
+                            width={24}
+                            height={24}
+                            className={styles.parrotGif}
+                          />
+                        );
+                      })}
                     </div>
-                  )}
+                  ) : null}
                 </div>
               </div>
             ))
