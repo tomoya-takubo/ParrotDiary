@@ -584,17 +584,19 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
           </h2>
         </div>
         <div className={styles.modalContent}>
-          <div className={styles.entryTimestamp}>
-            {date && entry.time 
-              ? `${date} ${entry.time} の記録` 
-              : `${new Date().toLocaleString('ja-JP')} の記録`}
-          </div>          
+          <div className={styles.timestampErrorContainer}>
+            <div className={styles.entryTimestamp}>
+              {date && entry.time 
+                ? `${date} ${entry.time} の記録` 
+                : `${new Date().toLocaleString('ja-JP')} の記録`}
+            </div>          
             {/* エラーメッセージ表示 */}
             {formError && (
               <div className={styles.errorText}>
                 {formError}
               </div>
             )}
+          </div>
 
           {/* 入力フィールド */}
           <div className={styles.inputGroup}>

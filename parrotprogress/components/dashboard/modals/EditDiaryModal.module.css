@@ -40,7 +40,7 @@
 .modalContent {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .entryTimestamp {
@@ -464,3 +464,66 @@
   to { opacity: 0; }
 }
 
+/* タイムスタンプとエラーメッセージを横並びにするコンテナ */
+.timestampErrorContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* タイムスタンプスタイルの修正 */
+.entryTimestamp {
+  font-size: 14px;
+  color: #718096;
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+/* エラーテキストスタイルの修正 */
+.errorText {
+  color: #e53e3e;
+  font-size: 14px;
+  padding: 6px 12px;
+  background-color: #fff5f5;
+  border-radius: 8px;
+  border: none;
+  flex-grow: 1;
+  margin: 0;
+  max-width: 70%;
+}
+
+/* パロットセクションのサイズを安定させる */
+.modalParrotSection {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 16px;
+  width: 100%;
+}
+
+/* パロットオプションのサイズを固定する */
+.parrotOption {
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 5px;
+  padding: 3px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  box-sizing: content-box;
+}
+
+/* 選択済みパロットアイテムのサイズを固定する */
+.selectedParrotItem {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  box-sizing: content-box;
+}
