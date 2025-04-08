@@ -352,8 +352,8 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
     try {
       const matches = displayDate.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
       if (!matches) return null;
-      
-      const [year, month, day] = matches;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const [_, year, month, day] = matches;
       return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
     } catch (e) {
       console.error('日付変換エラー:', e);
@@ -636,7 +636,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
         onEditEntry={handleEditEntry}
         onDateChange={handleDateChange} // ← 新しく追加
       />
-
+      
       {isEditModalOpen && editingEntry && (
         <EditDiaryModal
           isOpen={isEditModalOpen}

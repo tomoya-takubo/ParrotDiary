@@ -77,8 +77,9 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
         setIsLoading(false);
         return;
       }
-      
-      const [yearStr, monthStr, dayStr] = matches;
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const [_, yearStr, monthStr, dayStr] = matches;
       const year = parseInt(yearStr);
       const month = parseInt(monthStr) - 1; // JavaScriptの月は0-11
       const day = parseInt(dayStr);
@@ -123,7 +124,8 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
         return;
       }
       
-      const [yearStr, monthStr, dayStr] = matches;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const [_, yearStr, monthStr, dayStr] = matches;
       const year = parseInt(yearStr);
       const month = parseInt(monthStr) - 1; // JavaScriptの月は0-11
       const day = parseInt(dayStr);
