@@ -346,7 +346,48 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
     const day = date.getDate();
     return `${year}年${month}月${day}日`;
   };
-  
+
+  // 表示形式の日付から内部形式への変換（例: 2024年3月15日 → 2024-03-15）
+  const parseDisplayDate = (displayDate: string): string | null => {
+    try {
+      const matches = displayDate.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
+      if (!matches) return null;
+      
+      const [year, month, day] = matches;
+      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    } catch (e) {
+      console.error('日付変換エラー:', e);
+      return null;
+    }
+  };
+
+  // 日記モーダルの日付変更ハンドラー
+  const handleDateChange = async (newDisplayDate: string) => {
+    console.log('日付変更:', newDisplayDate);
+    const newDateString = parseDisplayDate(newDisplayDate);
+    
+    if (newDateString) {
+      try {
+        setSelectedDate(newDateString);
+        
+        // 新しい日付のデータを取得
+        const entries = entriesByDate[newDateString] || [];
+        
+        // データ変換処理
+        let modalData: ModalDiaryEntry[] = [];
+        if (entries.length > 0) {
+          modalData = await Promise.all(entries.map(convertToModalEntry));
+        }
+        
+        // 処理完了後にモーダルエントリーを更新
+        setModalEntries(modalData);
+      } catch (error) {
+        console.error("エントリー変換中にエラーが発生しました:", error);
+        setModalEntries([]);
+      }
+    }
+  };  
+
   // DBデータをモーダル表示用データに変換
   // convertToModalEntry 関数を確認・修正
   const convertToModalEntry = async (dbEntry: DBDiaryEntry): Promise<ModalDiaryEntry> => {
@@ -593,8 +634,9 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
         onDataUpdated={refreshData}
         isToday={selectedDate === formatDateString(new Date())}
         onEditEntry={handleEditEntry}
+        onDateChange={handleDateChange} // ← 新しく追加
       />
-      
+
       {isEditModalOpen && editingEntry && (
         <EditDiaryModal
           isOpen={isEditModalOpen}

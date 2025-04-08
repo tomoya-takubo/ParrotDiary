@@ -303,3 +303,128 @@
   padding-bottom: 8px;
   border-bottom: 1px solid #e2e8f0;
 }
+
+/* モーダルナビゲーションのスタイル */
+.modalNavigationWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 800px; /* モーダルより少し広く */
+  gap: 1rem;
+}
+
+.modalNavButton {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid #ddd;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1001; /* モーダルより前面に */
+  flex-shrink: 0; /* ボタンサイズを固定 */
+  color: #4a5568;
+}
+
+.modalNavButton:hover:not(:disabled) {
+  background-color: white;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.modalNavButton:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.modalNavButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: rgba(229, 231, 235, 0.8);
+}
+
+/* モーダルオーバーレイとモーダルコンテンツの調整 */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 50;
+}
+
+/* 既存のスタイルを一部調整 */
+.modalContainer {
+  position: relative;
+  flex: 1;
+  max-width: 600px;
+  width: 100%;
+  margin: 0 16px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* ローディングインジケーター */
+.loadingIndicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.7);
+  z-index: 10;
+  border-radius: 16px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: #4a5568;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ナビゲーションボタンのローディング状態 */
+.modalNavButton.loading {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* モバイル向け調整 */
+@media (max-width: 768px) {
+  .modalNavButton {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .modalNavigationWrapper {
+    max-width: 90%;
+    gap: 0.5rem;
+  }
+  
+  .modalContainer {
+    padding: 20px;
+  }
+}
