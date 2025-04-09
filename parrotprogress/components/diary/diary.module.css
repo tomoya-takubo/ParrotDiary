@@ -1,6 +1,6 @@
 /* src/components/diary/diary.module.css */
 
-/* 全画面グラデーション背景 */
+/* 全画面グラデーション背景 - 修正箇所 */
 .pageBackground {
   background: linear-gradient(to bottom, #EFF6FF, #F5F3FF);
   min-height: 100vh;
@@ -8,19 +8,22 @@
   position: fixed;
   top: 0;
   left: 0;
+  bottom: 0;
+  right: 0;
   z-index: -1;
 }
 
-/* コンテナ */
+/* コンテナ - 修正箇所 */
 .container {
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 24px 24px 60px 24px; /* 下部パディングを増やす */
   font-family: sans-serif;
   position: relative;
   min-height: 100vh; /* 最低でも画面の高さ分は確保 */
 }
 
+/* 残りのCSSはそのまま */
 /* タイトル */
 .title {
   font-size: 24px;
@@ -424,8 +427,6 @@
   transform: scaleX(-1); /* GIFを左右反転 */
 }
 
-/* diary.module.cssに追加 */
-
 /* コンテナの最大幅を調整 */
 .container {
   max-width: 1200px; /* 幅を拡大 */
@@ -455,8 +456,6 @@
     grid-template-columns: 1fr;
   }
 }
-
-/* src/components/diary/diary.module.css - ページネーション用スタイルを追加 */
 
 /* ページネーション関連のスタイル */
 .pagination {
