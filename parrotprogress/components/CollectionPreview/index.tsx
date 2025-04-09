@@ -338,8 +338,11 @@ export default function CollectionPreview() {
 
 // ParrotModal関数の修正部分
 
-const ParrotModal = ({ parrot, onClose }: { parrot: Parrot; onClose: () => void }) => {
-  // ユーザーの獲得情報を取得（ログインユーザーのものだけ）
+const ParrotModal = ({ parrot, onClose, allParrots }: {
+  parrot: Parrot;
+  onClose: () => void;
+  allParrots: Parrot[];
+}) => {
   const obtainInfo = parrot.user_parrots.find(up => up.user_id === currentUser);
   
   // タグ関連の状態
@@ -347,6 +350,9 @@ const ParrotModal = ({ parrot, onClose }: { parrot: Parrot; onClose: () => void 
   const [loading, setLoading] = useState(false);
   const [newTagName, setNewTagName] = useState('');
   const [tagError, setTagError] = useState<string | null>(null);
+
+  // ナンバー表示用のindexを取得
+  const parrotIndex = allParrots.findIndex(p => p.parrot_id === parrot.parrot_id);
 
   // タグデータの取得
   useEffect(() => {
@@ -571,6 +577,8 @@ const ParrotModal = ({ parrot, onClose }: { parrot: Parrot; onClose: () => void 
               />
             </div>
             <div className={styles.modalInfo}>
+              {/* パロットナンバーを追加（表示順を優先） */}
+              <div className={styles.parrotNumber}>No.{parrot.display_order || parrotIndex + 1}</div>
               <h2 className={styles.modalTitle}>{parrot.name}</h2>
               <span 
                 className={`${styles.rarityBadge} ${styles[`rarityBadge${parrot.rarity.abbreviation}`]}`}
@@ -1178,6 +1186,7 @@ const ParrotModal = ({ parrot, onClose }: { parrot: Parrot; onClose: () => void 
         <ParrotModal
           parrot={selectedParrot}
           onClose={() => setSelectedParrot(null)}
+          allParrots={sortedAndFilteredParrots} // パロット配列を渡す
         />
       )}
     </div>
