@@ -476,61 +476,6 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
   };
 
   /**
-   * 1回のガチャアニメーションを実行する関数
-   */
-  const singleGachaAnimation = async () => {
-    if (!user) {
-      setError('ガチャを実行するにはログインが必要です');
-      return;
-    }
-    
-    // チケットがあるか確認
-    if (tickets <= 0) {
-      console.error('チケット不足エラー。チケット数:', tickets);
-      setError('ガチャチケットが不足しています');
-      return;
-    }
-    
-    setError(null);
-    setProcessing(true);
-    
-    try {
-      // 1. チケットを消費
-      const ticketConsumed = await consumeTickets(1);
-      if (!ticketConsumed) {
-        throw new Error('チケットの消費に失敗しました');
-      }
-
-      // チケット消費後、親コンポーネントのコールバックを呼び出して画面更新
-      startGacha();
-
-      // 2. ガチャを引く
-      const { parrot, rarityType } = await pullGacha();
-      
-      // 3. パロットをユーザーに登録
-      await saveParrotToUser(parrot);
-      
-      // 4. 単一ガチャの結果表示用のデータをセット
-      setCurrentSingleParrot({
-        parrot,
-        rarityType,
-        revealed: true
-      });
-      
-      // 5. アニメーション完了後に単一ガチャの結果表示
-      setTimeout(() => {
-        setProcessing(false);
-        setShowingSingleResult(true);
-      }, 2000);
-      
-    } catch (error) {
-      console.error('ガチャ処理エラー:', error);
-      setError(`ガチャの実行中にエラーが発生しました: ${(error as Error).message}`);
-      setProcessing(false);
-    }
-  };
-
-  /**
    * 複数回のガチャを一括で実行する関数
    */
   const runMultiGacha = async (count: number) => {
