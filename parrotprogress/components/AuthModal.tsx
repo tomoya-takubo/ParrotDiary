@@ -163,10 +163,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               user_id: data.user.id,
               login_streak_count: 0,
               login_max_streak: 0,
-              pomodoro_streak_count: 0,  // ここを修正
-              pomodoro_max_streak: 0,
               last_login_date: currentTime,
-              last_pomodoro_date: null,
               created_at: currentTime,
               updated_at: currentTime
             });
@@ -182,7 +179,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             console.log('gacha_ticketsテーブルに挿入開始');
             const { error: gachaError } = await supabase.from('gacha_tickets').insert({
               user_id: data.user.id,
-              ticket_count: 9999,         // 'count' ではなく 'ticket_count'
+              ticket_count: 0,         // 'count' ではなく 'ticket_count'
               last_updated: currentTime // 'expires_at' や 'created_at' ではなく 'last_updated'
             });
 
