@@ -659,7 +659,8 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
             className={`absolute w-3 h-3 rounded-full ${config.particleColors[i % config.particleColors.length]}`}
             style={{
               filter: 'blur(1px)'
-            }} />
+            }}
+          />
         ))}
       </div>
     );
@@ -779,16 +780,16 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
               }
             }}
           >
-              <motion.div
-                initial={{ scale: 0.5, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.5, opacity: 0 }}
-                className="rounded-xl p-6 w-full max-w-3xl relative overflow-hidden shadow-2xl"
-                style={{
-                  background: "linear-gradient(135deg, #e0f2fe, #f0f9ff)", // 淡い青系の背景
-                }}
-              >
-                {error ? (
+            <motion.div
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.5, opacity: 0 }}
+              className="rounded-xl p-6 w-full max-w-3xl relative overflow-hidden shadow-2xl"
+              style={{
+                background: "linear-gradient(135deg, #e0f2fe, #f0f9ff)", // 淡い青系の背景
+              }}
+            >
+              {error ? (
                 // エラー表示
                 <div className="py-8 text-center">
                   <div className="text-red-500 text-xl mb-4">⚠️ {error}</div>
@@ -873,13 +874,6 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                       </button>
                       
                       <button 
-                        onClick={singleGachaAnimation}
-                        className="w-full py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:opacity-90 shadow-lg"
-                      >
-                        1回だけ回す
-                      </button>
-                      
-                      <button 
                         onClick={handleCloseGacha}
                         className="w-full py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 mt-2"
                       >
@@ -957,7 +951,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                   />
 
                   <div className="relative text-center z-10">
-                    <div className="py-8">
+                    <div className="py-8 px-4">
                       {/* パーティクルエフェクト */}
                       <Particles config={rarityConfigs[currentSingleParrot.rarityType]} />
                       
@@ -1110,7 +1104,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                     {/* パーティクルエフェクト */}
                     <Particles config={rarityConfigs[detailParrot.rarityType]} />
                     
-                    <div className="relative z-10 max-w-md mx-auto">
+                    <div className="relative z-10 max-w-md mx-auto px-4 py-2">
                       {/* パロット画像 */}
                       <motion.div
                         animate={{
@@ -1176,7 +1170,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                       
                       {/* パロット説明文（あれば表示） */}
                       {detailParrot.parrot.description && (
-                        <div className="text-gray-600 mt-4 mb-6 max-w-xs mx-auto text-center">
+                        <div className="text-gray-600 mt-4 mb-6 max-w-xs mx-auto text-center px-2">
                           {detailParrot.parrot.description}
                         </div>
                       )}
@@ -1209,8 +1203,8 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                     <h3 className="text-xl font-bold mb-6 text-center text-gray-800">ガチャ結果</h3>
                     
                     {/* グリッド表示 */}
-                    <div className="max-h-[80vh] overflow-y-auto overflow-x-hidden">
-                      <div className="grid grid-cols-5 gap-3">
+                    <div className="max-h-[80vh] overflow-y-auto overflow-x-hidden px-2">
+                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
                         {gachaResults.map((result, index) => (
                           <motion.div
                             key={result.parrot.parrot_id}
