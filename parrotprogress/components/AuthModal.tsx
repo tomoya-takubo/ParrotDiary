@@ -55,7 +55,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
    */
   const handleAuthSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     //#region バリデーション関数
     // メールアドレスの検証
     const validateEmail = (email: string) => {
@@ -63,14 +63,14 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       setEmailError(validation.message);
       return validation.isValid;
     };
-    
+
     // パスワード強度の検証
     const validatePassword = (pass: string) => {
       const validation = validatePasswordStrength(pass);
       setPasswordError(validation.message);
       return validation.isValid;
     };
-    
+
     // パスワードと確認用パスワードの一致検証
     const validatePasswordMatch = () => {
       if (password !== confirmPassword) {
@@ -82,19 +82,19 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     //#endregion
 
     // 基本的な入力検証
-    if (!validateEmail(email) || !validatePassword(password)) return;
-    
+    // if (!validateEmail(email) || !validatePassword(password)) return;
+
     // 送信処理の開始
     setIsLoading(true);
 
-      // 現在時刻を日本時間（JST）で取得
+    // 現在時刻を日本時間（JST）で取得
     const getCurrentJSTTime = () => {
       const now = new Date();
       // 日本時間に調整（UTC+9）
       now.setHours(now.getHours() + 9);
       return now.toISOString();
     };
-    
+
     // 現在時刻を取得
     const currentTime = getCurrentJSTTime();
 
@@ -108,9 +108,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           setIsLoading(false);
           return;
         }
-        
+
         console.log('サインアッププロセス開始:', { email });
-        
+
         // Step 1: Supabaseの認証システムにユーザーを登録
         const { data, error } = await supabase.auth.signUp({
           email,
@@ -150,13 +150,13 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               created_at: currentTime,    // 作成日時
               updated_at: currentTime     // 更新日時
             });
-            
+
             if (usersError) {
               console.error('usersテーブル挿入エラー:', usersError);
               throw new Error(`usersテーブルINSERTエラー: ${usersError.message}`);
             }
             console.log('usersテーブル挿入成功');
-            
+
             // Step 3.2: ユーザーストリーク情報を初期化
             console.log('user_streaksテーブルに挿入開始');
             const { error: streakError } = await supabase.from('user_streaks').insert({
@@ -195,25 +195,25 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           } catch (insertError) {
             //#region エラー時のクリーンアップ処理
             console.error('データ挿入エラー:', insertError);
-            
+
             // エラー発生時は作成したレコードを削除してロールバック
             try {
               console.log('エラー発生によるクリーンアップ処理開始');
-              
+
               // 各テーブルから関連レコードを削除
               await supabase.from('users').delete().eq('id', data.user.id);
               await supabase.from('user_streaks').delete().eq('user_id', data.user.id);
               await supabase.from('gacha_tickets').delete().eq('user_id', data.user.id);
-              
+
               console.log('データベースからのクリーンアップ完了');
-              
+
               // 注意: 認証システムからのユーザー削除はクライアントサイドでは通常実行できない
               console.log('注意: 認証システムからのユーザー削除はバックエンド側で行う必要があります');
             } catch (cleanupError) {
               console.error('クリーンアップ中にエラーが発生:', cleanupError);
             }
             //#endregion
-            
+
             throw insertError; // 上位のcatchブロックで処理するためにエラーを再スロー
           }
         }
@@ -233,7 +233,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           onClose();
         }, 2000);
         //#endregion
-        
+
       } else if (modalMode === 'signin') {
         //#region 既存ユーザーのサインイン処理
         // Step 1: Supabaseでサインイン認証
@@ -241,9 +241,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           email,
           password
         });
-        
+
         if (error) throw error;
-        
+
         // Step 2: ユーザーテーブルとストリークテーブルのログイン関連フィールドを更新
         if (data.user?.id) {
           const now = new Date();
@@ -296,14 +296,14 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           onClose();
         }, 1000);
         //#endregion
-        
+
       } else if (modalMode === 'reset') {
         //#region パスワードリセット処理
         // パスワードリセットメール送信
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: `${window.location.origin}/auth/reset-password` // リセット後のリダイレクト先
         });
-        
+
         if (error) throw error;
 
         // 成功フィードバック
@@ -311,7 +311,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           type: 'success',
           message: 'パスワードリセット用のメールを送信しました。'
         });
-        
+
         // 3秒後にモーダルを閉じる
         setTimeout(() => {
           onClose();
@@ -323,11 +323,11 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       //#region エラーハンドリング
       // エラー内容をログに出力
       console.error('認証エラー:', error);
-      
+
       // エラーメッセージの変換と表示
       const errorMessage = error instanceof Error ? error.message : '認証に失敗しました';
       const translatedError = translateAuthError(errorMessage);
-      
+
       setFormFeedback({
         type: 'error',
         message: translatedError
@@ -343,7 +343,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   // エラーメッセージの日本語変換関数
   const translateAuthError = (error: string): string => {
     // 一般的なSupabaseのエラーメッセージを日本語に変換
-    const errorMap: {[key: string]: string} = {
+    const errorMap: { [key: string]: string } = {
       'Invalid login credentials': 'メールアドレスまたはパスワードが正しくありません',
       'Email not confirmed': 'メールアドレスが未確認です。確認メールをご確認ください',
       'User already registered': 'このメールアドレスは既に登録されています',
@@ -376,7 +376,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setFormFeedback(null);
   }
   //#endregion
-  
+
   //#region モーダルを閉じたときにフォームをリセット
   const resetForm = () => {
     setEmail('');
@@ -402,7 +402,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     if (modalMode === 'reset') {
       return email.length > 0;
     }
-    return email.length > 0 || password.length > 0 || 
+    return email.length > 0 || password.length > 0 ||
       (modalMode === 'signup' && confirmPassword.length > 0);
   }, [email, password, confirmPassword, modalMode]);
   //#endregion
@@ -416,16 +416,16 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   //#endregion
 
   //#region モーダルを閉じる処理
-    const handleClose = useCallback(() => {
-      if (confirmClose()) {
-        setIsVisible(false);
-        setTimeout(() => {
-          onClose();
-          resetForm();
-        }, 200);
-      }
-    }, [confirmClose, onClose]);
-    //#endregion
+  const handleClose = useCallback(() => {
+    if (confirmClose()) {
+      setIsVisible(false);
+      setTimeout(() => {
+        onClose();
+        resetForm();
+      }, 200);
+    }
+  }, [confirmClose, onClose]);
+  //#endregion
 
   //#region オーバーレイクリックのハンドラを追加
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -460,7 +460,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     // モーダルが開いている時のみイベントリスナーを設定
     if (isOpen) {
       document.addEventListener('keydown', handleEscKey);
-      
+
       // クリーンアップ関数
       return () => {
         document.removeEventListener('keydown', handleEscKey);
@@ -481,7 +481,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     // モーダルが開いている時のみイベントリスナーを設定
     if (isOpen) {
       window.addEventListener('beforeunload', handleBeforeUnload);
-      
+
       // クリーンアップ関数
       return () => {
         window.removeEventListener('beforeunload', handleBeforeUnload);
@@ -541,20 +541,38 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         onClose();
       }
     };
-    
+
     if (isOpen) {
       checkSession();
     }
   }, [isOpen, router, onClose, supabase.auth]);
 
+  const handleResetPassword = async () => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: 'http://localhost:3000/auth/reset-password',
+      });
+
+      if (error) {
+        throw error;
+      }
+    } catch (error) {
+      alert("エラー発生");
+    }
+  }
+
+  useEffect(() => {
+    console.log(modalMode);
+  }, [modalMode]);
+
   if (!isOpen) return null;
 
   return (
     <>
-      <div 
+      <div
         ref={modalRef}
         className={`${styles.modal} ${isVisible ? styles.modalVisible : ''}`}
-        onClick={handleOverlayClick} 
+        onClick={handleOverlayClick}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modalTitle"
@@ -564,6 +582,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             <div className={styles.closeButton}>
               <button onClick={handleClose}>✕</button>
             </div>
+
             {modalMode === 'reset' ? (
               <div className={styles.modalInner}>
                 <h2 id="modalTitle" className={styles.modalTitle}>パスワードをリセット</h2>
@@ -571,10 +590,10 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   登録済みのメールアドレスを入力してください。<br />
                   パスワードリセット用のリンクをお送りします。
                 </p>
-                <form className={styles.form} onSubmit={handleAuthSubmit}>
+                <form className={styles.form}>
                   <div className={styles.formGroup}>
                     <label className={styles.label}>メールアドレス</label>
-                    <input 
+                    <input
                       ref={emailInputRef}
                       id="email"
                       name="email"
@@ -587,7 +606,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                       onChange={(e) => {
                         setEmail(e.target.value);
                         validateEmail(e.target.value);
-                        }
+                      }
                       }
                       required
                     />
@@ -597,8 +616,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                       </p>
                     )}
                   </div>
-                  <button 
-                    type="submit" 
+                  <button
+                    type="button"
+                    onClick={handleResetPassword}
                     className={styles.submitButton}
                     disabled={isLoading}
                   >
@@ -618,12 +638,12 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             ) : (
               <div className={styles.modalInner}>
                 <h2 id="modalTitle" className={styles.modalTitle}>
-                  {modalMode === 'signup'  ? 'アカウント作成' : 'サインイン'}
+                  {modalMode === 'signup' ? 'アカウント作成' : 'サインイン'}
                 </h2>
                 {/* タブ切り替えを追加 */}
                 <div className={styles.tabs}>
                   <button
-                    className={`${styles.tab} ${modalMode === 'signin'  ? styles.activeTab : ''}`}
+                    className={`${styles.tab} ${modalMode === 'signin' ? styles.activeTab : ''}`}
                     onClick={() => handleModeChange('signin')}
                   >
                     サインイン
@@ -636,18 +656,17 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   </button>
                 </div>
                 {formFeedback && (
-                  <div className={`${styles.feedbackWrapper} ${
-                    formFeedback.type === 'success' ? 
-                    styles.feedbackSuccess : 
+                  <div className={`${styles.feedbackWrapper} ${formFeedback.type === 'success' ?
+                    styles.feedbackSuccess :
                     styles.feedbackError
-                  }`}>
+                    }`}>
                     <div className={styles.feedbackContent}>
                       {formFeedback.type === 'success' ? '✓ ' : '⚠ '}
                       {formFeedback.message}
                     </div>
                   </div>
                 )}
-                  <form className={styles.form} onSubmit={handleAuthSubmit}>
+                <form className={styles.form} onSubmit={handleAuthSubmit}>
                   {/* メールアドレス入力部 */}
                   <div className={styles.formGroup}>
                     <label className={styles.label}>メールアドレス</label>
@@ -664,7 +683,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                       onChange={(e) => {
                         setEmail(e.target.value);
                         validateEmail(e.target.value);
-                        }
+                      }
                       }
                       required
                     />
@@ -678,7 +697,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   <div className={styles.formGroup}>
                     <label className={styles.label}>パスワード</label>
                     <div className={styles.passwordInput}>
-                      <input 
+                      <input
                         type={showPassword ? "text" : "password"}
                         className={`${styles.input} ${passwordError ? styles.inputError : ''}`}
                         value={password}
@@ -688,7 +707,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                         }}
                         required
                       />
-                      <button 
+                      <button
                         type="button"
                         className={styles.togglePassword}
                         onClick={() => setShowPassword(!showPassword)}
@@ -700,11 +719,11 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                       <p className={styles.errorMessage}>{passwordError}</p>
                     )}
                   </div>
-                  {modalMode === 'signup'  && (
+                  {modalMode === 'signup' && (
                     <div className={styles.formGroup}>
                       <label className={styles.label}>パスワード（確認）</label>
-                      <input 
-                        type="password" 
+                      <input
+                        type="password"
                         className={styles.input}
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
@@ -712,16 +731,16 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                       />
                     </div>
                   )}
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     className={styles.submitButton}
                     disabled={isLoading}
                   >
-                  {isLoading ? (
-                    <span className={styles.loadingText}>送信中...</span>
-                  ) : (
-                    modalMode === 'signup' ? 'アカウントを作成' : 'サインイン'
-                  )}
+                    {isLoading ? (
+                      <span className={styles.loadingText}>送信中...</span>
+                    ) : (
+                      modalMode === 'signup' ? 'アカウントを作成' : 'サインイン'
+                    )}
                   </button>
                   {modalMode === 'signin' && (
                     <button
