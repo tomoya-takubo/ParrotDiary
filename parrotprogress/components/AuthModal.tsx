@@ -86,6 +86,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
     // 送信処理の開始
     setIsLoading(true);
+    setFormFeedback(null); // 前回のフィードバックをクリア
 
     // 現在時刻を日本時間（JST）で取得
     const getCurrentJSTTime = () => {
@@ -112,7 +113,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         console.log('サインアッププロセス開始:', { email });
 
         // Step 1: Supabaseの認証システムにユーザーを登録
-        const { data, error } = await supabase.auth.signUp({
+        const { data, error:signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -123,7 +124,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           }
         });
 
-        if (error) throw error;
+        if (signUpError) throw signUpError;
 
         // Step 2: 作成したアカウントで即座にサインイン
         console.log('サインインプロセス開始');
@@ -237,12 +238,12 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       } else if (modalMode === 'signin') {
         //#region 既存ユーザーのサインイン処理
         // Step 1: Supabaseでサインイン認証
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password
         });
 
-        if (error) throw error;
+        if (signInError) throw signInError;
 
         // Step 2: ユーザーテーブルとストリークテーブルのログイン関連フィールドを更新
         if (data.user?.id) {
@@ -297,24 +298,30 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         }, 1000);
         //#endregion
 
-      } else if (modalMode === 'reset') {
         //#region パスワードリセット処理
+        // パスワードリセット前にメールアドレスの有効性を検証
+        if (!validateEmail(email)) {
+          setIsLoading(false);
+          return;
+        }
+        
         // パスワードリセットメール送信
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: `${window.location.origin}/auth/reset-password` // リセット後のリダイレクト先
         });
 
-        if (error) throw error;
+        if (resetError) throw resetError;
 
         // 成功フィードバック
         setFormFeedback({
           type: 'success',
-          message: 'パスワードリセット用のメールを送信しました。'
+          message: 'パスワードリセット用のメールを送信しました。メールボックスをご確認ください。'
         });
 
         // 3秒後にモーダルを閉じる
         setTimeout(() => {
           onClose();
+          resetForm();
         }, 3000);
         //#endregion
       }
@@ -326,7 +333,12 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
       // エラーメッセージの変換と表示
       const errorMessage = error instanceof Error ? error.message : '認証に失敗しました';
-      const translatedError = translateAuthError(errorMessage);
+      let translatedError = translateAuthError(errorMessage);
+      
+      // レート制限エラーを明示的に処理
+      if (errorMessage.includes('429') || errorMessage.includes('Too Many Requests')) {
+        translatedError = 'リクエスト回数の上限に達しました。しばらく時間をおいてから再度お試しください。';
+      }
 
       setFormFeedback({
         type: 'error',
@@ -338,9 +350,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       setIsLoading(false);
     }
   };
-  //#endregion
 
-  // エラーメッセージの日本語変換関数
+  // エラーメッセージの日本語変換関数を改善
   const translateAuthError = (error: string): string => {
     // 一般的なSupabaseのエラーメッセージを日本語に変換
     const errorMap: { [key: string]: string } = {
@@ -352,6 +363,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       'Password recovery requires an email': 'パスワード回復にはメールアドレスが必要です',
       'Rate limit exceeded': 'リクエスト回数の上限に達しました。しばらく経ってからお試しください',
       'User not found': 'ユーザーが見つかりません',
+      'Too Many Requests': 'リクエスト回数の上限に達しました。しばらく経ってからお試しください',
     };
 
     return errorMap[error] || 'エラーが発生しました。もう一度お試しください';
@@ -546,23 +558,6 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       checkSession();
     }
   }, [isOpen, router, onClose, supabase.auth]);
-
-  const handleResetPassword = async () => {
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: 'http://localhost:3000/auth/reset-password',
-      });
-  
-      if (error) {
-        alert("エラー発生");
-        return;
-      }
-  
-      // 成功時のフィードバックをここに記述することも可能
-    } catch {
-      alert("予期しないエラーが発生しました");
-    }
-  };
   
   useEffect(() => {
     console.log(modalMode);
@@ -593,7 +588,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   登録済みのメールアドレスを入力してください。<br />
                   パスワードリセット用のリンクをお送りします。
                 </p>
-                <form className={styles.form}>
+                {/* フォームを handleAuthSubmit に接続 */}
+                <form className={styles.form} onSubmit={handleAuthSubmit}>
                   <div className={styles.formGroup}>
                     <label className={styles.label}>メールアドレス</label>
                     <input
@@ -609,8 +605,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                       onChange={(e) => {
                         setEmail(e.target.value);
                         validateEmail(e.target.value);
-                      }
-                      }
+                      }}
                       required
                     />
                     {emailError && (
@@ -619,9 +614,20 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                       </p>
                     )}
                   </div>
+                  {/* フィードバック表示部分を追加 */}
+                  {formFeedback && (
+                    <div className={`${styles.feedbackWrapper} ${formFeedback.type === 'success' ?
+                      styles.feedbackSuccess :
+                      styles.feedbackError
+                      }`}>
+                      <div className={styles.feedbackContent}>
+                        {formFeedback.type === 'success' ? '✓ ' : '⚠ '}
+                        {formFeedback.message}
+                      </div>
+                    </div>
+                  )}
                   <button
-                    type="button"
-                    onClick={handleResetPassword}
+                    type="submit"
                     className={styles.submitButton}
                     disabled={isLoading}
                   >
