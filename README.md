@@ -19,3 +19,6 @@
 | 3D | [システム構成図](/documents/SYSTEM_CONFIGURATION.md) |
 | 4W | [コア機能](/documents/CORE.md) |
 | 3W | インフラ |
+
+# 画面遷移図
+  <img width="4800" alt="ぱろっとぷろぐれす - 画面遷移図_new" src="https://github.com/user-attachments/assets/028437b8-33aa-4955-85bb-5d66077270c6" />
