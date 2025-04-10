@@ -563,6 +563,70 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     console.log(modalMode);
   }, [modalMode]);
 
+  // デバッグ用のログ追加
+  useEffect(() => {
+    if (modalMode === 'reset') {
+      console.log('リセットモードに変更されました');
+    }
+  }, [modalMode]);
+
+  // パスワードリセット専用の処理関数
+  const handleResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log('パスワードリセット処理開始');
+    
+    // 入力検証
+    if (!validateEmail(email)) {
+      console.log('メールバリデーション失敗');
+      return;
+    }
+    
+    setIsLoading(true);
+    setFormFeedback(null);
+    
+    try {
+      console.log('Supabaseにリセットリクエスト送信中...');
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/reset-password` 
+      });
+
+      if (resetError) {
+        console.error('リセットエラー:', resetError);
+        throw resetError;
+      }
+
+      console.log('リセットメール送信成功');
+      setFormFeedback({
+        type: 'success',
+        message: 'パスワードリセット用のメールを送信しました。メールボックスをご確認ください。'
+      });
+
+      // 成功時の処理
+      setTimeout(() => {
+        onClose();
+        resetForm();
+      }, 3000);
+    } catch (error) {
+      console.error('パスワードリセットエラー:', error);
+      
+      // エラーメッセージの変換と表示
+      const errorMessage = error instanceof Error ? error.message : '認証に失敗しました';
+      let translatedError = translateAuthError(errorMessage);
+      
+      // レート制限エラーを明示的に処理
+      if (errorMessage.includes('429') || errorMessage.includes('Too Many Requests')) {
+        translatedError = 'リクエスト回数の上限に達しました。しばらく時間をおいてから再度お試しください。';
+      }
+
+      setFormFeedback({
+        type: 'error',
+        message: translatedError
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -588,8 +652,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   登録済みのメールアドレスを入力してください。<br />
                   パスワードリセット用のリンクをお送りします。
                 </p>
-                {/* フォームを handleAuthSubmit に接続 */}
-                <form className={styles.form} onSubmit={handleAuthSubmit}>
+                {/* 重要な修正: リセットパスワード用のフォームを専用のハンドラに接続 */}
+                <form className={styles.form} onSubmit={handleResetPassword}>
                   <div className={styles.formGroup}>
                     <label className={styles.label}>メールアドレス</label>
                     <input
@@ -614,7 +678,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                       </p>
                     )}
                   </div>
-                  {/* フィードバック表示部分を追加 */}
+                  {/* フィードバック表示部分 */}
                   {formFeedback && (
                     <div className={`${styles.feedbackWrapper} ${formFeedback.type === 'success' ?
                       styles.feedbackSuccess :
@@ -645,6 +709,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 </form>
               </div>
             ) : (
+              // サインイン/サインアップ用のフォーム部分は変更なし
               <div className={styles.modalInner}>
                 <h2 id="modalTitle" className={styles.modalTitle}>
                   {modalMode === 'signup' ? 'アカウント作成' : 'サインイン'}
