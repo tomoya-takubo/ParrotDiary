@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { updatePassword } from '@/lib/authentication';
 import { useRouter } from 'next/navigation';
 import styles from '@/styles/Home.module.css';
 import { validatePasswordStrength } from '@/lib/validation';
+import { Eye, EyeOff, Check, X } from 'lucide-react';
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState('');
@@ -12,63 +13,60 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [passwordError, setPasswordError] = useState('');
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState<'weak' | 'medium' | 'strong' | null>(null);
+  const [requirements, setRequirements] = useState({
+    length: false,
+    uppercase: false,
+    lowercase: false,
+    number: false,
+    special: false
+  });
   const router = useRouter();
 
-  // コード改修
-  // const handlePasswordReset = async () => {
-  //   try {
-  //     console.log("パスワードリセットページ初期化");
-  //     setIsProcessingToken(true);
+  // パスワード強度と要件チェックを更新
+  useEffect(() => {
+    if (!password) {
+      setPasswordStrength(null);
+      setRequirements({
+        length: false,
+        uppercase: false,
+        lowercase: false,
+        number: false,
+        special: false
+      });
+      return;
+    }
 
-  //     // クライアントサイドのみで実行
-  //     if (typeof window !== 'undefined') {
-  //       // URLからクエリパラメータを取得
-  //       const urlParams = new URLSearchParams(window.location.search);
-  //       const resetCode = urlParams.get('code');
+    const hasLength = password.length >= 8;
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
 
-  //       console.log("URL:", window.location.href);
-  //       console.log("Reset code:", resetCode);
+    setRequirements({
+      length: hasLength,
+      uppercase: hasUppercase,
+      lowercase: hasLowercase,
+      number: hasNumber,
+      special: hasSpecial
+    });
 
-  //       if (resetCode) {
-  //         // codeパラメータがある場合、それを使用してセッションを確立
-  //         try {
-  //           // Supabaseの認証システムにcodeを渡して処理
-  //           const { data, error } = await supabase.auth.exchangeCodeForSession(resetCode);
-
-  //           if (error) {
-  //             console.error("コード交換エラー:", error);
-  //             throw error;
-  //           }
-
-  //           if (data.session) {
-  //             console.log("コードからセッションを設定成功");
-  //             setIsProcessingToken(false);
-  //           } else {
-  //             throw new Error("セッションが作成されませんでした");
-  //           }
-  //         } catch (err) {
-  //           console.error("リセットコード処理エラー:", err);
-  //           setError('リセットリンクが無効または期限切れです。再度パスワードリセットを依頼してください。');
-  //           setTimeout(() => {
-  //             router.push('/');
-  //           }, 5000);
-  //         }
-  //       } else {
-  //         // codeパラメータがない場合は既存セッションを確認
-  //         checkExistingSession();
-  //       }
-  //     }
-  //   } catch (err) {
-  //     console.error("URL処理エラー:", err);
-  //     setError('ページ処理中にエラーが発生しました。');
-  //     setIsProcessingToken(false);
-  //   }
-  // };
+    // パスワード強度の計算
+    const metRequirements = [hasLength, hasUppercase, hasLowercase, hasNumber, hasSpecial].filter(Boolean).length;
+    
+    if (metRequirements <= 2) {
+      setPasswordStrength('weak');
+    } else if (metRequirements <= 4) {
+      setPasswordStrength('medium');
+    } else {
+      setPasswordStrength('strong');
+    }
+  }, [password]);
 
   const validatePassword = (pass: string) => {
     const validation = validatePasswordStrength(pass);
-    setPasswordError(validation.message);
     return validation.isValid;
   };
 
@@ -76,7 +74,10 @@ export default function ResetPasswordPage() {
     e.preventDefault();
     setError(null);
 
-    if (!validatePassword(password)) return;
+    if (!validatePassword(password)) {
+      setError('パスワードが要件を満たしていません');
+      return;
+    }
 
     if (password !== confirmPassword) {
       setError('パスワードが一致しません');
@@ -112,22 +113,22 @@ export default function ResetPasswordPage() {
     }
   };
 
-  // トークン処理中はローディング表示
-  // if (isProcessingToken) {
-  //   return (
-  //     <div className={styles.container}>
-  //       <div className={styles.resetPasswordCard}>
-  //         <h1 className={styles.title}>パスワードリセット処理中...</h1>
-  //         <p>しばらくお待ちください</p>
-  //       </div>
-  //     </div>
-  //   );
-  // }
+  const togglePasswordVisibility = () => {
+    setPasswordVisible(!passwordVisible);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setConfirmPasswordVisible(!confirmPasswordVisible);
+  };
 
   return (
-    <div className={styles.container}>
+    <div className={styles.resetContainer}>
       <div className={styles.resetPasswordCard}>
-        <h1 className={styles.title}>新しいパスワードを設定</h1>
+        {/* オプション: ロゴを追加 */}
+        {/* <img src="/logo.svg" alt="Logo" className={styles.resetLogo} /> */}
+        
+        <h1 className={styles.resetTitle}>新しいパスワードを設定</h1>
+        <p className={styles.resetSubtitle}>安全なパスワードを入力して、アカウントを保護してください</p>
 
         {error && (
           <div className={styles.errorMessage}>
@@ -141,43 +142,115 @@ export default function ResetPasswordPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.formGroup}>
+        <form onSubmit={handleSubmit}>
+          <div className={styles.passwordField}>
             <label htmlFor="password" className={styles.label}>新しいパスワード</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                validatePassword(e.target.value);
-              }}
-              className={styles.input}
-              required
-            />
-            {passwordError && (
-              <p className={styles.errorMessage}>{passwordError}</p>
+            <div className={styles.passwordField}>
+              <input
+                id="password"
+                type={passwordVisible ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={styles.resetInput}
+                placeholder="新しいパスワードを入力"
+                required
+              />
+              <div 
+                className={styles.passwordIcon} 
+                onClick={togglePasswordVisibility}
+                role="button"
+                tabIndex={0}
+                aria-label={passwordVisible ? "パスワードを隠す" : "パスワードを表示"}
+              >
+                {passwordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+              </div>
+            </div>
+            
+            {/* パスワード強度メーター */}
+            {password && (
+              <div className={styles.passwordStrengthMeter}>
+                <div 
+                  className={`
+                    ${styles.passwordStrengthIndicator} 
+                    ${passwordStrength === 'weak' ? styles.strengthWeak : ''} 
+                    ${passwordStrength === 'medium' ? styles.strengthMedium : ''} 
+                    ${passwordStrength === 'strong' ? styles.strengthStrong : ''}
+                  `}
+                ></div>
+              </div>
             )}
+            
+            {/* パスワード要件リスト */}
+            <div className={styles.passwordRequirements}>
+              <div className={`${styles.requirement} ${requirements.length ? styles.requirementMet : ''}`}>
+                {requirements.length ? <Check size={14} className={styles.requirementIcon} /> : <X size={14} className={styles.requirementIcon} />}
+                <span>8文字以上</span>
+              </div>
+              <div className={`${styles.requirement} ${requirements.uppercase ? styles.requirementMet : ''}`}>
+                {requirements.uppercase ? <Check size={14} className={styles.requirementIcon} /> : <X size={14} className={styles.requirementIcon} />}
+                <span>大文字を含む</span>
+              </div>
+              <div className={`${styles.requirement} ${requirements.lowercase ? styles.requirementMet : ''}`}>
+                {requirements.lowercase ? <Check size={14} className={styles.requirementIcon} /> : <X size={14} className={styles.requirementIcon} />}
+                <span>小文字を含む</span>
+              </div>
+              <div className={`${styles.requirement} ${requirements.number ? styles.requirementMet : ''}`}>
+                {requirements.number ? <Check size={14} className={styles.requirementIcon} /> : <X size={14} className={styles.requirementIcon} />}
+                <span>数字を含む</span>
+              </div>
+              <div className={`${styles.requirement} ${requirements.special ? styles.requirementMet : ''}`}>
+                {requirements.special ? <Check size={14} className={styles.requirementIcon} /> : <X size={14} className={styles.requirementIcon} />}
+                <span>特殊文字を含む (!@#$%^&*など)</span>
+              </div>
+            </div>
           </div>
 
-          <div className={styles.formGroup}>
+          <div className={styles.passwordField}>
             <label htmlFor="confirmPassword" className={styles.label}>パスワード（確認）</label>
-            <input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className={styles.input}
-              required
-            />
+            <div className={styles.passwordField}>
+              <input
+                id="confirmPassword"
+                type={confirmPasswordVisible ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className={styles.resetInput}
+                placeholder="パスワードをもう一度入力"
+                required
+              />
+              <div 
+                className={styles.passwordIcon} 
+                onClick={toggleConfirmPasswordVisibility}
+                role="button"
+                tabIndex={0}
+                aria-label={confirmPasswordVisible ? "パスワードを隠す" : "パスワードを表示"}
+              >
+                {confirmPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+              </div>
+            </div>
+            {/* パスワード一致インジケーター (オプション) */}
+            {confirmPassword && password && (
+              <div className={styles.requirement} style={{ marginTop: '0.5rem' }}>
+                {confirmPassword === password ? 
+                  <><Check size={14} className={styles.requirementIcon} style={{ color: '#16a34a' }} /> <span style={{ color: '#16a34a' }}>パスワードが一致しています</span></> : 
+                  <><X size={14} className={styles.requirementIcon} style={{ color: '#dc2626' }} /> <span style={{ color: '#dc2626' }}>パスワードが一致していません</span></>
+                }
+              </div>
+            )}
           </div>
 
           <button
             type="submit"
-            className={styles.submitButton}
-            disabled={loading}
+            className={styles.resetButton}
+            disabled={loading || !password || !confirmPassword || password !== confirmPassword || !validatePassword(password)}
           >
-            {loading ? 'パスワード更新中...' : 'パスワードを更新する'}
+            {loading ? (
+              <>
+                <span>パスワード更新中</span>
+                <div className={styles.loadingRing}></div>
+              </>
+            ) : (
+              'パスワードを更新する'
+            )}
           </button>
         </form>
       </div>

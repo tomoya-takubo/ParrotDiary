@@ -578,3 +578,215 @@
     color: #047857;
   }
 }
+
+/* パスワードリセット関連の追加スタイル */
+.resetPasswordCard {
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 450px;
+  margin: 2rem auto;
+  padding: 2.5rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.resetPasswordCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+}
+
+.resetContainer {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #e0f2fe, #dbeafe, #eff6ff);
+  padding: 1rem;
+}
+
+.resetTitle {
+  font-size: 1.75rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #1e3a8a;
+}
+
+.resetSubtitle {
+  font-size: 1rem;
+  text-align: center;
+  color: #64748b;
+  margin-bottom: 2rem;
+}
+
+.passwordField {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.passwordIcon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+.resetInput {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background-color: #f8fafc;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  font-size: 1rem;
+}
+
+.resetInput:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+}
+
+.resetButton {
+  width: 100%;
+  padding: 0.875rem;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.resetButton:hover {
+  background-color: #1d4ed8;
+}
+
+.resetButton:disabled {
+  background-color: #93c5fd;
+  cursor: not-allowed;
+}
+
+.successMessage {
+  background-color: #dcfce7;
+  border-left: 4px solid #16a34a;
+  color: #166534;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.errorMessage {
+  background-color: #fee2e2;
+  border-left: 4px solid #dc2626;
+  color: #991b1b;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.passwordRequirements {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.requirement {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+.requirementIcon {
+  margin-right: 0.5rem;
+  color: #94a3b8;
+}
+
+.requirementMet {
+  color: #16a34a;
+}
+
+.reset-transition {
+  transition: all 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.loadingRing {
+  display: inline-block;
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-left: 0.5rem;
+}
+
+.loadingRing:after {
+  content: " ";
+  display: block;
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  border-color: #fff transparent #fff transparent;
+  animation: loadingRing 1.2s linear infinite;
+}
+
+@keyframes loadingRing {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.passwordStrengthMeter {
+  height: 4px;
+  width: 100%;
+  background-color: #e2e8f0;
+  margin-top: 0.5rem;
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.passwordStrengthIndicator {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.strengthWeak {
+  background-color: #ef4444;
+  width: 25%;
+}
+
+.strengthMedium {
+  background-color: #f59e0b;
+  width: 50%;
+}
+
+.strengthStrong {
+  background-color: #10b981;
+  width: 100%;
+}
+
+.resetLogo {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 1.5rem;
+  display: block;
+}
