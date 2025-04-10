@@ -547,6 +547,31 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     }
   }, [isOpen, router, onClose, supabase.auth]);
 
+  // globalLoadingの状態が変わったときにbodyのクラスを操作するuseEffectを追加
+  useEffect(() => {
+    if (globalLoading) {
+      document.body.classList.add('overlay-active');
+    } else {
+      document.body.classList.remove('overlay-active');
+    }
+
+    // クリーンアップ関数
+    return () => {
+      document.body.classList.remove('overlay-active');
+    };
+  }, [globalLoading]);
+
+  // isVisibleの状態が変わったときにbodyのクラスを操作するuseEffectを修正
+  useEffect(() => {
+    if (isOpen) {
+      setIsVisible(true);
+      document.body.classList.add('overlay-active');
+    } else {
+      setIsVisible(false);
+      document.body.classList.remove('overlay-active');
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (

@@ -27,6 +27,20 @@ export default function StartButton() {
     checkAuth();
   }, [supabase.auth]);
 
+  // ローディング状態が変わったときにbodyのクラスを操作
+  useEffect(() => {
+    if (isLoading) {
+      document.body.classList.add('overlay-active');
+    } else {
+      document.body.classList.remove('overlay-active');
+    }
+
+    // クリーンアップ関数
+    return () => {
+      document.body.classList.remove('overlay-active');
+    };
+  }, [isLoading]);
+
   // ボタンクリック時のハンドラー修正
   const handleButtonClick = async () => {
     try {
@@ -81,6 +95,6 @@ export default function StartButton() {
           {/* オーバーレイの内容はローディング中のみシンプルに保つ */}
         </div>
       )}
-  </>
+    </>
   );
 }
