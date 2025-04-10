@@ -548,15 +548,22 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   }, [isOpen, router, onClose, supabase.auth]);
 
   const handleResetPassword = async () => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'http://localhost:3000/auth/reset-password',
-    });
-
-    if (error) {
-      throw error;
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: 'http://localhost:3000/auth/reset-password',
+      });
+  
+      if (error) {
+        alert("エラー発生");
+        return;
+      }
+  
+      // 成功時のフィードバックをここに記述することも可能
+    } catch {
+      alert("予期しないエラーが発生しました");
     }
-  }
-
+  };
+  
   useEffect(() => {
     console.log(modalMode);
   }, [modalMode]);
