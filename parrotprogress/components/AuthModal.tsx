@@ -8,6 +8,7 @@ import { validateEmailFormat, validatePasswordStrength } from '../lib/validation
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
 import { Database } from '../types/supabase';
+import { Eye, EyeOff } from 'lucide-react';
 //#endregion
 
 type AuthModalProps = {
@@ -33,6 +34,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [globalLoading, setGlobalLoading] = useState(false);
+  const [isProcessingSuccess, setIsProcessingSuccess] = useState(false);
   const [formFeedback, setFormFeedback] = useState<{
     type: 'success' | 'error';
     message: string;
@@ -45,7 +47,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
    * 
    * このメソッドは以下の認証処理を扱います：
    * - 新規ユーザー登録（サインアップ）
-   * - 既存ユーザーのログイン（サインイン）
+   * - 既存ユーザーのログイン（ログイン）
    * - パスワードリセットメールの送信
    * 
    * 各処理では適切な入力検証を行い、Supabase認証およびデータベース操作を実行します。
@@ -101,7 +103,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
     try {
       //#region モード別処理分岐
-      // modalModeに応じて処理を分岐（サインアップ、サインイン、パスワードリセット）
+      // modalModeに応じて処理を分岐（サインアップ、ログイン、パスワードリセット）
       if (modalMode === 'signup') {
         //#region アカウント新規作成処理
         // サインアップ用の追加検証
@@ -117,7 +119,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           email,
           password,
           options: {
-            // メール確認をスキップしてすぐにサインイン状態にするための設定
+            // メール確認をスキップしてすぐにログイン状態にするための設定
             data: {
               email_confirmed: true
             }
@@ -126,8 +128,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
         if (signUpError) throw signUpError;
 
-        // Step 2: 作成したアカウントで即座にサインイン
-        console.log('サインインプロセス開始');
+        // Step 2: 作成したアカウントで即座にログイン
+        console.log('ログインプロセス開始');
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password
@@ -236,8 +238,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         //#endregion
 
       } else if (modalMode === 'signin') {
-        //#region 既存ユーザーのサインイン処理
-        // Step 1: Supabaseでサインイン認証
+        //#region 既存ユーザーのログイン処理
+        // Step 1: Supabaseでログイン認証
         const { data, error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password
@@ -282,10 +284,11 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           }
         }
 
+        setIsProcessingSuccess(true); // 成功処理中フラグをオン
         // Step 3: 成功フィードバックとリダイレクト
         setFormFeedback({
           type: 'success',
-          message: 'サインインしました！'
+          message: 'ログインしました！'
         });
 
         // グローバルローディングを有効にしてユーザー操作をブロック
@@ -295,6 +298,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         setTimeout(() => {
           router.push('/dashboard');
           onClose();
+          setIsProcessingSuccess(false); // 処理完了後にフラグをオフ
         }, 1000);
         //#endregion
 
@@ -421,10 +425,13 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   //#region モーダルを閉じる前の確認
   const confirmClose = useCallback((): boolean => {
+    // 成功処理中は閉じれないように
+    if (isProcessingSuccess) return false;
+    
     // `hasFormInput` の結果を取得してから判定する
     if (!hasFormInput()) return true;
     return window.confirm('入力内容が破棄されます。よろしいですか？');
-  }, [hasFormInput]);
+  }, [hasFormInput, isProcessingSuccess]);
   //#endregion
 
   //#region モーダルを閉じる処理
@@ -441,6 +448,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   //#region オーバーレイクリックのハンドラを追加
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
+
+    if (isProcessingSuccess || isLoading) return;
+
     if (e.target === e.currentTarget) {
       handleClose();
     }
@@ -463,7 +473,11 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   //#region ESCキー検知のためのuseEffectを追加
   useEffect(() => {
+
     const handleEscKey = (e: KeyboardEvent) => {
+      // 成功処理中やローディング中はESCキーを無効化
+      if (isProcessingSuccess || isLoading) return;
+      
       if (e.key === 'Escape') {
         handleClose();
       }
@@ -478,7 +492,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         document.removeEventListener('keydown', handleEscKey);
       };
     }
-  }, [isOpen, handleClose]);
+}, [isOpen, handleClose, isProcessingSuccess, isLoading]);
   //#endregion
 
   //#region ブラウザのページ離脱防止イベントの設定
@@ -611,6 +625,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       setTimeout(() => {
         onClose();
         resetForm();
+        setIsProcessingSuccess(false); // 処理完了後にフラグをオフ
       }, 3000);
     } catch (error) {
       console.error('パスワードリセットエラー:', error);
@@ -710,15 +725,15 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                     className={styles.backButton}
                     onClick={() => handleModeChange('signin')}
                   >
-                    ← サインインに戻る
+                    ← ログインに戻る
                   </button>
                 </form>
               </div>
             ) : (
-              // サインイン/サインアップ用のフォーム部分は変更なし
+              // ログイン/サインアップ用のフォーム部分は変更なし
               <div className={styles.modalInner}>
                 <h2 id="modalTitle" className={styles.modalTitle}>
-                  {modalMode === 'signup' ? 'アカウント作成' : 'サインイン'}
+                  {modalMode === 'signup' ? 'アカウント作成' : 'ログイン'}
                 </h2>
                 {/* タブ切り替えを追加 */}
                 <div className={styles.tabs}>
@@ -726,7 +741,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                     className={`${styles.tab} ${modalMode === 'signin' ? styles.activeTab : ''}`}
                     onClick={() => handleModeChange('signin')}
                   >
-                    サインイン
+                    ログイン
                   </button>
                   <button
                     className={`${styles.tab} ${modalMode === 'signup' ? styles.activeTab : ''}`}
@@ -773,7 +788,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                       </p>
                     )}
                   </div>
-                  {/* パスワード入力部 */}
+                  {/* パスワード入力部 - 目のアイコンに変更 */}
                   <div className={styles.formGroup}>
                     <label className={styles.label}>パスワード</label>
                     <div className={styles.passwordInput}>
@@ -787,13 +802,15 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                         }}
                         required
                       />
-                      <button
-                        type="button"
-                        className={styles.togglePassword}
+                      <div 
+                        className={styles.passwordIcon} 
                         onClick={() => setShowPassword(!showPassword)}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={showPassword ? "パスワードを隠す" : "パスワードを表示"}
                       >
-                        {showPassword ? "非表示" : "表示"}
-                      </button>
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </div>
                     </div>
                     {passwordError && (
                       <p className={styles.errorMessage}>{passwordError}</p>
@@ -802,13 +819,24 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   {modalMode === 'signup' && (
                     <div className={styles.formGroup}>
                       <label className={styles.label}>パスワード（確認）</label>
-                      <input
-                        type="password"
-                        className={styles.input}
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        required
-                      />
+                      <div className={styles.passwordInput}>
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          className={styles.input}
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          required
+                        />
+                        <div 
+                          className={styles.passwordIcon} 
+                          onClick={() => setShowPassword(!showPassword)}
+                          role="button"
+                          tabIndex={0}
+                          aria-label={showPassword ? "パスワードを隠す" : "パスワードを表示"}
+                        >
+                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </div>
+                      </div>
                     </div>
                   )}
                   <button
@@ -819,7 +847,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                     {isLoading ? (
                       <span className={styles.loadingText}>送信中...</span>
                     ) : (
-                      modalMode === 'signup' ? 'アカウントを作成' : 'サインイン'
+                      modalMode === 'signup' ? 'アカウントを作成' : 'ログイン'
                     )}
                   </button>
                   {modalMode === 'signin' && (
@@ -827,6 +855,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                       type="button"
                       className={styles.forgotPasswordButton}
                       onClick={() => handleModeChange('reset')}
+                      disabled={isProcessingSuccess}
                     >
                       パスワードをお忘れの方はこちら
                     </button>

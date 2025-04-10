@@ -92,9 +92,9 @@ export const signUpWithEmail = async (
       }
     }
     
-    // 3. 自動的にサインインも実行
+    // 3. 自動的にログインも実行
     if (!data.session) {
-      // セッションが自動的に作成されていない場合は、明示的にサインイン
+      // セッションが自動的に作成されていない場合は、明示的にログイン
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password
@@ -124,7 +124,7 @@ export const signUpWithEmail = async (
 };
 
 /**
- * メールとパスワードでサインイン
+ * メールとパスワードでログイン
  */
 export const signInWithEmail = async (
   email: string,
@@ -187,7 +187,7 @@ export const signInWithEmail = async (
       session: data.session,
     };
   } catch (error) {
-    console.error('サインインエラー:', error);
+    console.error('ログインエラー:', error);
     return {
       success: false,
       error: error instanceof AuthError ? error.message : '予期せぬエラーが発生しました',
