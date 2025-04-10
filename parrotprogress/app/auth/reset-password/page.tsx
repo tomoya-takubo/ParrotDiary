@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { updatePassword } from '@/lib/authentication';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
 import styles from '@/styles/Home.module.css';
 import { validatePasswordStrength } from '@/lib/validation';
@@ -14,9 +13,7 @@ export default function ResetPasswordPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [passwordError, setPasswordError] = useState('');
-  const [isProcessingToken, setIsProcessingToken] = useState(true);
   const router = useRouter();
-  const supabase = createClientComponentClient();
 
   // コード改修
   // const handlePasswordReset = async () => {
@@ -68,21 +65,6 @@ export default function ResetPasswordPage() {
   //     setIsProcessingToken(false);
   //   }
   // };
-
-  // 既存セッションの確認
-  const checkExistingSession = async () => {
-    const { data } = await supabase.auth.getSession();
-    console.log("既存セッション確認:", { hasSession: !!data.session });
-
-    if (data.session) {
-      setIsProcessingToken(false);
-    } else {
-      setError('セッションが見つかりません。再度パスワードリセットを依頼してください。');
-      setTimeout(() => {
-        router.push('/');
-      }, 5000);
-    }
-  };
 
   const validatePassword = (pass: string) => {
     const validation = validatePasswordStrength(pass);
