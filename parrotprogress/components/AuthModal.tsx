@@ -571,6 +571,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   }, [modalMode]);
 
   // パスワードリセット専用の処理関数
+  // パスワードリセット処理関数
   const handleResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log('パスワードリセット処理開始');
@@ -612,12 +613,26 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         resetForm();
       }, 3000);
     } catch (error) {
-      // エラー処理（既存のコード）...
+      console.error('パスワードリセットエラー:', error);
+      
+      // エラーメッセージの変換と表示
+      const errorMessage = error instanceof Error ? error.message : '認証に失敗しました';
+      let translatedError = translateAuthError(errorMessage);
+      
+      // レート制限エラーを明示的に処理
+      if (errorMessage.includes('429') || errorMessage.includes('Too Many Requests')) {
+        translatedError = 'リクエスト回数の上限に達しました。しばらく時間をおいてから再度お試しください。';
+      }
+
+      setFormFeedback({
+        type: 'error',
+        message: translatedError
+      });
     } finally {
       setIsLoading(false);
     }
   };
-  
+
   if (!isOpen) return null;
 
   return (
