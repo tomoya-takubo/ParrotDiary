@@ -9,7 +9,7 @@
 ## 🌐 デモ・成果物リンク
 
 - [デプロイ済みアプリを見る](https://parrot-diary.vercel.app/)
-- お試し用アカウント: `test@example.com` / パスワード: `testuser`
+- お試し用アカウント: `test@example.com` / パスワード: `Testuser01`
 - [GitHubリポジトリを見る](https://github.com/tomoya-takubo/ParrotProgress.git)
 
 ---
