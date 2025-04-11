@@ -10,7 +10,7 @@
 
 - [デプロイ済みアプリを見る](https://parrot-diary.vercel.app/)
 - お試し用アカウント: `test@example.com` / パスワード: `testuser`
-- [GitHubリポジトリを見る](https://github.com/yourusername/parrot-diary)
+- [GitHubリポジトリを見る](https://github.com/tomoya-takubo/ParrotProgress.git)
 
 ---
 
