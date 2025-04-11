@@ -1,10 +1,10 @@
+<h1>ParrotDiary</h1>
+
+[気軽に続けられる“感情日記”アプリ『ぱろっとだいありー』](https://parrot-diary.vercel.app/)
+
 <p align="center">
   <img src="images/parrotdiary-banner.gif" alt="ParrotDiary Banner" width="100%" />
 </p>
-
-<h1 align="center">ParrotDiary</h1>
-
-<p align="center"><strong>すべての人の心に寄り添う</strong><br>感情と向き合う、ガチャ×日記アプリ</p>
 
 ---
 
