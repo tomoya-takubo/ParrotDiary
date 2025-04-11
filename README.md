@@ -1,10 +1,16 @@
-<h1>ParrotDiary</h1>
+# 🦜 ParrotDiary - あなたの気持ち、今日の1羽で伝えよう
 
 [気軽に続けられる“感情日記”アプリ『ぱろっとだいありー』](https://parrot-diary.vercel.app/)
 
 <p align="center">
   <img src="images/parrotdiary-banner.gif" alt="ParrotDiary Banner" width="100%" />
 </p>
+
+## 🌐 デモ・成果物リンク
+
+- [デプロイ済みアプリを見る](https://parrot-diary.vercel.app/)
+- お試し用アカウント: `test@example.com` / パスワード: `testuser`
+- [GitHubリポジトリを見る](https://github.com/yourusername/parrot-diary)
 
 ---
 
@@ -53,8 +59,6 @@ PartyParrotというユニークなキャラクターと組み合わせること
 ---
 
 ## 🗀 画面紹介
-
-（以下は後日キャプチャ画像・GIFを挿入予定です）
 
 ### トップページ
 
