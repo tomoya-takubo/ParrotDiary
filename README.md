@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="images/parrotdiary-banner.png" alt="ParrotDiary Banner" width="100%" />
+  <img src="images/parrotdiary-banner.gif" alt="ParrotDiary Banner" width="100%" />
 </p>
 
 <h1 align="center">ParrotDiary</h1>
