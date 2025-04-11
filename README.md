@@ -1,6 +1,6 @@
 # ParrotDiary - あなたの気持ち、今日の1羽で伝えよう
 
-[気軽に続けられる“感情日記”アプリ『ぱろっとだいありー』](https://parrot-diary.vercel.app/)
+[気軽に続けられる“感情日記”アプリ『ぱろっとだいありー』](https://parrot-diary.vercel.app/)\
   ※お試し用アカウント: `test@example.com` / パスワード: `Testuser01`
 
 <p align="center">
@@ -159,5 +159,5 @@ Vercelでフロントをデプロイし、個人開発でも簡単に運用で�
 
 ## 📢 Contact
 
-GitHubのIssueまたは [[your-email@example.com](mailto\:your-email@example.com)] までお気軽にご連絡ください。
+GitHubのIssueまたは [[tkb1003@gmail.com](mailto\:tkb1003@gmail.com)] までお気軽にご連絡ください。
 
