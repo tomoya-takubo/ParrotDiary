@@ -84,10 +84,22 @@ export default function CollectionPreview() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(24); // デフォルトのアイテム数
   const [totalPages, setTotalPages] = useState(1);
-  
+
+  // モバイル用のフィルターメニューを追加
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
+
   // AuthContextからユーザー情報を取得
   const { user, isLoading: authLoading } = useAuth();
 
+  // フィルターボタンコンポーネント
+  const FilterButton = () => (
+    <button 
+      className={styles.filterToggleButton}
+      onClick={() => setShowFilterMenu(!showFilterMenu)}
+    >
+      {showFilterMenu ? 'フィルターを閉じる' : 'フィルターを開く'}
+    </button>
+  );
 
   // パロットデータの読み込み
   const loadParrotData = async (userId: string | null) => {
@@ -1003,96 +1015,102 @@ const ParrotModal = ({ parrot, onClose, allParrots }: {
       </div>
       
       <div className={styles.filterSection}>
-        <div className={styles.filterHeader}>
-          <div className={styles.searchBox}>
-            <Search className={styles.searchIcon} size={20} />
-            <input
-              type="text"
-              placeholder="パロットを検索"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={styles.searchInput}
-            />
-          </div>
-
-          <div className={styles.sortButtons}>
-            <button
-              className={`${styles.sortButton} ${sortType === 'display_order' ? styles.active : ''}`}
-              onClick={() => setSortType('display_order')}
-            >
-              表示順
-            </button>
-            <button
-              className={`${styles.sortButton} ${sortType === 'rarity' ? styles.active : ''}`}
-              onClick={() => setSortType('rarity')}
-            >
-              レア度順
-            </button>
-            <button
-              className={`${styles.sortButton} ${sortType === 'obtained_date' ? styles.active : ''}`}
-              onClick={() => setSortType('obtained_date')}
-              disabled={!isAuthenticated}
-              title={!isAuthenticated ? "ログインすると獲得日順で表示できます" : ""}
-            >
-              獲得日順
-            </button>
-          </div>
-
-          <div className={styles.obtainedFilter}>
-            <button
-              className={`${styles.obtainedButton} ${showObtainedOnly ? styles.active : ''}`}
-              onClick={() => setShowObtainedOnly(!showObtainedOnly)}
-              disabled={!isAuthenticated}
-              title={!isAuthenticated ? "ログインすると獲得済みのみの表示ができます" : ""}
-            >
-              {showObtainedOnly ? '全て表示' : '獲得済みのみ'}
-            </button>
-          </div>
-
-          <div className={styles.rarityFilter}>
-            <button
-              className={`${styles.rarityButton} ${searchRarity === null ? styles.active : ''}`}
-              onClick={() => setSearchRarity(null)}
-            >
-              全レアリティ
-            </button>
-            {['N', 'R', 'SR', 'UR'].map((rarity) => (
-              <button
-                key={rarity}
-                className={`${styles.rarityButton} ${searchRarity === rarity ? styles.active : ''}`}
-                onClick={() => setSearchRarity(rarity)}
-              >
-                {rarity}
-              </button>
-            ))}
-          </div>
-          {isAuthenticated && allTags.length > 0 && (
-          <div className={styles.tagFilter}>
-            <div className={styles.tagFilterLabel}>
-              タグで絞り込み:
+        {/* モバイル表示時のフィルターボタン */}
+        <div className={styles.mobileFilterToggle}>
+          <FilterButton />
+        </div>
+        <div className={`${styles.filterHeader} ${showFilterMenu ? styles.show : styles.hide}`}>
+          <div className={styles.filterHeader}>
+            <div className={styles.searchBox}>
+              <Search className={styles.searchIcon} size={20} />
+              <input
+                type="text"
+                placeholder="パロットを検索"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={styles.searchInput}
+              />
             </div>
-            <select
-              className={styles.tagFilterSelect}
-              value={searchTag || ''}
-              onChange={(e) => setSearchTag(e.target.value || null)}
-            >
-              <option value="">すべてのタグ</option>
-              {allTags.map((tag) => (
-                <option key={tag} value={tag}>
-                  {tag}
-                </option>
-              ))}
-            </select>
-            {searchTag && (
+
+            <div className={styles.sortButtons}>
               <button
-                className={styles.clearTagFilterButton}
-                onClick={() => setSearchTag(null)}
+                className={`${styles.sortButton} ${sortType === 'display_order' ? styles.active : ''}`}
+                onClick={() => setSortType('display_order')}
               >
-                クリア
+                表示順
               </button>
-            )}
+              <button
+                className={`${styles.sortButton} ${sortType === 'rarity' ? styles.active : ''}`}
+                onClick={() => setSortType('rarity')}
+              >
+                レア度順
+              </button>
+              <button
+                className={`${styles.sortButton} ${sortType === 'obtained_date' ? styles.active : ''}`}
+                onClick={() => setSortType('obtained_date')}
+                disabled={!isAuthenticated}
+                title={!isAuthenticated ? "ログインすると獲得日順で表示できます" : ""}
+              >
+                獲得日順
+              </button>
+            </div>
+
+            <div className={styles.obtainedFilter}>
+              <button
+                className={`${styles.obtainedButton} ${showObtainedOnly ? styles.active : ''}`}
+                onClick={() => setShowObtainedOnly(!showObtainedOnly)}
+                disabled={!isAuthenticated}
+                title={!isAuthenticated ? "ログインすると獲得済みのみの表示ができます" : ""}
+              >
+                {showObtainedOnly ? '全て表示' : '獲得済みのみ'}
+              </button>
+            </div>
+
+            <div className={styles.rarityFilter}>
+              <button
+                className={`${styles.rarityButton} ${searchRarity === null ? styles.active : ''}`}
+                onClick={() => setSearchRarity(null)}
+              >
+                全レアリティ
+              </button>
+              {['N', 'R', 'SR', 'UR'].map((rarity) => (
+                <button
+                  key={rarity}
+                  className={`${styles.rarityButton} ${searchRarity === rarity ? styles.active : ''}`}
+                  onClick={() => setSearchRarity(rarity)}
+                >
+                  {rarity}
+                </button>
+              ))}
+            </div>
+            {isAuthenticated && allTags.length > 0 && (
+            <div className={styles.tagFilter}>
+              <div className={styles.tagFilterLabel}>
+                タグで絞り込み:
+              </div>
+              <select
+                className={styles.tagFilterSelect}
+                value={searchTag || ''}
+                onChange={(e) => setSearchTag(e.target.value || null)}
+              >
+                <option value="">すべてのタグ</option>
+                {allTags.map((tag) => (
+                  <option key={tag} value={tag}>
+                    {tag}
+                  </option>
+                ))}
+              </select>
+              {searchTag && (
+                <button
+                  className={styles.clearTagFilterButton}
+                  onClick={() => setSearchTag(null)}
+                >
+                  クリア
+                </button>
+              )}
+            </div>
+          )}
           </div>
-        )}
         </div>
       </div>
       

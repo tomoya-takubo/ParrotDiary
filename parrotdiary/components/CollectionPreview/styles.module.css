@@ -1320,3 +1320,313 @@
     padding: 1.5rem;
   }
 }
+
+/* styles.module.css に追加 */
+@media (max-width: 480px) {
+  .filterHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .searchBox {
+    width: 100%;
+    max-width: none;
+  }
+  
+  .sortButtons, 
+  .rarityFilter, 
+  .obtainedFilter {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    justify-content: flex-start;
+  }
+  
+  .rarityFilter {
+    justify-content: space-between;
+  }
+  
+  .rarityButton,
+  .sortButton,
+  .obtainedButton {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    white-space: nowrap;
+  }
+  
+  .tagFilter {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  
+  .tagFilterLabel {
+    min-width: 100%;
+    margin-bottom: 4px;
+  }
+  
+  .tagFilterSelect {
+    flex: 1;
+    max-width: none;
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  
+  .parrotCard {
+    width: 100%;
+    padding: 8px;
+  }
+  
+  .iconWrapper {
+    aspect-ratio: 1;
+    padding: 4px;
+  }
+  
+  .parrotName {
+    font-size: 0.8rem;
+    gap: 4px;
+  }
+  
+  .rarityBadge {
+    padding: 0.15rem 0.5rem;
+    font-size: 0.7rem;
+  }
+  
+  .cardTagsContainer {
+    margin-top: 0.15rem;
+  }
+  
+  .cardTagItem, 
+  .moreTagsBadge {
+    padding: 0.1rem 0.25rem;
+    font-size: 0.6rem;
+  }
+
+  .modalContent {
+    width: 100%;
+    padding: 1rem;
+    margin: 0 0.5rem;
+    max-height: 85vh;
+  }
+  
+  .modalHeader {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.75rem;
+  }
+  
+  .modalIconWrapper {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .modalInfo {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .modalTitle {
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .description {
+    font-size: 0.875rem;
+  }
+  
+  .detailsSection,
+  .tagsSection {
+    padding: 0.75rem;
+  }
+  
+  .detailsSection h3,
+  .tagsSection h3 {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .tagInputContainer {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .addTagButton {
+    align-self: stretch;
+  }
+  
+  .modalNavButton {
+    width: 36px;
+    height: 36px;
+  }
+
+  .paginationControls {
+    gap: 4px;
+  }
+  
+  .paginationButton {
+    min-width: 1.75rem;
+    height: 1.75rem;
+    font-size: 0.75rem;
+    padding: 0 0.25rem;
+  }
+  
+  .paginationInfo {
+    font-size: 0.75rem;
+    text-align: center;
+    width: 100%;
+  }
+  
+  .itemsPerPageSelector {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .titleSection {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .title {
+    margin-bottom: 0.5rem;
+    font-size: 1.25rem;
+  }
+  
+  .backToDashboardButton {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* styles.module.css に追加 */
+@media (max-width: 680px) {
+  .loginBanner {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
+  
+  .loginMessage {
+    width: 100%;
+    text-align: center;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .loginButton {
+    width: 100%;
+    padding: 0.75rem;
+  }
+}
+
+/* styles.module.css に追加 */
+@media (max-width: 768px) {
+  .parrotCard:hover {
+    transform: none; /* ホバー効果を無効化 */
+  }
+  
+  /* タップ時のエフェクト */
+  .parrotCard:active {
+    transform: scale(0.98);
+  }
+  
+  /* アニメーションの最適化 */
+  .loadingSpinner {
+    border-width: 3px;
+  }
+  
+  /* 進捗バー */
+  .progressSection {
+    padding: 1rem;
+  }
+  
+  .progressInfo {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+  }
+  
+  .progressLabel {
+    margin-bottom: 0.1rem;
+  }
+  
+  .progressValue {
+    font-size: 1.1rem;
+  }
+}
+
+/* styles.module.css に追加 */
+@media (hover: none) {
+  /* ホバー状態を無効化し、アクティブ状態（タップ時）に置き換え */
+  .parrotCard:hover {
+    transform: none;
+  }
+  
+  .parrotCard:active {
+    transform: scale(0.97);
+  }
+  
+  .modalNavButton:hover {
+    transform: none;
+  }
+  
+  .modalNavButton:active {
+    background-color: #f3f4f6;
+  }
+  
+  /* ボタンのタップ領域を拡大 */
+  .sortButton,
+  .rarityButton,
+  .obtainedButton,
+  .tagFilterSelect,
+  .clearTagFilterButton,
+  .paginationButton {
+    min-height: 44px; /* Apple のガイドラインに従ったタップ領域サイズ */
+  }
+  
+  .addTagButton,
+  .removeTagButton {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* styles.module.css に追加 */
+.mobileFilterToggle {
+  display: none;
+}
+
+.filterToggleButton {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #8B5CF6;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .mobileFilterToggle {
+    display: block;
+    margin-bottom: 1rem;
+  }
+  
+  .filterHeader {
+    display: none;
+  }
+  
+  .filterHeader.show {
+    display: flex;
+  }
+}
