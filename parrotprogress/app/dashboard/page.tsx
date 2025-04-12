@@ -166,7 +166,7 @@ export default function Dashboard() {
         setIsLoadingUserStatus(true);
         setIsLoadingTickets(true);
   
-        console.log('📤 Supabase からユーザー情報・チケット情報の再取得開始');
+        console.log('📤 Supabase からユーザー情報の再取得開始');
   
         const { data: { user } } = await supabase.auth.getUser();
         console.log('👤 現在のユーザー:', user);

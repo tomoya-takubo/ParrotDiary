@@ -251,9 +251,6 @@ export default function CollectionPreview() {
             await Promise.all([
               loadParrotData(session.user.id)
             ]);
-          } else {
-            // セッションがない場合は通常の認証フローで確認
-            console.log('セッションなし、getCurrentUserを実行');
           }
         }
       } catch (error) {
