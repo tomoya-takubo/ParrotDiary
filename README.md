@@ -58,7 +58,7 @@ PartyParrotというユニークなキャラクターと組み合わせること
 ### ランディングページ
 ![landing](images/landing.png)
 
-### サインイン
+### ログイン
 ![signin](images/signin.gif)
 
 ### ダッシュボード
