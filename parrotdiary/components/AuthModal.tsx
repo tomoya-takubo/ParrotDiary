@@ -805,9 +805,11 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                       <div 
                         className={styles.passwordIcon} 
                         onClick={() => setShowPassword(!showPassword)}
+                        onTouchStart={() => {}} // タッチ操作の明示的サポート
                         role="button"
                         tabIndex={0}
                         aria-label={showPassword ? "パスワードを隠す" : "パスワードを表示"}
+                        style={{ padding: '8px' }} // タップ領域を広げる
                       >
                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </div>
@@ -830,9 +832,11 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                         <div 
                           className={styles.passwordIcon} 
                           onClick={() => setShowPassword(!showPassword)}
+                          onTouchStart={() => {}} // タッチ操作の明示的サポート
                           role="button"
                           tabIndex={0}
                           aria-label={showPassword ? "パスワードを隠す" : "パスワードを表示"}
+                          style={{ padding: '8px' }} // タップ領域を広げる
                         >
                           {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                         </div>

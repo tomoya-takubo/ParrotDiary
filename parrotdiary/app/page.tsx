@@ -32,8 +32,21 @@ export default function Home() {
           <h1 className={styles.title}> ぱろっとだいありー </h1>
           <p className={styles.subtitle}>PartyParrotと一緒に楽しく継続</p>
           <div className={styles.heroParrot}>
-            {gifUrl && <Image src={gifUrl} alt="Party Parrot" width={400} height={400}/>}
-          </div>
+          {gifUrl && (
+            <Image 
+              src={gifUrl} 
+              alt="Party Parrot" 
+              width={400} 
+              height={400}
+              style={{
+                width: '100%',
+                height: 'auto',
+                maxWidth: '100%'
+              }}
+              priority // 優先的に読み込み
+            />
+          )}
+        </div>
           <StartButton />
         </div>
       </div>

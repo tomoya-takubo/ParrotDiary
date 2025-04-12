@@ -11,15 +11,20 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ja">
-      <body>
-        <AuthProvider>
-          <RewardProvider> {/* ← これで囲まれている必要あり */}
-            {children}
-            <RewardNotification /> {/* これが RewardContext を使って通知表示 */}
-          </RewardProvider>
-        </AuthProvider>
-      </body>
-    </html>
+    <>
+      <html lang="ja">
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        </head>
+        <body>
+          <AuthProvider>
+            <RewardProvider> {/* ← これで囲まれている必要あり */}
+              {children}
+              <RewardNotification /> {/* これが RewardContext を使って通知表示 */}
+            </RewardProvider>
+          </AuthProvider>
+        </body>
+      </html>
+    </>
   );
 }
