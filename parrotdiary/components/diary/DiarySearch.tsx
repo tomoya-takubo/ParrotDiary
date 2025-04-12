@@ -48,6 +48,9 @@ const DiarySearch = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [entriesPerPage, setEntriesPerPage] = useState(5);
   const [pageSizeOptions] = useState([5, 10, 20, 50]);
+
+  // DiarySearch.tsx 内に viewMode の状態を追加
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   // #endregion
 
   // #region データ取得
@@ -107,6 +110,18 @@ const DiarySearch = () => {
 
     fetchData();
   }, [user]);
+
+  // 画面サイズに基づいて自動的に表示モードを調整
+  useEffect(() => {
+    const updateViewMode = () => {
+      setViewMode(window.innerWidth >= 768 ? 'grid' : 'list');
+    };
+    
+    window.addEventListener('resize', updateViewMode);
+    updateViewMode(); // 初期表示時に実行
+    
+    return () => window.removeEventListener('resize', updateViewMode);
+  }, []);
   // #endregion
 
   // #region イベントハンドラ
@@ -531,7 +546,7 @@ const DiarySearch = () => {
         ) : (
           <>
             {/* 日記エントリー */}
-            <div className={styles.entriesContainer}>
+            <div className={`${styles.entriesContainer} ${viewMode === 'grid' ? styles.entriesGrid : ''}`}>
               {currentEntries.length > 0 ? (
                 currentEntries.map((entry) => (
                   <div key={entry.entry_id} className={styles.entryCard}>

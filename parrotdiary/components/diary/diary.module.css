@@ -451,35 +451,36 @@
 }
 
 /* レスポンシブ対応 */
-@media (max-width: 768px) {
-  .modalContainer {
-    width: calc(100% - 32px);
-    max-width: none;
-    padding: 16px;
-    margin: 0 16px;
-    max-height: 85vh;
-  }
-  
-  .modalTitle {
-    font-size: 20px;
-  }
-  
-  .modalNavigationWrapper {
-    width: 100%;
-    max-width: 100%;
-  }
-  
-  .modalNavButton {
-    width: 36px;
-    height: 36px;
-  }
-  
-  .entryCard {
-    padding: 12px;
-  }
-}
 
 @media (max-width: 480px) {
+  .filterPanel {
+    padding: 12px;
+  }
+  
+  .tagsList {
+    max-height: 150px;
+    padding: 6px;
+  }
+  
+  .tagButton {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+  
+  .dateRangeContainer {
+    width: 100%;
+  }
+  
+  .dateInput {
+    font-size: 12px;
+    padding: 6px;
+  }
+  
+  .clearFiltersButton {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
   .modalContainer {
     padding: 12px;
     margin: 0 8px;
@@ -507,6 +508,113 @@
   .entriesContainer {
     max-height: 65vh;
     overflow-y: auto;
+  }
+
+  .searchContainer {
+    margin-bottom: 12px;
+  }
+  
+  .searchInput {
+    padding: 8px 30px 8px 10px;
+    font-size: 14px;
+  }
+  
+  .searchIcon {
+    right: 10px;
+  }
+  
+  .filterButton {
+    padding: 6px 0;
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+
+  .entryCard {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  
+  .entryHeader {
+    margin-bottom: 10px;
+  }
+  
+  .entryDate {
+    font-size: 12px;
+    margin-bottom: 6px;
+    width: 100%;
+  }
+  
+  .entryTags {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+  }
+  
+  .entryTag {
+    white-space: nowrap;
+    font-size: 12px;
+    padding: 3px 6px;
+  }
+  
+  .entryContent p {
+    font-size: 14px;
+    margin-bottom: 6px;
+  }
+  
+  /* パロット表示調整 */
+  .parrotBottomRight {
+    bottom: -3px;
+    right: -3px;
+  }
+  
+  .parrotGif {
+    width: 32px;
+    height: 32px;
+  }
+
+  .pagination {
+    gap: 4px;
+  }
+  
+  .paginationButton {
+    min-width: 32px;
+    height: 32px;
+    font-size: 12px;
+    padding: 0 4px;
+  }
+  
+  /* 画面幅が狭い場合は「最初」と「最後」のボタンを非表示 */
+  .pagination button:first-child,
+  .pagination button:last-child {
+    display: none;
+  }
+
+  .titleSection {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+  }
+  
+  .title {
+    font-size: 20px;
+    margin-bottom: 0.5rem;
+  }
+  
+  .backToDashboardButton {
+    width: 100%;
+    justify-content: center;
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  .entryContent {
+    gap: 6px;
+  }
+  
+  .entryContent p {
+    line-height: 1.4;
   }
 }
 
@@ -610,4 +718,101 @@
 .disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* diary.module.css に追加 */
+@media (hover: none) {
+  /* タッチデバイス向け調整 */
+  .entryTag {
+    padding: 6px 10px; /* タップ領域を拡大 */
+  }
+  
+  .tagButton {
+    padding: 8px 12px; /* タップ領域を拡大 */
+  }
+  
+  .editButton {
+    padding: 6px 10px; /* タップ領域を拡大 */
+  }
+  
+  .paginationButton {
+    min-width: 44px; /* Appleガイドラインに準拠したタップサイズ */
+    height: 44px;
+  }
+  
+  /* ホバーエフェクトを無効化 */
+  .tagButton:hover, .entryTag:hover, .paginationButton:hover,
+  .filterButton:hover, .clearFiltersButton:hover {
+    background-color: inherit;
+  }
+  
+  /* 代わりにアクティブ（タップ）エフェクトを設定 */
+  .tagButton:active, .entryTag:active, .paginationButton:active,
+  .filterButton:active, .clearFiltersButton:active {
+    opacity: 0.7;
+  }
+}
+
+/* グリッドレイアウト用のスタイル */
+.entriesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .modalContainer {
+    width: calc(100% - 32px);
+    max-width: none;
+    padding: 16px;
+    margin: 0 16px;
+    max-height: 85vh;
+  }
+  
+  .modalTitle {
+    font-size: 20px;
+  }
+  
+  .modalNavigationWrapper {
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .modalNavButton {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .entryCard {
+    padding: 12px;
+  }
+
+  .entriesGrid {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .searchInput:focus {
+    outline: 2px solid #3182ce;
+    border-color: transparent;
+  }
+  
+  .dateInput:focus {
+    outline: 2px solid #3182ce;
+    border-color: transparent;
+  }
+  
+  .pageSizeSelect:focus {
+    outline: 2px solid #3182ce;
+    border-color: transparent;
+  }
+
+  .entriesContainer {
+    will-change: transform; /* スクロールパフォーマンス向上 */
+  }
+  
+  /* イベントデリゲーションのヒント */
+  .entryTags {
+    contain: content; /* コンテンツの影響範囲を制限 */
+  }
 }
