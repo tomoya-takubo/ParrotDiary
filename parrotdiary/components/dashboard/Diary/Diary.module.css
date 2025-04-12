@@ -848,3 +848,55 @@
   transform: scaleX(-1);
 }
 
+@media (max-width: 768px) {
+  .diaryEntry {
+    padding: 12px;
+  }
+  
+  .entryHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .entryTags {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    justify-content: flex-start;
+  }
+  
+  /* パロットの位置調整 */
+  .parrotBottomRight {
+    bottom: 4px;
+    right: 4px;
+  }
+  
+  .parrotGif {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .diaryContainer {
+    padding: 16px;
+  }
+  
+  .diaryTitle {
+    font-size: 18px;
+  }
+  
+  .entryLine {
+    font-size: 14px;
+  }
+  
+  .entryTimestamp {
+    font-size: 12px;
+  }
+  
+  .entryTag, .editButton {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+}

@@ -49,3 +49,41 @@ textarea:focus,
 button:focus {
   outline: none;
 }
+
+/* タッチ操作の最適化 */
+@media (max-width: 768px) {
+  /* すべてのクリック可能な要素のタップ領域を確保 */
+  button, 
+  a,
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"] {
+    min-height: 44px; /* Apple推奨のタップターゲット最小サイズ */
+    min-width: 44px;
+  }
+  
+  /* 要素間の間隔を適切に確保 */
+  .clickable-wrapper {
+    padding: 8px;
+  }
+  
+  /* フォームコントロールの調整 */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  textarea,
+  select {
+    font-size: 16px; /* iOSでズームインを防止 */
+  }
+}
+
+/* モバイルでのアニメーション最適化（ページやコンポーネントのCSSに追加） */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

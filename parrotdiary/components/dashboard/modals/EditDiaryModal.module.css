@@ -527,3 +527,79 @@
   flex-shrink: 0;
   box-sizing: content-box;
 }
+
+@media (max-width: 768px) {
+  .modalContainer {
+    width: calc(100% - 32px);
+    max-width: none;
+    padding: 16px;
+    margin: 0 16px;
+  }
+  
+  .inputGroup {
+    gap: 4px;
+  }
+  
+  .textInput {
+    padding: 8px 40px 8px 8px; /* 右側の余白を減らす */
+    font-size: 14px;
+  }
+  
+  .charCount {
+    right: 8px;
+  }
+  
+  /* タグセクションのレイアウト調整 */
+  .selectedTagsContainer, .frequentTagsList {
+    gap: 6px;
+  }
+  
+  .selectedTag, .frequentTag {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  
+  .removeTagButton {
+    padding: 2px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modalContainer {
+    padding: 12px;
+    margin: 0 8px;
+    max-height: 90vh;
+  }
+  
+  .modalTitle {
+    font-size: 16px;
+  }
+  
+  .closeButton {
+    top: 8px;
+    right: 8px;
+  }
+  
+  /* パロット選択セクションをスマホに対応 */
+  .modalParrotSection {
+    padding-top: 12px;
+  }
+  
+  .parrotOption {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .selectedParrotItem {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .removeParrotButton {
+    width: 16px;
+    height: 16px;
+    top: -6px;
+    right: -6px;
+    font-size: 10px;
+  }
+}

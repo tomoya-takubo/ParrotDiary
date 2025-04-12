@@ -452,8 +452,61 @@
 
 /* レスポンシブ対応 */
 @media (max-width: 768px) {
-  .entriesGrid {
-    grid-template-columns: 1fr;
+  .modalContainer {
+    width: calc(100% - 32px);
+    max-width: none;
+    padding: 16px;
+    margin: 0 16px;
+    max-height: 85vh;
+  }
+  
+  .modalTitle {
+    font-size: 20px;
+  }
+  
+  .modalNavigationWrapper {
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .modalNavButton {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .entryCard {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modalContainer {
+    padding: 12px;
+    margin: 0 8px;
+    max-height: 90vh;
+  }
+  
+  .modalTitle {
+    font-size: 18px;
+  }
+  
+  .headerTitleContainer {
+    gap: 8px;
+  }
+  
+  .modalNavButton {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .closeButton {
+    padding: 4px;
+  }
+  
+  /* スマホでの縦スクロール時の安定性向上 */
+  .entriesContainer {
+    max-height: 65vh;
+    overflow-y: auto;
   }
 }
 

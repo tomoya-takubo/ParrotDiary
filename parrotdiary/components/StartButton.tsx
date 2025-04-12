@@ -4,6 +4,13 @@ import { useRouter } from 'next/navigation';
 import AuthModal from './AuthModal';
 import styles from '../styles/Home.module.css';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import React, { ReactNode } from 'react'; // ReactNodeをインポート
+
+// 型定義を追加したコンポーネント
+interface EnhanceTapAreaProps {
+  children: ReactNode;
+  padding?: string;
+}
 
 export default function StartButton() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -74,15 +81,30 @@ export default function StartButton() {
     setIsModalOpen(false);
   };
 
+  // タップエリアを拡大する高階コンポーネント
+  const EnhanceTapArea: React.FC<EnhanceTapAreaProps> = ({ children, padding = '8px' }) => {
+    return (
+      <div style={{ 
+        padding, 
+        margin: `-${padding}`,
+        display: 'inline-block'
+      }}>
+        {children}
+      </div>
+    );
+  };
+
   return (
     <>
-      <button 
-        className={styles.button}
-        onClick={handleButtonClick}
-        disabled={isLoading}
-      >
-        {isLoading ? 'ロード中...' : 'はじめる'}
-      </button>
+      <EnhanceTapArea>
+        <button 
+          className={styles.button}
+          onClick={handleButtonClick}
+          disabled={isLoading}
+        >
+          {isLoading ? 'ロード中...' : 'はじめる'}
+        </button>
+      </EnhanceTapArea>
       <AuthModal 
         isOpen={isModalOpen} 
         onClose={handleModalClose}

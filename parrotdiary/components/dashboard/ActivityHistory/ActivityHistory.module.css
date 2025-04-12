@@ -328,32 +328,64 @@
 }
 
 @media (max-width: 480px) {
-  .monthlyGrid {
-    gap: 4px;
+  .calendarCard {
+    padding: 12px;
   }
   
-  .weekRow {
-    gap: 4px;
+  .title {
+    font-size: 16px;
   }
   
   .dayCell {
-    height: 50px;
-    padding: 4px;
-    border-radius: 8px;
+    height: 40px; /* さらに小さく */
+    padding: 2px;
+    border-radius: 6px;
   }
   
   .dayNumber {
-    font-size: 12px;
+    font-size: 11px;
   }
   
   .activityCount {
-    font-size: 9px;
-    bottom: 4px;
-    right: 4px;
+    font-size: 8px;
+    padding: 0 2px;
+    bottom: 2px;
+    right: 2px;
+    min-width: auto;
+    height: auto;
   }
   
   .weekdayHeaderCell {
-    font-size: 12px;
-    padding: 6px 0;
+    font-size: 10px;
+    padding: 4px 0;
+  }
+  
+  /* レジェンドを簡素化 */
+  .levelLegend {
+    flex-wrap: wrap;
+    padding: 4px;
+    margin-top: 12px;
+  }
+  
+  .legendCell {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .legendText {
+    font-size: 10px;
+  }
+}
+
+/* タッチデバイス向けの調整 */
+@media (hover: none) {
+  .dayCell:hover {
+    transform: none; /* ホバーエフェクトを無効化 */
+    box-shadow: none;
+  }
+  
+  /* タップ時のエフェクト */
+  .dayCell:active {
+    background-color: rgba(59, 130, 246, 0.1);
   }
 }

@@ -542,3 +542,97 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+@media (max-width: 768px) {
+  .contentContainer {
+    gap: 16px; /* 縦方向の間隔を縮小 */
+  }
+  
+  .headerContainer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .appTitle {
+    font-size: 20px;
+  }
+  
+  .navButtons {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .navButton, .primaryButton {
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+  
+  .statusCard, .statsCard, .diaryContainer {
+    padding: 16px;
+  }
+  
+  .statsGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .statItem {
+    padding: 0;
+    border-left: none;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 16px;
+  }
+  
+  .statItem:last-child {
+    border-bottom: none;
+  }
+  
+  .gachaButton {
+    padding: 12px 16px;
+  }
+  
+  .ticketContainer {
+    position: static;
+    transform: none;
+    margin-left: 8px;
+  }
+  
+  .gachaButtonContent {
+    justify-content: center;
+  }
+  
+  /* ガチャボタンのレイアウト変更 */
+  .gachaButton {
+    display: flex;
+    flex-direction: column; /* スマホでは縦並びに */
+    padding: 12px;
+  }
+  
+  .ticketContainer {
+    position: static;
+    transform: none;
+    margin-top: 8px;
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .pageContainer {
+    padding: 16px 12px;
+  }
+  
+  .wrapper {
+    padding: 1rem 0.5rem;
+  }
+  
+  .title {
+    font-size: 1.5rem;
+  }
+  
+  .navButtons {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}

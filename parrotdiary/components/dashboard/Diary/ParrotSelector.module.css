@@ -405,3 +405,58 @@
   background-color: #e2e8f0;
 }
 
+@media (max-width: 480px) {
+  .parrotGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    max-height: 180px;
+  }
+  
+  .parrotGridItem {
+    padding: 6px;
+  }
+  
+  .parrotImageContainer {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .parrotName {
+    font-size: 10px;
+  }
+  
+  .parrotTypeSelector {
+    white-space: nowrap;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    justify-content: flex-start;
+    display: flex;
+    flex-wrap: nowrap;
+  }
+  
+  .parrotTypeButton {
+    flex-shrink: 0;
+  }
+  
+  /* スマホでのタップエリア拡大 */
+  .removeParrotButton {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .tagButton {
+    padding: 4px 6px;
+  }
+}
+
+/* タッチデバイス用の調整 */
+@media (hover: none) {
+  .parrotGridItem:hover {
+    transform: none;
+  }
+  
+  .parrotGridItem:active {
+    background-color: #e2e8f0;
+  }
+}
+

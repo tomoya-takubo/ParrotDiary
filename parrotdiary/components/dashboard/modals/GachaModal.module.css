@@ -139,3 +139,61 @@
 .closeResultButton:hover {
   background-color: #cbd5e0;
 }
+
+@media (max-width: 768px) {
+  .modalContainer {
+    width: calc(100% - 32px);
+    max-width: 350px;
+    padding: 20px;
+  }
+  
+  .modalTitle {
+    font-size: 20px;
+  }
+  
+  .iconWrapper {
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modalContainer {
+    padding: 16px;
+    margin: 0 8px;
+    max-width: none;
+    width: calc(100% - 16px);
+  }
+  
+  .modalTitle {
+    font-size: 18px;
+  }
+  
+  .prompt {
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+  
+  .iconWrapper {
+    margin-bottom: 8px;
+  }
+  
+  .gachaButton, .closeResultButton {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+  
+  /* ガチャ演出の縮小 */
+  .spinningState {
+    padding: 32px 0;
+  }
+  
+  .spinner {
+    height: 96px;
+    width: 96px;
+  }
+  
+  .resultImage {
+    width: 96px;
+    height: 96px;
+  }
+}
