@@ -10,7 +10,6 @@ type ParrotType = {
   name?: string;
   image_url?: string;
   description?: string;
-  category_id?: string;
   rarity_id?: string;
   display_order?: number;
   tags?: ParrotTagInfo[]; // タグ情報を追加
@@ -21,7 +20,6 @@ type RawParrot = {
   name?: string;
   image_url?: string;
   description?: string;
-  category_id?: string;
   rarity_id?: string;
   display_order?: number;
 };
@@ -182,7 +180,7 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
           
           const { data: parrotBatch, error: batchError } = await supabase
             .from('parrots')
-            .select('parrot_id, name, image_url, description, category_id, rarity_id, display_order')
+            .select('parrot_id, name, image_url, description, rarity_id, display_order')
             .in('parrot_id', batchIds)
             .order('display_order', { ascending: true });
             
@@ -200,7 +198,6 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
           name: parrot.name ? String(parrot.name) : undefined,
           image_url: parrot.image_url ? String(parrot.image_url) : undefined,
           description: parrot.description ? String(parrot.description) : undefined,
-          category_id: parrot.category_id ? String(parrot.category_id) : undefined,
           rarity_id: parrot.rarity_id ? String(parrot.rarity_id) : undefined,
           display_order: typeof parrot.display_order === 'number' ? parrot.display_order : undefined,
           tags: [] as ParrotTagInfo[] // 明示的に型を指定
@@ -244,7 +241,6 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
           name: 'デフォルトパロット',
           image_url: '/gif/parrots/60fpsparrot.gif',
           description: 'デフォルトパロット',
-          category_id: 'common',
           rarity_id: 'common',
           display_order: 1,
           tags: [] as ParrotTagInfo[]
@@ -269,7 +265,6 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
           name: 'デフォルトパロット',
           image_url: '/gif/parrots/60fpsparrot.gif',
           description: 'デフォルトパロット',
-          category_id: 'common',
           rarity_id: 'common',
           display_order: 1,
           tags: [] as ParrotTagInfo[]
@@ -345,9 +340,7 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
   const filteredParrots = availableParrots.filter(parrot => {
     // 検索条件を削除し、カテゴリーとタグのみでフィルタリング
     const matchesCategory = !selectedCategory || 
-      selectedCategory === 'all' || 
-      parrot.category_id === selectedCategory;
-      
+      selectedCategory === 'all'
     // 選択されたタグでフィルタリング
     const matchesTag = !selectedTag || 
       (parrot.tags && parrot.tags.some(tag => tag.parrot_tag_name === selectedTag));
