@@ -155,6 +155,8 @@ export const signInWithEmail = async (
       if (updateError) {
         console.error("ログイン時間更新エラー:", updateError);
       }
+
+      console.log("user_sessions開始user_sessions開始user_sessions開始user_sessions開始user_sessions開始user_sessions開始");
       
       // セッション記録
       const { error: sessionError } = await supabase.from('user_sessions').insert({
@@ -165,19 +167,6 @@ export const signInWithEmail = async (
 
       if (sessionError) {
         console.error("セッション記録エラー:", sessionError);
-      }
-      
-      // ログイン時にデイリーアクティビティを記録
-      const today = new Date().toISOString().split('T')[0];
-      
-      const { error: activityError } = await supabase.from('user_daily_activities').insert({
-        user_id: data.user.id,
-        activity_date: today,
-        activity_type: 'login',
-      });
-      
-      if (activityError) {
-        console.error("アクティビティ記録エラー:", activityError);
       }
     }
     

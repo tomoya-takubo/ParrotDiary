@@ -504,27 +504,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
                 console.error('🎫 チケット挿入エラー（insert）:', insertError);
               }
             }
-  
-            const { data: typeData, error: typeError } = await supabase
-            .from('acquisition_type_master')
-            .select('acquisition_type_id')
-            .filter('name', 'eq', '日記作成') // ← .eq() の代わりに .filter() を使う
-            .maybeSingle();
-          
-            if (typeError) {
-              console.error('🎫 acquisition_type_master の取得エラー:', typeError);
-            }
-            
-            if (typeData?.acquisition_type_id) {
-              await supabase.from('ticket_acquisition_history').insert({
-                user_id: user.id,
-                ticket_count: ticketsAmount,
-                acquired_at: isoString,
-                acquisition_type_id: typeData.acquisition_type_id
-              });
-            }
           }
-  
         } catch (rewardError) {
           console.error('報酬付与エラー:', rewardError);
         }
