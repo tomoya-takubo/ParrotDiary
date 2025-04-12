@@ -474,7 +474,6 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
             xp_amount: xpAmount,
             action_type: '日記作成',
             earned_at: isoString,
-            created_at: isoString
           });
   
           if (ticketsAmount > 0) {

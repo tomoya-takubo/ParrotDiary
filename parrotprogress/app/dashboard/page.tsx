@@ -181,7 +181,7 @@ export default function Dashboard() {
         // ユーザー基本情報の取得
         const { data: userData, error: userError } = await supabase
           .from('users')
-          .select('level, total_xp, streak')
+          .select('level, total_xp')
           .eq('id', user.id)
           .single();
   
