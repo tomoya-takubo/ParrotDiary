@@ -100,7 +100,7 @@
 }
 
 .entryTag {
-  font-size: 12px;
+  font-size: 10px;
   padding: 4px 8px;
   border-radius: 9999px;
   background-color: #e0f2fe;
@@ -906,11 +906,10 @@
   /* タグと編集ボタンを分離して個別にスタイリング */
   .entryTag {
     font-size: 12px;
-    padding: 4px 8px;
+    padding: 2px 6px;
     border-radius: 9999px;
     background-color: #e0f2fe;
     color: #0284c7;
-    /* 以下を追加 */
     display: inline-flex;
     align-items: center;
     justify-content: center;
