@@ -437,13 +437,6 @@
   min-height: 100vh;
 }
 
-/* グリッドレイアウト用のスタイル */
-.entriesGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 20px;
-}
-
 .entryCard {
   height: 100%;
   display: flex;
@@ -754,9 +747,10 @@
 }
 
 /* グリッドレイアウト用のスタイル */
+/* entriesGridのスタイルを修正 - PCでも1列表示にする */
 .entriesGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 20px;
 }
 
