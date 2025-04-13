@@ -31,6 +31,15 @@ interface Parrot {
   image_url: string | null;
 }
 
+// ユーザーパロットの型定義を追加
+interface UserParrot {
+  id?: string; // 更新時に必要な主キー（オプション）
+  user_id: string;
+  parrot_id: string;
+  obtained_at: string;
+  obtain_count: number;
+}
+
 /**
  * レアリティ表示設定の型定義
  * UIの見た目の設定を管理します
@@ -295,47 +304,6 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
 
   //#region ガチャ処理関数
   /**
-     * ガチャを引いてパロットを抽選する関数
-     * すべてのパロットから均等な確率で1つを選択
-     */
-  const pullGacha = async (): Promise<{ parrot: Parrot, rarityType: RarityType }> => {
-    try {
-      const { data: parrots, error } = await supabase.from('parrots').select('*');
-    
-      if (error || !parrots || parrots.length === 0) {
-        throw new Error('パロット取得エラー: ' + error?.message);
-      }
-    
-      const randomIndex = Math.floor(Math.random() * parrots.length);
-      const selectedParrot = parrots[randomIndex];
-    
-      console.log('選択されたパロット:', selectedParrot.name);
-      console.log('レアリティID:', selectedParrot.rarity_id);
-    
-      // 改善されたマッピング関数を使用
-      const rarityType = getRarityType(selectedParrot.rarity_id);
-    
-      return {
-        parrot: selectedParrot,
-        rarityType
-      };
-    } catch (error) {
-      console.error('パロット抽選エラー:', error);
-      return {
-        parrot: {
-          parrot_id: "1",
-          name: "Unknown Parrot",
-          category_id: null,
-          rarity_id: "1",
-          description: null,
-          image_url: null
-        },
-        rarityType: "normal"
-      };
-    }
-  };
-      
-  /**
    * チケットを消費する関数
    * @param amount 消費するチケット数
    */
@@ -389,94 +357,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
   };
 
   /**
-   * 獲得したパロットをデータベースに登録する関数
-   * user_parrotsテーブルとgacha_historyテーブルを更新
-   */
-  const saveParrotToUser = async (parrot: Parrot): Promise<boolean> => {
-    if (!user) return false;
-    
-    try {
-      console.log('パロット保存開始:', parrot);
-      console.log('ユーザーID:', user.id, '型:', typeof user.id);
-      console.log('パロットID:', parrot.parrot_id, '型:', typeof parrot.parrot_id);
-
-      // 1. まず既存のエントリを確認
-      const { data: existingParrots, error: fetchError } = await supabase
-        .from('user_parrots')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('parrot_id', parrot.parrot_id);
-
-      if (fetchError) {
-        console.error('既存パロット確認エラー詳細:', fetchError);
-        throw new Error('既存パロット確認エラー: ' + fetchError.message);
-      }
-
-      // 2. user_parrotsテーブルの処理
-      if (existingParrots && existingParrots.length > 0) {
-        // 既に持っている場合はカウントを+1
-        const { error: updateError } = await supabase
-          .from('user_parrots')
-          .update({ 
-            obtain_count: existingParrots[0].obtain_count + 1,
-            obtained_at: getJSTISOString() // 最終取得日を更新
-          })
-          .eq('user_id', user.id)
-          .eq('parrot_id', parrot.parrot_id);
-
-        if (updateError) {
-          console.error('パロット更新エラー詳細:', updateError);
-          throw new Error('パロット更新エラー: ' + updateError.message);
-        }
-        
-        console.log('既存パロットを更新しました:', parrot.name, '新しい取得数:', existingParrots[0].obtain_count + 1);
-      } else {
-        // 初めて獲得した場合は新規レコード作成
-        const { error: insertError } = await supabase
-          .from('user_parrots')
-          .insert([{
-            user_id: user.id,
-            parrot_id: parrot.parrot_id,
-            obtained_at: getJSTISOString(),
-            obtain_count: 1
-          }]);
-
-        if (insertError) {
-          console.error('パロット登録エラー詳細:', insertError);
-          throw new Error('パロット登録エラー: ' + insertError.message);
-        }
-        
-        console.log('新しいパロットを登録しました:', parrot.name);
-      }
-
-      // 3. ガチャ履歴テーブルに記録
-      // gacha_idは省略してサーバー側で自動生成
-      const { error: historyError } = await supabase
-        .from('gacha_history')
-        .insert([{
-          // gacha_idは省略（Supabase側で自動生成される）
-          user_id: user.id,
-          parrot_id: parrot.parrot_id,
-          executed_at: getJSTISOString()
-        }]);
-
-      if (historyError) {
-        console.error('ガチャ履歴登録エラー詳細:', historyError);
-        throw new Error('ガチャ履歴登録エラー: ' + historyError.message);
-      }
-
-      console.log('ガチャ履歴を登録しました:', parrot.name);
-      return true; // 成功を返す
-
-    } catch (error) {
-      // エラーをログに記録し、失敗を明示的に返す
-      console.error('データベース操作エラー:', error);
-      return false;
-    }
-  };
-
-  /**
-   * 複数回のガチャを一括で実行する関数
+   * 複数回のガチャを一括で実行する関数 (最適化版)
    */
   const runMultiGacha = async (count: number) => {
     if (!user) {
@@ -503,31 +384,126 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
       // チケット消費後、親コンポーネントのコールバックを呼び出して画面更新
       startGacha();
       
-      // 2. ガチャ結果を格納する配列
-      const results: GachaResult[] = [];
+      // 2. パロットを一括で抽選する (すべてのパロットを一度に取得して、ランダム選択)
+      const { data: allParrots, error: parrotsError } = await supabase.from('parrots').select('*');
       
-      // 3. 指定した回数分ガチャを引く
-      for (let i = 0; i < count; i++) {
-        const { parrot, rarityType } = await pullGacha();
-        results.push({
-          parrot,
-          rarityType,
-          revealed: true // 最初から表示状態にする
-        });
-        
-        // パロットをユーザーに登録
-        await saveParrotToUser(parrot);
+      if (parrotsError || !allParrots || allParrots.length === 0) {
+        throw new Error('パロット取得エラー: ' + parrotsError?.message);
       }
       
-      // 4. 結果を保存して表示モードに切り替え
+      // ランダム抽選関数
+      const getRandomParrot = () => {
+        const randomIndex = Math.floor(Math.random() * allParrots.length);
+        const selectedParrot = allParrots[randomIndex];
+        const rarityType = getRarityType(selectedParrot.rarity_id);
+        return { parrot: selectedParrot, rarityType };
+      };
+      
+      // 指定した回数分のパロットを抽選
+      const selectedParrots = Array.from({ length: count }, () => getRandomParrot());
+      
+      // 3. 抽選結果をユーザーのコレクションに一括で登録する
+      if (user) {
+        // 3.1. 現在の所持パロット情報を一括取得
+        const parrotIds = selectedParrots.map(item => item.parrot.parrot_id);
+        const { data: existingParrots, error: fetchError } = await supabase
+          .from('user_parrots')
+          .select('*')
+          .eq('user_id', user.id)
+          .in('parrot_id', parrotIds);
+        
+        if (fetchError) {
+          console.error('既存パロット確認エラー詳細:', fetchError);
+          throw new Error('既存パロット確認エラー: ' + fetchError.message);
+        }
+        
+        // 3.2. 新規パロットと更新パロットに分ける
+        const existingParrotMap = new Map<string, UserParrot>();
+        if (existingParrots) {
+          existingParrots.forEach(parrot => {
+            existingParrotMap.set(parrot.parrot_id, parrot);
+          });
+        }
+        
+        // 型を明示的に定義
+        const newParrots: UserParrot[] = [];
+        const updateParrots: UserParrot[] = [];
+        
+        // 現在時刻を一度だけ取得
+        const currentTime = getJSTISOString();
+        
+        selectedParrots.forEach(({ parrot }) => {
+          if (existingParrotMap.has(parrot.parrot_id)) {
+            // 既存パロットの場合は更新
+            const existingParrot = existingParrotMap.get(parrot.parrot_id);
+            updateParrots.push({
+              id: existingParrot?.id, // 主キーが必要
+              user_id: user.id,
+              parrot_id: parrot.parrot_id,
+              obtain_count: existingParrot?.obtain_count ? existingParrot.obtain_count + 1 : 1,
+              obtained_at: currentTime
+            });
+          } else {
+            // 新規パロットの場合は追加
+            newParrots.push({
+              user_id: user.id,
+              parrot_id: parrot.parrot_id,
+              obtained_at: currentTime,
+              obtain_count: 1
+            });
+          }
+        });
+        interface GachaHistory {
+          user_id: string;
+          parrot_id: string;
+          executed_at: string;
+        }
+        
+        const executePromises = async () => {
+          const results = [];
+          
+          if (newParrots.length > 0) {
+            const result = await supabase.from('user_parrots').insert(newParrots);
+            results.push(result);
+          }
+          
+          if (updateParrots.length > 0) {
+            // UPSERTを使用して一括更新
+            const result = await supabase.from('user_parrots').upsert(updateParrots);
+            results.push(result);
+          }
+          
+          // ガチャ履歴を一括登録
+          const historyRecords: GachaHistory[] = selectedParrots.map(({ parrot }) => ({
+            user_id: user.id,
+            parrot_id: parrot.parrot_id,
+            executed_at: currentTime
+          }));
+          
+          const historyResult = await supabase.from('gacha_history').insert(historyRecords);
+          results.push(historyResult);
+          
+          return results;
+        };
+        
+        // すべてのデータベース操作を実行
+        await executePromises();
+      }
+      
+      // 4. 結果を作成
+      const results: GachaResult[] = selectedParrots.map(({ parrot, rarityType }) => ({
+        parrot,
+        rarityType,
+        revealed: true // 最初から表示状態にする
+      }));
+      
+      // 5. 結果を表示 (待ち時間を短縮)
       setTimeout(() => {
-        // 結果を保存して表示モードに切り替え
         setGachaResults(results);
         setShowResult(true);
         setProcessing(false);
         setAllRevealed(true); // すべて表示済みに設定
-      }, 2000); // ローディングアニメーションの後、一斉に表示
-
+      }, 500); // 待ち時間を短縮: 2000ms → 500ms
     } catch (error) {
       console.error('複数ガチャ処理エラー:', error);
       setError(`ガチャの実行中にエラーが発生しました: ${(error as Error).message}`);
