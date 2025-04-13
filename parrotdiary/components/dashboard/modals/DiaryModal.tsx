@@ -202,9 +202,10 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
       className={styles.modalOverlay}
       onClick={handleOverlayClick}
     >
-      <div className={styles.modalNavigationWrapper}>
+      <div className={styles.modalContentWrapper}>
+        {/* 左ナビゲーションボタン */}
         <button 
-          className={`${styles.modalNavButton} ${isLoading ? styles.loading : ''}`} 
+          className={`${styles.modalNavButton} ${styles.modalNavButtonLeft} ${isLoading ? styles.loading : ''}`} 
           onClick={(e) => {
             e.stopPropagation();
             navigateToPreviousDay();
@@ -215,6 +216,7 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
           <ChevronLeft size={24} />
         </button>
         
+        {/* メインコンテンツ */}
         <div className={styles.modalContainer}>
           {/* ローディングインジケーター */}
           {isLoading && (
@@ -323,8 +325,9 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
           </div>
         </div>
         
+        {/* 右ナビゲーションボタン */}
         <button 
-          className={`${styles.modalNavButton} ${isLoading ? styles.loading : ''}`} 
+          className={`${styles.modalNavButton} ${styles.modalNavButtonRight} ${isLoading ? styles.loading : ''}`} 
           onClick={(e) => {
             e.stopPropagation();
             navigateToNextDay();

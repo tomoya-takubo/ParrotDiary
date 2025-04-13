@@ -137,16 +137,6 @@
   background-color: #cbd5e0;
 }
 
-/* 活動項目（3行の日記内容）の背景色も変更して見やすくする
-.activityItem {
-  padding: 6px 12px;
-  color: #4a5568;
-  border-radius: 6px;
-  margin-bottom: 4px;
-} */
-
-/* モーダル内のコンテンツスタイル調整 */
-
 /* 活動内容の表示スタイル */
 .activityItem {
   padding: 4px 0;
@@ -210,8 +200,6 @@
   min-height: 120px;
 }
 
-/* 既存のDiaryModal.module.cssに追加するスタイル */
-
 /* パロット表示のコンテナスタイル */
 .parrotContainer {
   display: flex;
@@ -232,8 +220,6 @@
   position: relative;
   width: 100%;
 }
-
-/* 既存のDiaryModal.module.cssに追加または更新するスタイル */
 
 /* エントリーカードのスタイル - 余分な高さを削除 */
 .entryCard {
@@ -292,19 +278,20 @@
   border-bottom: 1px solid #e2e8f0;
 }
 
-/* モーダルナビゲーションのスタイル */
-.modalNavigationWrapper {
+/* モーダル全体のコンテンツラッパー - 新しく追加 */
+.modalContentWrapper {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   width: 100%;
-  max-width: 800px; /* モーダルより少し広く */
-  gap: 1rem;
+  max-width: 700px;
 }
 
+/* ナビゲーションボタンのスタイル - 修正 */
 .modalNavButton {
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background-color: rgba(255, 255, 255, 0.9);
   border: 1px solid #ddd;
@@ -314,19 +301,29 @@
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  z-index: 1001; /* モーダルより前面に */
-  flex-shrink: 0; /* ボタンサイズを固定 */
+  z-index: 51; /* モーダルより前面に */
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
   color: #4a5568;
+}
+
+.modalNavButtonLeft {
+  left: -20px;
+}
+
+.modalNavButtonRight {
+  right: -20px;
 }
 
 .modalNavButton:hover:not(:disabled) {
   background-color: white;
-  transform: scale(1.05);
+  transform: translateY(-50%) scale(1.05);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .modalNavButton:active:not(:disabled) {
-  transform: scale(0.98);
+  transform: translateY(-50%) scale(0.98);
 }
 
 .modalNavButton:disabled {
@@ -335,27 +332,11 @@
   background-color: rgba(229, 231, 235, 0.8);
 }
 
-/* モーダルオーバーレイとモーダルコンテンツの調整 */
-.modalOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 50;
-}
-
-/* 既存のスタイルを一部調整 */
+/* モーダルコンテナのスタイル - 修正 */
 .modalContainer {
   position: relative;
-  flex: 1;
-  max-width: 600px;
   width: 100%;
-  margin: 0 16px;
+  max-width: 600px;
   max-height: 80vh;
   overflow-y: auto;
   background-color: #ffffff;
@@ -402,14 +383,21 @@
 
 /* モバイル向け調整 */
 @media (max-width: 768px) {
-  .modalNavButton {
-    width: 40px;
-    height: 40px;
+  .modalContentWrapper {
+    max-width: 90%;
   }
   
-  .modalNavigationWrapper {
-    max-width: 90%;
-    gap: 0.5rem;
+  .modalNavButton {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .modalNavButtonLeft {
+    left: -10px;
+  }
+  
+  .modalNavButtonRight {
+    right: -10px;
   }
   
   .modalContainer {
@@ -444,28 +432,37 @@
     background-color: #ffffff;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
-  
-  /* ナビゲーションボタンの表示保証 */
-  .modalNavigationWrapper {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    max-width: 800px;
-    gap: 1rem;
-  }
-  
-  .modalNavButton {
-    display: flex;
-    background-color: white;
-    opacity: 1;
-  }
 }
 
 /* 小さいモバイルでさらに調整 */
 @media (max-width: 480px) {
+  .modalContentWrapper {
+    width: 95%;
+  }
+  
+  .modalNavButton {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .modalNavButtonLeft {
+    left: -8px;
+  }
+  
+  .modalNavButtonRight {
+    right: -8px;
+  }
+  
+  .modalContainer {
+    padding: 16px;
+  }
+  
   .entryTag, .editButton {
     font-size: 10px;
     padding: 3px 6px;
+  }
+  
+  .modalTitle {
+    font-size: 20px;
   }
 }
