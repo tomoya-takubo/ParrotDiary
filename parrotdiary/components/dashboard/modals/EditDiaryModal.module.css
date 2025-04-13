@@ -554,11 +554,25 @@
     gap: 6px;
   }
   
-  .selectedTag, .frequentTag {
+  /* 選択済みタグ */
+  .selectedTag {
     padding: 4px 8px;
     font-size: 12px;
+    gap: 4px;
   }
   
+  /* よく使うタグ */
+  .frequentTag {
+    padding: 4px 8px;
+    font-size: 12px;
+    gap: 4px;
+  }
+  
+  /* タグ削除ボタン */
+  .removeTagButton {
+    padding: 1px;
+  }
+
   .removeTagButton {
     padding: 2px;
   }
@@ -600,6 +614,22 @@
     height: 16px;
     top: -6px;
     right: -6px;
+    font-size: 10px;
+  }
+
+  /* さらに小さい画面用 */
+  .selectedTag {
+    padding: 3px 6px;
+    font-size: 11px;
+  }
+  
+  .frequentTag {
+    padding: 3px 6px;
+    font-size: 11px;
+  }
+  
+  /* タグカウント */
+  .tagCount {
     font-size: 10px;
   }
 }
