@@ -73,7 +73,7 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
   const [loadError, setLoadError] = useState<string | null>(null);
   const [showParrotDropdown, setShowParrotDropdown] = useState(false);
   const [selectedCategory] = useState<string | null>(null);
-  const [pageSize] = useState(9); // 一度に表示するパロットの数
+  const [pageSize] = useState(10); // 一度に表示するパロットの数
   const [currentPage, setCurrentPage] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [popularTags, setPopularTags] = useState<ParrotTag[]>([]);
@@ -421,7 +421,11 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
         {Array(maxParrots).fill(null).map((_, index) => (
           <div key={index} className={styles.selectedParrotItem}>
             {selectedParrots[index] ? (
-              <>
+              <div 
+                className={styles.selectedParrotWrapper}
+                onClick={() => removeParrot(selectedParrots[index])}
+                title="タップで削除"
+              >
                 <Image
                   src={selectedParrots[index]}
                   alt={`Selected Parrot ${index + 1}`}
@@ -429,23 +433,12 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
                   height={compact ? 20 : 24}
                   className={styles.parrotGif}
                 />
-                <button
-                  onClick={() => removeParrot(selectedParrots[index])}
-                  className={styles.removeParrotButton}
-                  aria-label="Remove parrot"
-                >
-                  <X size={compact ? 8 : 10} />
-                </button>
-              </>
+              </div>
             ) : (
-              // 未選択の場合は空の枠を表示
-              <div 
-                className={styles.emptyParrotSlot}
-                onClick={handleAddButtonClick}
-              />
+              <div className={styles.emptyParrotSlot} onClick={handleAddButtonClick} />
             )}
           </div>
-        ))}
+          ))}
       </div>
 
       {/* パロット選択ドロップダウン - 追加ボタンをクリックすると表示/非表示が切り替わる */}

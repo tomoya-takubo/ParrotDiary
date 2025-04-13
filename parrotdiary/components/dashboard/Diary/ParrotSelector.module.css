@@ -238,8 +238,8 @@
 /* パロットグリッド */
 .parrotGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); /* 70pxから60pxに減らす */
+  gap: 10px; /* 12pxから10pxに減らす */
   max-height: 165px;
   overflow-y: auto;
   padding: 12px;
@@ -381,7 +381,9 @@
 
 @media (max-width: 480px) {
   .parrotGrid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, 1fr); /* 小さい画面では3列固定 */
+    gap: 6px;
+    padding: 8px;
   }
   
   .parrotTypeSelector {

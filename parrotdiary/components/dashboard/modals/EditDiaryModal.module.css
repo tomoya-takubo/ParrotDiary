@@ -17,18 +17,18 @@
   position: relative;
   background-color: #fff;
   border-radius: 16px;
-  padding: 24px;
+  padding: 20px;
   max-width: 800px;
   width: 100%;
   margin: 0 16px;
-  max-height: 90vh;
+  max-height: 92vh;
   overflow-y: auto;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
 /* モーダルヘッダー */
 .modalHeader {
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .modalTitle {
@@ -111,10 +111,10 @@
 
 /* タグセクション */
 .tagSection {
-  margin-top: 4px;
+  margin-top: 2px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 /* タグ入力コンテナ */
@@ -469,7 +469,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   flex-wrap: wrap;
   gap: 10px;
 }

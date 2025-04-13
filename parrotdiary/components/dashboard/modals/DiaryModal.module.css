@@ -11,18 +11,6 @@
   z-index: 50;
 }
 
-.modalContainer {
-  background-color: #ffffff; /* 白色に変更 */
-  border-radius: 16px;
-  padding: 24px;
-  max-width: 672px;
-  width: 100%;
-  margin: 0 16px;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* 影を軽くする */
-}
-
 .modalHeader {
   display: flex;
   justify-content: space-between;
@@ -473,7 +461,6 @@
     opacity: 1;
   }
 }
-
 
 /* 小さいモバイルでさらに調整 */
 @media (max-width: 480px) {
