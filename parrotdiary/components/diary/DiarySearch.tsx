@@ -48,9 +48,6 @@ const DiarySearch = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [entriesPerPage, setEntriesPerPage] = useState(5);
   const [pageSizeOptions] = useState([5, 10, 20, 50]);
-
-  // viewMode を常に 'list' に設定（PCでの表示も1列に固定）
-  const [viewMode] = useState<'list'>('list');
   // #endregion
 
   // #region データ取得
