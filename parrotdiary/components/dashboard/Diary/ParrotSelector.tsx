@@ -422,7 +422,6 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
           <div key={index} className={styles.selectedParrotItem}>
             {selectedParrots[index] ? (
               <div 
-                className={styles.selectedParrotWrapper}
                 onClick={() => removeParrot(selectedParrots[index])}
                 title="タップで削除"
               >
