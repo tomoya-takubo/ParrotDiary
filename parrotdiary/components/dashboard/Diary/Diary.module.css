@@ -124,13 +124,17 @@
 }
 
 .editButton {
-  font-size: 12px;
-  padding: 4px 8px;
-  border-radius: 9999px;
+  font-size: 12px; /* タグと同じサイズ */
+  padding: 4px 8px; /* タグと同じパディング */
+  border-radius: 9999px; /* タグと同じ角丸 */
   background-color: #f1f5f9;
   color: #64748b;
   border: none;
   cursor: pointer;
+  display: inline-flex; /* flex表示で中央揃えを改善 */
+  align-items: center;
+  justify-content: center;
+  line-height: 1; /* 行の高さを調整して縦位置を揃える */
 }
 
 .editButton:hover {
@@ -898,5 +902,6 @@
   .entryTag, .editButton {
     font-size: 10px;
     padding: 2px 6px;
+    line-height: 1.2;
   }
 }
