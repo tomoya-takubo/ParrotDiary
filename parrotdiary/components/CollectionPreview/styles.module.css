@@ -866,127 +866,6 @@
     justify-content: center;
     text-align: center;
   }
-
-  .tagFilter {
-    width: 100%;
-    margin-top: 0.5rem;
-    justify-content: space-between;
-  }
-  
-  .tagFilterSelect {
-    flex: 1;
-  }
-
-  .modalNavButton {
-    width: 40px;
-    height: 40px;
-  }
-  
-  .modalNavigationWrapper {
-    max-width: 90%;
-    gap: 0.5rem;
-  }
-  
-  .modalContent {
-    padding: 1.5rem;
-  }
-
-  .parrotCard:hover {
-    transform: none; /* ホバー効果を無効化 */
-  }
-  
-  /* タップ時のエフェクト */
-  .parrotCard:active {
-    transform: scale(0.98);
-  }
-  
-  /* アニメーションの最適化 */
-  .loadingSpinner {
-    border-width: 3px;
-  }
-  
-  /* 進捗バー */
-  .progressSection {
-    padding: 1rem;
-  }
-  
-  .progressInfo {
-    flex-direction: column;
-    align-items: flex-start;
-    margin-bottom: 0.5rem;
-  }
-  
-  .progressLabel {
-    margin-bottom: 0.1rem;
-  }
-  
-  .progressValue {
-    font-size: 1.1rem;
-  }
-
-  .mobileFilterToggle {
-    display: block !important; /* !importantで優先度を上げる */
-    margin-bottom: 1rem;
-  }
-  
-  .filterHeader {
-    display: none;
-  }
-  
-  .filterHeader.show {
-    display: flex;
-  }
-
-  .mobileFilterToggle {
-    display: block;
-    margin-bottom: 1rem;
-  }
-  
-  /* 初期状態では非表示 */
-  .filterHeader {
-    display: none;
-  }
-  
-  /* showクラスが付いたら表示 */
-  .filterHeader.show {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-  }
-  
-  .filterHeader > div {
-    width: 100%;
-    margin-bottom: 0.75rem;
-  }
-  
-  .searchBox {
-    max-width: none;
-  }
-
-  /* モーダルナビゲーションのモバイル対応 */
-  .modalNavigationWrapper {
-    max-width: 90%;
-    position: relative;
-  }
-  
-  .modalContent {
-    width: 100%;
-    margin: 0 40px; /* ナビゲーションボタンの幅分余白を確保 */
-  }
-  
-  .modalNavButton {
-    width: 36px;
-    height: 36px;
-  }
-  
-  .modalNavButtonLeft {
-    left: 0;
-  }
-  
-  .modalNavButtonRight {
-    right: 0;
-  }
-
 }
 
 /* styles.module.css に以下のタグ関連のスタイルを追加 */
@@ -1229,40 +1108,17 @@
   color: #808080;
 }
 
-.modalNavButton:hover {
-  background-color: white;
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.modalNavButton:active {
-  transform: scale(0.98);
-}
-
-/* モーダルオーバーレイとモーダルコンテンツの修正 */
-.modalOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modalContent {
-  position: relative;
-  flex: 1;
-  max-width: 600px;
-  max-height: 90vh;
-  padding: 2rem;
-  border-radius: 1rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  overflow-y: auto;
-  /* 背景色は既存のmodalContent[UR/SR/R/N]クラスで設定 */
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .tagFilter {
+    width: 100%;
+    margin-top: 0.5rem;
+    justify-content: space-between;
+  }
+  
+  .tagFilterSelect {
+    flex: 1;
+  }
 }
 
 /* モーダルナビゲーションのスタイル */
@@ -1346,6 +1202,123 @@
 .modalContentN + .modalNavButton,
 .modalContentN ~ .modalNavButton {
   color: #808080;
+}
+
+/* モバイル向け調整 */
+@media (max-width: 768px) {
+  .modalNavButton {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .modalNavigationWrapper {
+    max-width: 90%;
+    gap: 0.5rem;
+  }
+  
+  .modalContent {
+    padding: 1.5rem;
+  }
+}
+
+/* モーダルナビゲーションのスタイル */
+.modalNavigationWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 800px; /* モーダルより少し広く */
+  gap: 1rem;
+}
+
+.modalNavButton {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid #ddd;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1001; /* モーダルより前面に */
+  flex-shrink: 0; /* ボタンサイズを固定 */
+}
+
+.modalNavButton:hover {
+  background-color: white;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.modalNavButton:active {
+  transform: scale(0.98);
+}
+
+/* モーダルオーバーレイとモーダルコンテンツの修正 */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  position: relative;
+  flex: 1;
+  max-width: 600px;
+  max-height: 90vh;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  overflow-y: auto;
+  /* 背景色は既存のmodalContent[UR/SR/R/N]クラスで設定 */
+}
+
+/* レア度に応じたナビゲーションボタンの色調整 */
+.modalContentUR + .modalNavButton,
+.modalContentUR ~ .modalNavButton {
+  color: #FF6B00;
+}
+
+.modalContentSR + .modalNavButton,
+.modalContentSR ~ .modalNavButton {
+  color: #CC33FF;
+}
+
+.modalContentR + .modalNavButton,
+.modalContentR ~ .modalNavButton {
+  color: #3399FF;
+}
+
+.modalContentN + .modalNavButton,
+.modalContentN ~ .modalNavButton {
+  color: #808080;
+}
+
+/* モバイル向け調整 */
+@media (max-width: 768px) {
+  .modalNavButton {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .modalNavigationWrapper {
+    max-width: 90%;
+    gap: 0.5rem;
+  }
+  
+  .modalContent {
+    padding: 1.5rem;
+  }
 }
 
 /* styles.module.css に追加 */
@@ -1487,6 +1460,11 @@
     align-self: stretch;
   }
   
+  .modalNavButton {
+    width: 36px;
+    height: 36px;
+  }
+
   .paginationControls {
     gap: 4px;
   }
@@ -1523,16 +1501,6 @@
     width: 100%;
     justify-content: center;
   }
-
-  .modalContent {
-    padding: 1rem;
-    margin: 0 30px; /* さらに余白を減らす */
-  }
-  
-  .modalNavButton {
-    width: 32px;
-    height: 32px;
-  }
 }
 
 /* styles.module.css に追加 */
@@ -1553,6 +1521,42 @@
   .loginButton {
     width: 100%;
     padding: 0.75rem;
+  }
+}
+
+/* styles.module.css に追加 */
+@media (max-width: 768px) {
+  .parrotCard:hover {
+    transform: none; /* ホバー効果を無効化 */
+  }
+  
+  /* タップ時のエフェクト */
+  .parrotCard:active {
+    transform: scale(0.98);
+  }
+  
+  /* アニメーションの最適化 */
+  .loadingSpinner {
+    border-width: 3px;
+  }
+  
+  /* 進捗バー */
+  .progressSection {
+    padding: 1rem;
+  }
+  
+  .progressInfo {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+  }
+  
+  .progressLabel {
+    margin-bottom: 0.1rem;
+  }
+  
+  .progressValue {
+    font-size: 1.1rem;
   }
 }
 
@@ -1612,16 +1616,17 @@
   text-align: center;
 }
 
-.modalNavButtonLeft, .modalNavButtonRight {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.modalNavButtonLeft {
-  left: 10px;
-}
-
-.modalNavButtonRight {
-  right: 10px;
+@media (max-width: 768px) {
+  .mobileFilterToggle {
+    display: block;
+    margin-bottom: 1rem;
+  }
+  
+  .filterHeader {
+    display: none;
+  }
+  
+  .filterHeader.show {
+    display: flex;
+  }
 }
