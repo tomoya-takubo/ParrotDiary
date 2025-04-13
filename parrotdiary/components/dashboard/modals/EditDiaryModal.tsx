@@ -712,7 +712,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
                       className={styles.removeTagButton}
                       aria-label={`${tag}を削除`}
                     >
-                      <X size={14} />
+                      <X size={12} />
                     </button>
                   </span>
                 ))}
@@ -729,7 +729,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
                 selectedParrots={selectedParrots}
                 onParrotsChange={setSelectedParrots}
                 maxParrots={5}
-                compact={false}
+                compact={window.innerWidth <= 480} // 画面幅に応じてコンパクトモードを切り替え
                 forceOpen={true} // ← 新しく追加するprops
               />
             )}

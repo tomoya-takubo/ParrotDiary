@@ -226,6 +226,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  height: 28px; /* 明示的な高さ指定 */
+  box-sizing: border-box; /* パディングを含む高さに */
 }
 
 .frequentTag:hover {
@@ -250,14 +252,16 @@
 /* 選択済みタグ */
 .selectedTag {
   padding: 6px 12px;
-  background-color: #f0f7ff; /* 非常に薄い青色 */
+  background-color: #f0f7ff; 
   color: #0284c7;
-  border: none; /* 枠線なし */
+  border: none;
   border-radius: 9999px;
   font-size: 14px;
   display: flex;
   align-items: center;
   gap: 6px;
+  height: 28px; /* 明示的な高さ指定 */
+  box-sizing: border-box; /* パディングを含む高さに */
 }
 
 /* タグ削除ボタン */
@@ -352,16 +356,6 @@
   margin-bottom: 15px;
 }
 
-.parrotOption {
-  width: 40px;
-  height: 40px;
-  cursor: pointer;
-  border: 2px solid transparent;
-  border-radius: 5px;
-  padding: 3px;
-  transition: all 0.2s ease;
-}
-
 .parrotOption:hover {
   background-color: #f0f0f0;
 }
@@ -377,12 +371,6 @@
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 8px;
-}
-
-.selectedParrotItem {
-  position: relative;
-  width: 40px;
-  height: 40px;
 }
 
 .removeParrotButton {
@@ -516,7 +504,10 @@
   padding: 3px;
   transition: all 0.2s ease;
   flex-shrink: 0;
-  box-sizing: content-box;
+  box-sizing: border-box; /* パディングとボーダーを含む */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* 選択済みパロットアイテムのサイズを固定する */
@@ -525,7 +516,10 @@
   width: 40px;
   height: 40px;
   flex-shrink: 0;
-  box-sizing: content-box;
+  box-sizing: border-box; /* サイズ計算を明確に */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @media (max-width: 768px) {
@@ -555,10 +549,12 @@
   }
   
   /* 選択済みタグ */
+  /* 選択済みタグ */
   .selectedTag {
     padding: 4px 8px;
     font-size: 12px;
     gap: 4px;
+    height: 24px; /* タブレット表示では高さを少し小さく */
   }
   
   /* よく使うタグ */
@@ -566,8 +562,9 @@
     padding: 4px 8px;
     font-size: 12px;
     gap: 4px;
+    height: 24px; /* タブレット表示では高さを少し小さく */
   }
-  
+
   /* タグ削除ボタン */
   .removeTagButton {
     padding: 1px;
@@ -575,6 +572,11 @@
 
   .removeTagButton {
     padding: 2px;
+  }
+
+  .selectedParrotItem {
+    width: 36px;
+    height: 36px;
   }
 }
 
@@ -621,15 +623,56 @@
   .selectedTag {
     padding: 3px 6px;
     font-size: 11px;
+    height: 22px; /* スマホでさらに小さく */
+    line-height: 1; /* 行の高さを最小に */
   }
   
   .frequentTag {
     padding: 3px 6px;
     font-size: 11px;
+    height: 22px; /* スマホでさらに小さく */
+    line-height: 1; /* 行の高さを最小に */
   }
-  
+
   /* タグカウント */
   .tagCount {
     font-size: 10px;
+  }
+
+  /* パロットのさらなるサイズ調整 */
+  .parrotOption {
+    width: 30px;
+    height: 30px;
+    padding: 2px;
+    border-width: 1px; /* ボーダーも薄く */
+  }
+  
+  .selectedParrotItem {
+    width: 30px;
+    height: 30px;
+  }
+  
+  /* パロットセレクションエリアの調整 */
+  .modalParrotSection {
+    padding-top: 10px;
+    gap: 8px;
+  }
+  
+  /* タグ削除ボタンをコンパクトに */
+  .removeTagButton {
+    padding: 1px;
+    width: 14px;
+    height: 14px;
+  }
+  
+  .removeTagButton svg {
+    width: 10px;
+    height: 10px;
+  }
+  
+  /* タグコンテナの間隔調整 */
+  .selectedTagsContainer, 
+  .frequentTagsList {
+    gap: 4px; /* より密集させる */
   }
 }

@@ -135,6 +135,10 @@
   align-items: center;
   justify-content: center;
   line-height: 1; /* 行の高さを調整して縦位置を揃える */
+  /* 高さを明示的に指定して一貫性を持たせる */
+  height: 24px;
+  /* ボックスサイジングを追加して、パディングを含む全体のサイズを制御 */
+  box-sizing: border-box;
 }
 
 .editButton:hover {
@@ -899,9 +903,26 @@
     font-size: 12px;
   }
   
-  .entryTag, .editButton {
+  /* タグと編集ボタンを分離して個別にスタイリング */
+  .entryTag {
     font-size: 10px;
     padding: 2px 6px;
     line-height: 1.2;
+    /* 高さを明示的に指定 */
+    height: 20px;
+    box-sizing: border-box;
+  }
+  
+  .editButton {
+    font-size: 10px;
+    padding: 2px 6px;
+    line-height: 1.2;
+    /* 高さを明示的に指定してタグと揃える */
+    height: 20px;
+    /* ボックスサイジングを明示的に指定 */
+    box-sizing: border-box;
+    /* 必要に応じてフレックス特性を調整 */
+    min-width: 0;
+    white-space: nowrap;
   }
 }
