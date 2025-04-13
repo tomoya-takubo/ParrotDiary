@@ -496,12 +496,6 @@
   .closeButton {
     padding: 4px;
   }
-  
-  /* スマホでの縦スクロール時の安定性向上 */
-  .entriesContainer {
-    max-height: 65vh;
-    overflow-y: auto;
-  }
 
   .searchContainer {
     margin-bottom: 12px;
@@ -547,8 +541,14 @@
   
   .entryTag {
     white-space: nowrap;
-    font-size: 12px;
-    padding: 3px 6px;
+    font-size: 11px; /* 小さくする */
+    padding: 2px 6px; /* パディングを縮小 */
+    border-radius: 16px; /* 角丸を小さく */
+  }
+  
+  .editButton {
+    font-size: 11px; /* 小さくする */
+    padding: 2px 6px; /* パディングを縮小 */
   }
   
   .entryContent p {
@@ -717,20 +717,15 @@
 @media (hover: none) {
   /* タッチデバイス向け調整 */
   .entryTag {
-    padding: 6px 10px; /* タップ領域を拡大 */
+    padding: 4px 8px; /* タップ領域を適度に */
   }
   
   .tagButton {
-    padding: 8px 12px; /* タップ領域を拡大 */
+    padding: 6px 10px; /* タップ領域を適度に */
   }
   
   .editButton {
-    padding: 6px 10px; /* タップ領域を拡大 */
-  }
-  
-  .paginationButton {
-    min-width: 44px; /* Appleガイドラインに準拠したタップサイズ */
-    height: 44px;
+    padding: 4px 8px; /* タップ領域を適度に */
   }
   
   /* ホバーエフェクトを無効化 */
@@ -802,7 +797,7 @@
   }
 
   .entriesContainer {
-    will-change: transform; /* スクロールパフォーマンス向上 */
+    will-change: auto; /* transformよりautoの方が良い */
   }
   
   /* イベントデリゲーションのヒント */
