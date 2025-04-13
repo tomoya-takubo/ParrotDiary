@@ -11,7 +11,7 @@ type ActivityDiaryEntry = {
   parrots?: string[];
 };
 
-// DiaryModalの型
+// 修正したDiaryModalの型（日付ナビゲーション機能を追加）
 type DiaryModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -20,20 +20,18 @@ type DiaryModalProps = {
   onDataUpdated: () => void;
   isToday: boolean;
   onEditEntry?: (entry: ActivityDiaryEntry) => void;
-  onDateChange?: (newDate: string) => void;
+  onDateChange?: (newDate: string) => void; // 日付変更ハンドラを追加
 };
 
 const DiaryModal: React.FC<DiaryModalProps> = ({ 
   isOpen, 
   onClose, 
   date, 
-  entries,
+  entries, // すでにパロット情報を含むエントリー
   isToday,
   onEditEntry,
-  onDateChange
+  onDateChange // 日付変更ハンドラを受け取る
 }) => {
-  // ローディングインジケーター表示のための状態
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
@@ -59,23 +57,20 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
     }
   };
 
-  // 日付をyyyy年MM月dd日形式にフォーマットする関数
-  const formatDateToJapanese = (date: Date): string => {
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    
-    return `${year}年${month}月${day}日`;
-  };
-
   // 前日へナビゲート
   const navigateToPreviousDay = () => {
-    if (isLoading || !date || !onDateChange) return;
+    if (isLoading) return; // ローディング中は操作を無効化
+    
+    console.log('前日ボタンがクリックされました');
+    console.log('現在の日付:', date);
+    console.log('onDateChangeは存在しますか?', !!onDateChange);
+    
+    if (!date || !onDateChange) return;
     
     try {
-      setIsLoading(true);
+      setIsLoading(true); // ローディング状態を開始
       
-      // 日付文字列をDateオブジェクトに変換
+      // 日付文字列をDateオブジェクトに変換（より堅牢な方法）
       const matches = date.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
       if (!matches) {
         console.error('日付形式が一致しません:', date);
@@ -89,6 +84,8 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
       const month = parseInt(monthStr) - 1; // JavaScriptの月は0-11
       const day = parseInt(dayStr);
       
+      console.log('解析された日付:', year, month + 1, day);
+      
       const currentDate = new Date(year, month, day);
       
       // 前日の日付を計算
@@ -96,6 +93,7 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
       
       // yyyy年MM月dd日 形式に変換
       const newDateStr = formatDateToJapanese(currentDate);
+      console.log('新しい日付:', newDateStr);
       
       // 親コンポーネントに通知
       onDateChange(newDateStr);
@@ -107,12 +105,18 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
 
   // 翌日へナビゲート
   const navigateToNextDay = () => {
-    if (isLoading || !date || !onDateChange) return;
+    if (isLoading) return; // ローディング中は操作を無効化
+    
+    console.log('翌日ボタンがクリックされました');
+    console.log('現在の日付:', date);
+    console.log('onDateChangeは存在しますか?', !!onDateChange);
+    
+    if (!date || !onDateChange) return;
     
     try {
-      setIsLoading(true);
+      setIsLoading(true); // ローディング状態を開始
       
-      // 日付文字列をDateオブジェクトに変換
+      // 日付文字列をDateオブジェクトに変換（より堅牢な方法）
       const matches = date.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
       if (!matches) {
         console.error('日付形式が一致しません:', date);
@@ -125,6 +129,8 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
       const year = parseInt(yearStr);
       const month = parseInt(monthStr) - 1; // JavaScriptの月は0-11
       const day = parseInt(dayStr);
+      
+      console.log('解析された日付:', year, month + 1, day);
       
       const currentDate = new Date(year, month, day);
       
@@ -138,6 +144,7 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
       // 今日より未来の日付は選択できないようにする
       if (currentDate <= today) {
         const newDateStr = formatDateToJapanese(currentDate);
+        console.log('新しい日付:', newDateStr);
         onDateChange(newDateStr);
       } else {
         console.log('未来の日付は選択できません');
@@ -148,12 +155,24 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
       setIsLoading(false);
     }
   };
+
+  // 日付をyyyy年MM月dd日形式にフォーマットする関数
+  const formatDateToJapanese = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    
+    return `${year}年${month}月${day}日`;
+  };
   
   // 日付変更が完了したときの処理
   useEffect(() => {
     // 日付が変更されたらローディング状態を解除
     setIsLoading(false);
   }, [entries]);
+
+  // ローディングインジケーター表示のための状態
+  const [isLoading, setIsLoading] = useState(false);
 
   // キーボードでのナビゲーション
   useEffect(() => {
@@ -162,7 +181,7 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
       
       if (e.key === 'ArrowLeft') {
         navigateToPreviousDay();
-      } else if (e.key === 'ArrowRight' && !isToday) {
+      } else if (e.key === 'ArrowRight') {
         navigateToNextDay();
       } else if (e.key === 'Escape') {
         onClose();
@@ -174,7 +193,7 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen, date, isToday]);
+  }, [isOpen, date]);
 
   if (!isOpen) return null;
 
@@ -183,143 +202,138 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
       className={styles.modalOverlay}
       onClick={handleOverlayClick}
     >
-      <div className={styles.modalContainer}>
-        {/* ローディングインジケーター */}
-        {isLoading && (
-          <div className={styles.loadingIndicator}>
-            <div className={styles.spinner}></div>
-          </div>
-        )}
-        
-        {/* 日付ナビゲーション - モーダル内部に配置 */}
-        <div className={styles.dateNavigation}>
-          <button 
-            className={styles.dateNavButton}
-            onClick={navigateToPreviousDay}
-            disabled={isLoading}
-            aria-label="前日"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          
-          <div className={styles.dateDisplay}>
-            <Calendar size={20} />
-            <span>{date}</span>
-          </div>
-          
-          <button 
-            className={styles.dateNavButton}
-            onClick={navigateToNextDay}
-            disabled={isToday || isLoading}
-            aria-label="翌日"
-          >
-            <ChevronRight size={20} />
-          </button>
-        </div>
-        
-        {/* 閉じるボタン */}
+      <div className={styles.modalNavigationWrapper}>
         <button 
-          onClick={onClose} 
-          className={styles.closeButton}
+          className={`${styles.modalNavButton} ${isLoading ? styles.loading : ''}`} 
+          onClick={(e) => {
+            e.stopPropagation();
+            navigateToPreviousDay();
+          }}
+          aria-label="前日"
+          disabled={isLoading}
         >
-          <X size={24} />
+          <ChevronLeft size={24} />
         </button>
-
-        {/* 記録追加ボタン */}
-        {isToday && (
-          <div className={styles.addRecordTop}>
-            <button 
-              className={styles.addRecordButton}
-              onClick={handleAddRecordClick}
-            >
-              <Clock size={20} />
-              <span>記録を追加</span>
-            </button>
-          </div>
-        )}
-
-        {/* エントリーリスト */}
-        <div className={styles.entriesContainer}>
-          {entries.length > 0 ? (
-            entries.map((entry, index) => (
-              <div key={index} className={styles.entryCard}>
-                {/* エントリーヘッダー */}
-                <div className={styles.entryHeader}>
-                  <div className={styles.entryTime}>
-                    <Clock size={16} />
-                    <span>{entry.time}</span>
-                  </div>
-                  <div className={styles.entryTags}>
-                    {entry.tags.map((tag, tagIndex) => (
-                      <span
-                        key={tagIndex}
-                        className={styles.entryTag}
-                      >
-                        #{tag}
-                      </span>
-                    ))}
-                    {/* 編集ボタン */}
-                    <button
-                      onClick={() => handleEditClick(entry)}
-                      className={styles.editButton}
-                    >
-                      <Edit2 size={14} />
-                      <span>編集</span>
-                    </button>
-                  </div>
-                </div>
-                
-                {/* アクティビティリストとパロット表示 */}
-                <div className={styles.entryContent}>
-                  {/* アクティビティリスト */}
-                  <div className={styles.activitiesSection}>
-                    {entry.activities.filter(Boolean).map((activity, actIndex) => (
-                      <div 
-                        key={actIndex} 
-                        className={styles.activityItem}
-                      >
-                        {activity}
-                      </div>
-                    ))}
-                  </div>
-                
-                  {/* パロットGIFの表示 */}
-                  {entry.parrots && entry.parrots.length > 0 ? (
-                    <div className={styles.parrotContainer}>
-                      {entry.parrots.map((parrot, parrotIndex) => (
-                        <img 
-                          key={parrotIndex}
-                          src={parrot}
-                          alt={`Parrot ${parrotIndex + 1}`}
-                          width={24}
-                          height={24}
-                          className={styles.parrotGif}
-                        />
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className={styles.noEntriesMessage}>
-              <div className={styles.noEntriesIcon}>📝</div>
-              <p>この日の記録はありません</p>
-              {isToday && <p className={styles.noEntriesSubtext}>下の「記録を追加」ボタンから新しい記録を作成できます</p>}
+        
+        <div className={styles.modalContainer}>
+          {/* ローディングインジケーター */}
+          {isLoading && (
+            <div className={styles.loadingIndicator}>
+              <div className={styles.spinner}></div>
             </div>
           )}
+          
+          {/* ヘッダー */}
+          <div className={styles.modalHeader}>
+            <div className={styles.headerTitleContainer}>
+              <Calendar className={styles.diaryIcon} size={24} />
+              <h2 className={styles.modalTitle}>{date}の記録</h2>
+            </div>
+            <button 
+              onClick={onClose} 
+              className={styles.closeButton}
+            >
+              <X size={24} />
+            </button>
+          </div>
+
+          {/* 記録追加ボタンを上に移動 */}
+          {isToday && (
+            <div className={styles.addRecordTop}>
+              <button 
+                className={styles.addRecordButton}
+                onClick={handleAddRecordClick}
+              >
+                <Clock size={20} />
+                <span>記録を追加</span>
+              </button>
+            </div>
+          )}
+
+          {/* エントリーリスト */}
+          <div className={styles.entriesContainer}>
+            {entries.length > 0 ? (
+              entries.map((entry, index) => (
+                <div key={index} className={styles.entryCard}>
+                  {/* エントリーヘッダー */}
+                  <div className={styles.entryHeader}>
+                    <div className={styles.entryTime}>
+                      <Clock size={16} />
+                      <span>{entry.time}</span>
+                    </div>
+                    <div className={styles.entryTags}>
+                      {entry.tags.map((tag, tagIndex) => (
+                        <span
+                          key={tagIndex}
+                          className={styles.entryTag}
+                        >
+                          #{tag}
+                        </span>
+                      ))}
+                      {/* 編集ボタン */}
+                      <button
+                        onClick={() => handleEditClick(entry)}
+                        className={styles.editButton}
+                      >
+                        <Edit2 size={14} />
+                        編集
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* アクティビティリストとパロット表示 */}
+                  <div className={styles.entryContent}>
+                    {/* アクティビティリスト */}
+                    <div className={styles.activitiesSection}>
+                      {entry.activities.filter(Boolean).map((activity, actIndex) => (
+                        <div 
+                          key={actIndex} 
+                          className={styles.activityItem}
+                        >
+                          {activity}
+                        </div>
+                      ))}
+                    </div>
+                  
+                    {/* パロットGIFの表示 - imgタグを使用 */}
+                    {entry.parrots && entry.parrots.length > 0 ? (
+                      <div className={styles.parrotContainer}>
+                        {entry.parrots.map((parrot, parrotIndex) => (
+                          <img 
+                            key={parrotIndex}
+                            src={parrot}
+                            alt={`Parrot ${parrotIndex + 1}`}
+                            width={24}
+                            height={24}
+                            className={styles.parrotGif}
+                          />
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className={styles.noEntriesMessage}>
+                <div className={styles.noEntriesIcon}>📝</div>
+                <p>この日の記録はありません</p>
+                {isToday && <p className={styles.noEntriesSubtext}>下の「記録を追加」ボタンから新しい記録を作成できます</p>}
+              </div>
+            )}
+          </div>
         </div>
         
-        {/* 元のナビゲーション - 非表示にするため残しておく */}
-        <div className={styles.modalNavigationWrapper}>
-          <button className={styles.modalNavButton} disabled>
-            <ChevronLeft size={24} />
-          </button>
-          
-          <button className={styles.modalNavButton} disabled>
-            <ChevronRight size={24} />
-          </button>
-        </div>
+        <button 
+          className={`${styles.modalNavButton} ${isLoading ? styles.loading : ''}`} 
+          onClick={(e) => {
+            e.stopPropagation();
+            navigateToNextDay();
+          }}
+          aria-label="翌日"
+          disabled={isToday || isLoading} // 今日の場合またはローディング中は翌日ボタンを無効化
+        >
+          <ChevronRight size={24} />
+        </button>
       </div>
     </div>
   );
