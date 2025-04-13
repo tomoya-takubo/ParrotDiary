@@ -1630,3 +1630,91 @@
     display: flex;
   }
 }
+
+/**
+ * styles.module.css に追加するコード
+ * タグサイズのレスポンシブ対応：タブレットとモバイル向けの調整
+ */
+
+/* styles.module.css ファイル末尾に以下のコードを追加する */
+
+/* タグサイズの追加調整 - 既存のメディアクエリと合わせて適用 */
+@media (max-width: 768px) {
+  /* カード内のタグ表示サイズを縮小 */
+  .cardTagsContainer {
+    gap: 0.15rem;
+    margin-top: 0.15rem;
+  }
+  
+  .cardTagItem {
+    padding: 0.1rem 0.25rem;
+    font-size: 0.55rem;
+    max-width: 55px;
+  }
+  
+  .moreTagsBadge {
+    padding: 0.1rem 0.25rem;
+    font-size: 0.55rem;
+  }
+  
+  /* モーダル内のタグサイズも調整 */
+  .tagsContainer {
+    gap: 0.3rem;
+  }
+  
+  .tagItem {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.7rem;
+  }
+  
+  .removeTagButton {
+    width: 0.8rem;
+    height: 0.8rem;
+    font-size: 0.65rem;
+  }
+}
+
+/* スマホ向けのさらなる調整 - 既存の480px設定を補完 */
+@media (max-width: 480px) {
+  /* カード内のタグをより小さく */
+  .cardTagItem, 
+  .moreTagsBadge {
+    padding: 0.05rem 0.15rem;
+    font-size: 0.45rem;
+    max-width: 40px;
+  }
+  
+  /* モーダル内のタグも極小サイズに */
+  .tagItem {
+    padding: 0.1rem 0.25rem;
+    font-size: 0.58rem;
+  }
+  
+  .removeTagButton {
+    width: 0.65rem;
+    height: 0.65rem;
+    font-size: 0.58rem;
+    min-height: auto; /* hover: none メディアクエリの設定を上書き */
+  }
+}
+
+/* 画面サイズが非常に小さい場合の極小調整 */
+@media (max-width: 320px) {
+  .cardTagItem, 
+  .moreTagsBadge {
+    padding: 0.03rem 0.1rem;
+    font-size: 0.4rem;
+    max-width: 32px;
+  }
+  
+  .tagItem {
+    padding: 0.08rem 0.18rem;
+    font-size: 0.5rem;
+  }
+  
+  .removeTagButton {
+    width: 0.6rem;
+    height: 0.6rem;
+    font-size: 0.5rem;
+  }
+}
