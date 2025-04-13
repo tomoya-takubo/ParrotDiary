@@ -96,6 +96,7 @@ export default function CollectionPreview() {
     <button 
       className={styles.filterToggleButton}
       onClick={() => setShowFilterMenu(!showFilterMenu)}
+      aria-expanded={showFilterMenu}
     >
       {showFilterMenu ? 'フィルターを閉じる' : 'フィルターを開く'}
     </button>
@@ -563,7 +564,7 @@ const ParrotModal = ({ parrot, onClose, allParrots }: {
       {/* 左右ナビゲーションボタン（モーダルの外側に配置） */}
       <div className={styles.modalNavigationWrapper}>
         <button 
-          className={styles.modalNavButton} 
+          className={`${styles.modalNavButton} ${styles.modalNavButtonLeft}`}
           onClick={(e) => {
             e.stopPropagation(); // オーバーレイクリックによるモーダル閉じを防止
             navigateToPreviousParrot();
@@ -671,7 +672,7 @@ const ParrotModal = ({ parrot, onClose, allParrots }: {
         </div>
         
         <button 
-          className={styles.modalNavButton} 
+          className={`${styles.modalNavButton} ${styles.modalNavButtonRight}`}
           onClick={(e) => {
             e.stopPropagation(); // オーバーレイクリックによるモーダル閉じを防止
             navigateToNextParrot();
@@ -1019,98 +1020,96 @@ const ParrotModal = ({ parrot, onClose, allParrots }: {
         <div className={styles.mobileFilterToggle}>
           <FilterButton />
         </div>
-        <div className={`${styles.filterHeader} ${showFilterMenu ? styles.show : styles.hide}`}>
-          <div className={styles.filterHeader}>
-            <div className={styles.searchBox}>
-              <Search className={styles.searchIcon} size={20} />
-              <input
-                type="text"
-                placeholder="パロットを検索"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className={styles.searchInput}
-              />
-            </div>
-
-            <div className={styles.sortButtons}>
-              <button
-                className={`${styles.sortButton} ${sortType === 'display_order' ? styles.active : ''}`}
-                onClick={() => setSortType('display_order')}
-              >
-                表示順
-              </button>
-              <button
-                className={`${styles.sortButton} ${sortType === 'rarity' ? styles.active : ''}`}
-                onClick={() => setSortType('rarity')}
-              >
-                レア度順
-              </button>
-              <button
-                className={`${styles.sortButton} ${sortType === 'obtained_date' ? styles.active : ''}`}
-                onClick={() => setSortType('obtained_date')}
-                disabled={!isAuthenticated}
-                title={!isAuthenticated ? "ログインすると獲得日順で表示できます" : ""}
-              >
-                獲得日順
-              </button>
-            </div>
-
-            <div className={styles.obtainedFilter}>
-              <button
-                className={`${styles.obtainedButton} ${showObtainedOnly ? styles.active : ''}`}
-                onClick={() => setShowObtainedOnly(!showObtainedOnly)}
-                disabled={!isAuthenticated}
-                title={!isAuthenticated ? "ログインすると獲得済みのみの表示ができます" : ""}
-              >
-                {showObtainedOnly ? '全て表示' : '獲得済みのみ'}
-              </button>
-            </div>
-
-            <div className={styles.rarityFilter}>
-              <button
-                className={`${styles.rarityButton} ${searchRarity === null ? styles.active : ''}`}
-                onClick={() => setSearchRarity(null)}
-              >
-                全レアリティ
-              </button>
-              {['N', 'R', 'SR', 'UR'].map((rarity) => (
-                <button
-                  key={rarity}
-                  className={`${styles.rarityButton} ${searchRarity === rarity ? styles.active : ''}`}
-                  onClick={() => setSearchRarity(rarity)}
-                >
-                  {rarity}
-                </button>
-              ))}
-            </div>
-            {isAuthenticated && allTags.length > 0 && (
-            <div className={styles.tagFilter}>
-              <div className={styles.tagFilterLabel}>
-                タグで絞り込み:
-              </div>
-              <select
-                className={styles.tagFilterSelect}
-                value={searchTag || ''}
-                onChange={(e) => setSearchTag(e.target.value || null)}
-              >
-                <option value="">すべてのタグ</option>
-                {allTags.map((tag) => (
-                  <option key={tag} value={tag}>
-                    {tag}
-                  </option>
-                ))}
-              </select>
-              {searchTag && (
-                <button
-                  className={styles.clearTagFilterButton}
-                  onClick={() => setSearchTag(null)}
-                >
-                  クリア
-                </button>
-              )}
-            </div>
-          )}
+        <div className={`${styles.filterHeader} ${showFilterMenu ? styles.show : ''}`}>
+          <div className={styles.searchBox}>
+            <Search className={styles.searchIcon} size={20} />
+            <input
+              type="text"
+              placeholder="パロットを検索"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className={styles.searchInput}
+            />
           </div>
+
+          <div className={styles.sortButtons}>
+            <button
+              className={`${styles.sortButton} ${sortType === 'display_order' ? styles.active : ''}`}
+              onClick={() => setSortType('display_order')}
+            >
+              表示順
+            </button>
+            <button
+              className={`${styles.sortButton} ${sortType === 'rarity' ? styles.active : ''}`}
+              onClick={() => setSortType('rarity')}
+            >
+              レア度順
+            </button>
+            <button
+              className={`${styles.sortButton} ${sortType === 'obtained_date' ? styles.active : ''}`}
+              onClick={() => setSortType('obtained_date')}
+              disabled={!isAuthenticated}
+              title={!isAuthenticated ? "ログインすると獲得日順で表示できます" : ""}
+            >
+              獲得日順
+            </button>
+          </div>
+
+          <div className={styles.obtainedFilter}>
+            <button
+              className={`${styles.obtainedButton} ${showObtainedOnly ? styles.active : ''}`}
+              onClick={() => setShowObtainedOnly(!showObtainedOnly)}
+              disabled={!isAuthenticated}
+              title={!isAuthenticated ? "ログインすると獲得済みのみの表示ができます" : ""}
+            >
+              {showObtainedOnly ? '全て表示' : '獲得済みのみ'}
+            </button>
+          </div>
+
+          <div className={styles.rarityFilter}>
+            <button
+              className={`${styles.rarityButton} ${searchRarity === null ? styles.active : ''}`}
+              onClick={() => setSearchRarity(null)}
+            >
+              全レアリティ
+            </button>
+            {['N', 'R', 'SR', 'UR'].map((rarity) => (
+              <button
+                key={rarity}
+                className={`${styles.rarityButton} ${searchRarity === rarity ? styles.active : ''}`}
+                onClick={() => setSearchRarity(rarity)}
+              >
+                {rarity}
+              </button>
+            ))}
+          </div>
+          {isAuthenticated && allTags.length > 0 && (
+          <div className={styles.tagFilter}>
+            <div className={styles.tagFilterLabel}>
+              タグで絞り込み:
+            </div>
+            <select
+              className={styles.tagFilterSelect}
+              value={searchTag || ''}
+              onChange={(e) => setSearchTag(e.target.value || null)}
+            >
+              <option value="">すべてのタグ</option>
+              {allTags.map((tag) => (
+                <option key={tag} value={tag}>
+                  {tag}
+                </option>
+              ))}
+            </select>
+            {searchTag && (
+              <button
+                className={styles.clearTagFilterButton}
+                onClick={() => setSearchTag(null)}
+              >
+                クリア
+              </button>
+            )}
+          </div>
+        )}
         </div>
       </div>
       
