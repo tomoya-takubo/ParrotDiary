@@ -59,8 +59,8 @@ button:focus {
   input[type="button"],
   input[type="submit"],
   input[type="reset"] {
-    min-height: 44px; /* Apple推奨のタップターゲット最小サイズ */
-    min-width: 44px;
+    min-height: 22px; /* Apple推奨のタップターゲット最小サイズ */
+    min-width: 22px;
   }
   
   /* 要素間の間隔を適切に確保 */

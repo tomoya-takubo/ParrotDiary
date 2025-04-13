@@ -117,22 +117,6 @@
   background-color: #edf2f7;
 }
 
-/* 編集ボタンのスタイルを更新（3行日記と同様の丸みを帯びたデザイン） */
-.editButton {
-  padding: 4px 12px;
-  background-color: #e2e8f0;
-  border: none;
-  border-radius: 20px; /* 丸みを増加 */
-  color: #4a5568;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
 .editButton:hover {
   background-color: #cbd5e0;
 }
@@ -168,16 +152,18 @@
 
 /* 編集ボタンのスタイル */
 .editButton {
-  padding: 3px 10px;
-  background-color: #f9f9fb; /* 非常に薄いグレー */
-  color: #475569;
-  border: none; /* 枠線なし */
-  border-radius: 9999px;
-  font-size: 12px;
+  background-color: #ebf8ff;
+  color: #3182ce;
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-size: 14px;
+  border: none;
   cursor: pointer;
+  /* 以下を追加 */
+  height: 28px;
+  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
 }
 
 /* エントリーカードのヘッダーとボディの間隔 */
@@ -457,12 +443,33 @@
     padding: 16px;
   }
   
-  .entryTag, .editButton {
-    font-size: 10px;
-    padding: 3px 6px;
+  /* 共通部分を削除し、個別に定義 */
+  .entryTag {
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 16px;
+    height: 22px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    height: 22px;
+    box-sizing: border-box;
+
   }
   
+  .editButton {
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 16px;
+    height: 22px;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
   .modalTitle {
     font-size: 20px;
   }
+
 }

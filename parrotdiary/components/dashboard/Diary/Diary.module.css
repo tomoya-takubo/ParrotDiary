@@ -905,24 +905,26 @@
   
   /* タグと編集ボタンを分離して個別にスタイリング */
   .entryTag {
-    font-size: 10px;
-    padding: 2px 6px;
-    line-height: 1.2;
-    /* 高さを明示的に指定 */
-    height: 20px;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 9999px;
+    background-color: #e0f2fe;
+    color: #0284c7;
+    /* 以下を追加 */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    height: 22px;
     box-sizing: border-box;
   }
   
-  .editButton {
-    font-size: 10px;
+    .editButton {
+    font-size: 11px;
     padding: 2px 6px;
-    line-height: 1.2;
-    /* 高さを明示的に指定してタグと揃える */
-    height: 20px;
-    /* ボックスサイジングを明示的に指定 */
-    box-sizing: border-box;
-    /* 必要に応じてフレックス特性を調整 */
-    min-width: 0;
+    border-radius: 16px;
+    height: 22px;
+    line-height: 1;
     white-space: nowrap;
   }
 }
