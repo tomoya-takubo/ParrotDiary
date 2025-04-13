@@ -11,18 +11,6 @@
   z-index: 50;
 }
 
-.modalContainer {
-  background-color: #ffffff; /* 白色に変更 */
-  border-radius: 16px;
-  padding: 24px;
-  max-width: 672px;
-  width: 100%;
-  margin: 0 16px;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* 影を軽くする */
-}
-
 .modalHeader {
   display: flex;
   justify-content: space-between;
@@ -91,13 +79,16 @@
   gap: 8px;
 }
 
+/* タグの表示スタイル */
 .entryTag {
   padding: 4px 8px;
   font-size: 12px;
   border-radius: 9999px;
-  background-color: #f7fafc;
-  color: #4a5568;
-  font-weight: 500;
+  background-color: #e0f2fe;
+  color: #0284c7;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
 }
 
 .activityItem {
@@ -129,24 +120,8 @@
   background-color: #edf2f7;
 }
 
-/* 編集ボタンのスタイルを更新（3行日記と同様の丸みを帯びたデザイン） */
-.editButton {
-  padding: 4px 12px;
-  background-color: #e2e8f0;
-  border: none;
-  border-radius: 20px; /* 丸みを増加 */
-  color: #4a5568;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
 .editButton:hover {
-  background-color: #cbd5e0;
+  background-color: #e2e8f0;
 }
 
 /* 活動項目（3行の日記内容）の背景色も変更して見やすくする
@@ -178,27 +153,19 @@
   color: #666666; /* 薄めのグレー */
 }
 
-/* タグの表示スタイル */
-.entryTag {
-  padding: 3px 10px;
-  font-size: 12px;
-  border-radius: 9999px;
-  background-color: #f0f7ff; /* 非常に薄い青色 */
-  color: #0284c7;
-  border: none; /* 枠線なし */
-}
-
-/* 編集ボタンのスタイル */
+/* 編集ボタンのスタイルを更新（3行日記と同様の丸みを帯びたデザイン） */
 .editButton {
-  padding: 3px 10px;
-  background-color: #f9f9fb; /* 非常に薄いグレー */
-  color: #475569;
-  border: none; /* 枠線なし */
+  padding: 4px 8px;
+  background-color: #f1f5f9;
+  color: #64748b;
+  border: none;
   border-radius: 9999px;
   font-size: 12px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  line-height: 1;
   gap: 4px;
 }
 
@@ -306,12 +273,7 @@
 
 /* モーダルナビゲーションのスタイル */
 .modalNavigationWrapper {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  max-width: 800px; /* モーダルより少し広く */
-  gap: 1rem;
+  display: none;
 }
 
 .modalNavButton {
@@ -364,16 +326,10 @@
 /* 既存のスタイルを一部調整 */
 .modalContainer {
   position: relative;
-  flex: 1;
   max-width: 600px;
   width: 100%;
-  margin: 0 16px;
-  max-height: 80vh;
-  overflow-y: auto;
-  background-color: #ffffff;
-  border-radius: 16px;
+  margin: 0;
   padding: 24px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 /* ローディングインジケーター */
@@ -427,4 +383,55 @@
   .modalContainer {
     padding: 20px;
   }
+
+  .entryTag, .editButton {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+  
+  .dateDisplay {
+    font-size: 16px;
+  }
+}
+
+/* ナビゲーションを上部に配置 */
+.dateNavigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+/* 日付表示を中央に */
+.dateDisplay {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* 小さなナビゲーションボタン */
+.dateNavButton {
+  background: none;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  color: #4a5568;
+  transition: all 0.2s;
+}
+
+.dateNavButton:hover:not(:disabled) {
+  background-color: #f1f5f9;
+}
+
+.dateNavButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
