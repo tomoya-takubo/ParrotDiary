@@ -348,6 +348,7 @@ export default function CollectionPreview() {
 
 // ParrotModal関数の修正部分
 
+// ParrotModalコンポーネントの修正版
 const ParrotModal = ({ parrot, onClose, allParrots }: {
   parrot: Parrot;
   onClose: () => void;
@@ -396,6 +397,7 @@ const ParrotModal = ({ parrot, onClose, allParrots }: {
 
   // 新しいタグを追加する関数
   const addTag = async () => {
+    // 既存の実装を維持
     if (!newTagName.trim()) return;
     if (!currentUser || !parrot.parrot_id) return;
     
@@ -461,6 +463,7 @@ const ParrotModal = ({ parrot, onClose, allParrots }: {
 
   // タグを削除する関数
   const removeTag = async (tagId: string) => {
+    // 既存の実装を維持
     if (!currentUser) return;
     
     setLoading(true);
@@ -561,12 +564,12 @@ const ParrotModal = ({ parrot, onClose, allParrots }: {
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
-      {/* 左右ナビゲーションボタン（モーダルの外側に配置） */}
       <div className={styles.modalNavigationWrapper}>
+        {/* 左ナビゲーションボタン */}
         <button 
           className={`${styles.modalNavButton} ${styles.modalNavButtonLeft}`}
           onClick={(e) => {
-            e.stopPropagation(); // オーバーレイクリックによるモーダル閉じを防止
+            e.stopPropagation();
             navigateToPreviousParrot();
           }}
           aria-label="前のパロット"
@@ -574,8 +577,11 @@ const ParrotModal = ({ parrot, onClose, allParrots }: {
           <ChevronLeft size={24} />
         </button>
         
-        {/* モーダルコンテンツ */}
-        <div className={`${styles.modalContent} ${getModalClass()}`} onClick={e => e.stopPropagation()}>
+        {/* メインコンテンツ */}
+        <div 
+          className={`${styles.modalContent} ${getModalClass()}`} 
+          onClick={e => e.stopPropagation()}
+        >
           <button className={styles.closeButton} onClick={onClose}>×</button>
           
           <div className={styles.modalHeader}>
@@ -671,10 +677,11 @@ const ParrotModal = ({ parrot, onClose, allParrots }: {
           </div>
         </div>
         
+        {/* 右ナビゲーションボタン */}
         <button 
           className={`${styles.modalNavButton} ${styles.modalNavButtonRight}`}
           onClick={(e) => {
-            e.stopPropagation(); // オーバーレイクリックによるモーダル閉じを防止
+            e.stopPropagation();
             navigateToNextParrot();
           }}
           aria-label="次のパロット"

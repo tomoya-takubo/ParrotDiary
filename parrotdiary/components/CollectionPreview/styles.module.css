@@ -1718,3 +1718,117 @@
     font-size: 0.5rem;
   }
 }
+
+/* CollectionPreview/styles.module.css に追加するスタイル */
+
+/* モーダル全体のコンテンツラッパーを修正 */
+.modalNavigationWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 700px;
+}
+
+/* ナビゲーションボタンのスタイルを修正 */
+.modalNavButton {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid #ddd;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 51; /* モーダルより前面に */
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #4a5568;
+}
+
+.modalNavButtonLeft {
+  left: -20px;
+}
+
+.modalNavButtonRight {
+  right: -20px;
+}
+
+.modalNavButton:hover:not(:disabled) {
+  background-color: white;
+  transform: translateY(-50%) scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.modalNavButton:active:not(:disabled) {
+  transform: translateY(-50%) scale(0.98);
+}
+
+.modalNavButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: rgba(229, 231, 235, 0.8);
+}
+
+/* モーダルコンテナのスタイルを修正 */
+.modalContent {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* モバイル向け調整 */
+@media (max-width: 768px) {
+  .modalNavButton {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .modalNavButtonLeft {
+    left: -10px;
+  }
+  
+  .modalNavButtonRight {
+    right: -10px;
+  }
+  
+  .modalContent {
+    padding: 20px;
+    max-width: 90%;
+  }
+}
+
+/* 小さいモバイルでさらに調整 */
+@media (max-width: 480px) {
+  .modalNavigationWrapper {
+    width: 95%;
+  }
+  
+  .modalNavButton {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .modalNavButtonLeft {
+    left: -8px;
+  }
+  
+  .modalNavButtonRight {
+    right: -8px;
+  }
+  
+  .modalContent {
+    padding: 16px;
+  }
+}
