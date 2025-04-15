@@ -1,7 +1,7 @@
 "use client";
 
 // components/CollectionPreview/index.tsx
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Search, LogIn, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import ParrotIcon from '../ParrotIcon';
@@ -64,6 +64,12 @@ type ParrotTag = {
   parrot_id: string; // UUID型
   parrot_tag_name: string; // タグ名
   executed_at: string; // タグが追加された日時
+};
+
+// タグの使用頻度を追跡するための型
+type TagUsageCount = {
+  parrot_tag_name: string;
+  usage_count: number;
 };
 
 export default function CollectionPreview() {
@@ -362,6 +368,9 @@ const ParrotModal = ({ parrot, onClose, allParrots }: {
   const [newTagName, setNewTagName] = useState('');
   const [tagError, setTagError] = useState<string | null>(null);
 
+  // 頻繁に使用されるタグを管理するための状態
+  const [frequentTags, setFrequentTags] = useState<TagUsageCount[]>([]);
+
   // ナンバー表示用のindexを取得
   const parrotIndex = allParrots.findIndex(p => p.parrot_id === parrot.parrot_id);
 
@@ -394,6 +403,51 @@ const ParrotModal = ({ parrot, onClose, allParrots }: {
     
     fetchTags();
   }, [currentUser, parrot.parrot_id]);
+
+  // 頻出タグを取得するための useEffect
+  useEffect(() => {
+    const fetchFrequentTags = async () => {
+      if (!currentUser) return;
+      
+      try {
+        // ユーザーの全タグを取得
+        const { data, error } = await supabase
+          .from('user_parrots_tags')
+          .select('parrot_tag_name')
+          .eq('user_id', currentUser);
+        
+        if (error) {
+          console.error('頻出タグ取得エラー:', error);
+          return;
+        }
+        
+        if (data && Array.isArray(data)) {
+          // タグの使用回数をカウント
+          const tagCounts: { [key: string]: number } = {};
+          data.forEach(tag => {
+            // 明示的に string 型としてアサーション
+            const tagName = tag.parrot_tag_name as string;
+            tagCounts[tagName] = (tagCounts[tagName] || 0) + 1;
+          });
+          
+          // 使用頻度でソートして上位を取得
+          const sortedTags: TagUsageCount[] = Object.entries(tagCounts)
+            .map(([parrot_tag_name, usage_count]) => ({ 
+              parrot_tag_name, 
+              usage_count 
+            }))
+            .sort((a, b) => b.usage_count - a.usage_count)
+            .slice(0, 5); // 上位5つを表示
+          
+          setFrequentTags(sortedTags);
+        }
+      } catch (error) {
+        console.error('頻出タグ取得例外:', error);
+      }
+    };
+    
+    fetchFrequentTags();
+  }, [currentUser]); // 依存配列にはcurrentUserのみを指定
 
   // 新しいタグを追加する関数
   const addTag = async () => {
@@ -542,7 +596,111 @@ const ParrotModal = ({ parrot, onClose, allParrots }: {
     const nextIndex = (currentIndex + 1) % obtainedParrots.length;
     setSelectedParrot(obtainedParrots[nextIndex]);
   };
-  
+
+  const handleTagClick = async (tagName: string) => {
+    if (!currentUser || !parrot.parrot_id) return;
+    
+    // 既に同じタグが付いていないか確認
+    if (tags.some(tag => tag.parrot_tag_name.toLowerCase() === tagName.toLowerCase())) {
+      setTagError('このタグは既に追加されています');
+      setTimeout(() => setTagError(null), 3000);
+      return;
+    }
+    
+    // 追加中フラグを使わない - UI操作を最小限に抑える
+    const tempId = `temp-${Date.now()}`;
+    
+    // タグを追加 - タグオブジェクトをそのまま使用
+    const newTag = {
+      entry_id: tempId,
+      user_id: currentUser,
+      parrot_id: parrot.parrot_id,
+      parrot_tag_name: tagName,
+      executed_at: new Date().toISOString()
+    };
+    
+    // 状態更新は一度だけ行う（UIの安定性を確保）
+    setTags(prevTags => [...prevTags, newTag]);
+    
+    // サーバー処理 - UI更新とは切り離す
+    try {
+      const { data, error } = await supabase
+        .from('user_parrots_tags')
+        .insert([{
+          user_id: currentUser,
+          parrot_id: parrot.parrot_id,
+          parrot_tag_name: tagName,
+          executed_at: new Date().toISOString()
+        }])
+        .select();
+      
+      if (error) {
+        console.error('タグ追加エラー:', error);
+        
+        // エラー時のみ状態を元に戻す
+        setTags(prevTags => prevTags.filter(t => t.entry_id !== tempId));
+        setTagError('タグの追加に失敗しました');
+      } else if (data && data.length > 0) {
+        // 成功時も、ID更新のみ行いタグ全体の再描画は避ける
+        const realTag = data[0] as ParrotTag;
+        
+        setTags(prevTags => 
+          prevTags.map(tag => 
+            tag.entry_id === tempId ? realTag : tag
+          )
+        );
+        
+        // 全体のタグリストの更新 - 非表示領域のため影響は小さい
+        const newTagName = realTag.parrot_tag_name;
+        if (!allTags.includes(newTagName)) {
+          setAllTags(prevTags => [...prevTags, newTagName].sort());
+        }
+      }
+    } catch (error) {
+      console.error('タグ追加例外:', error);
+      setTags(prevTags => prevTags.filter(t => t.entry_id !== tempId));
+      setTagError('タグの追加中にエラーが発生しました');
+    }
+  };
+
+  // タグボタンのレンダリングを最適化
+  const frequentTagButtons = useMemo(() => {
+    return frequentTags.map((tag) => {
+      // 現在のタグリストから選択済みかどうかを判定
+      const isSelected = tags.some(t => 
+        t.parrot_tag_name.toLowerCase() === tag.parrot_tag_name.toLowerCase()
+      );
+      
+      // key に一意の識別子を含める（リストの変更でもコンポーネントを再利用できるように）
+      return (
+        // タグボタンを最適化
+        <button
+          key={`tag-${tag.parrot_tag_name}`}
+          className={`${styles.frequentTagButton} ${isSelected ? styles.tagSelected : ''}`}
+          onClick={() => !isSelected && addFrequentTag(tag.parrot_tag_name)}
+          aria-disabled={isSelected}
+          title={tag.parrot_tag_name}
+          // フォーカスアウトラインを非表示に
+          style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}
+        >
+          {tag.parrot_tag_name}
+          <span className={styles.tagUsageCount}>{tag.usage_count}</span>
+        </button>
+      );
+    });
+  }, [frequentTags, tags]);
+
+  // バッチ処理によるレンダリング最適化
+  const addFrequentTag = (tagName: string) => {
+    // クリック時のタップハイライトを消す（フラッシュ防止）
+    const activeElement = document.activeElement as HTMLElement;
+    if (activeElement && typeof activeElement.blur === 'function') {
+      activeElement.blur();
+    }
+
+    handleTagClick(tagName);
+  };
+
   // キーボードでのナビゲーション
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -627,7 +785,15 @@ const ParrotModal = ({ parrot, onClose, allParrots }: {
             {obtainInfo && (
               <div className={styles.tagsSection}>
                 <h3>タグ</h3>
-                
+
+                {frequentTags.length > 0 && (
+                  <div className={styles.frequentTagsContainer}>
+                    <p className={styles.frequentTagsLabel}>よく使うタグ:</p>
+                    <div className={styles.frequentTagsItems}>
+                      {frequentTagButtons}
+                    </div>
+                  </div>
+                )}
                 {tagError && (
                   <div className={styles.tagError}>
                     <AlertCircle size={16} />
