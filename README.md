@@ -71,6 +71,9 @@ PartyParrotというユニークなキャラクターと組み合わせること
 ### ログイン
 ![signin](images/signin.gif)
 
+### パスワードリセット
+![dashboard](images/passwordreset.png)
+
 ### ダッシュボード
 ![dashboard](images/dashboard.png)
 
