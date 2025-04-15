@@ -98,6 +98,7 @@ export const ParrotCollection = () => {
             alt={`Parrot ${i + 1}`}
             width={200} // 画像のサイズを明示
             height={200} // 画像のサイズを明示
+            unoptimized
             priority // 高速読み込みを有効化
           />
         </div>

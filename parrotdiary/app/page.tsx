@@ -1,4 +1,5 @@
-'use client'; 
+'use client';
+
 import { ArrowRight, BookOpen, Gift } from 'lucide-react';
 import StartButton from '@/components/StartButton';
 import styles from '@/styles/Home.module.css';
@@ -32,21 +33,21 @@ export default function Home() {
           <h1 className={styles.title}> ぱろっとだいありー </h1>
           <p className={styles.subtitle}>PartyParrotと一緒に楽しく継続</p>
           <div className={styles.heroParrot}>
-          {gifUrl && (
-            <Image 
-              src={gifUrl} 
-              alt="Party Parrot" 
-              width={400} 
-              height={400}
-              style={{
-                width: '100%',
-                height: 'auto',
-                maxWidth: '100%'
-              }}
-              priority // 優先的に読み込み
-            />
-          )}
-        </div>
+            {gifUrl && (
+              <Image
+                src={gifUrl}
+                alt="Party Parrot"
+                width={400}
+                height={400}
+                style={{
+                  width: '100%',
+                  height: 'auto',
+                  maxWidth: '100%'
+                }}
+                priority // 優先的に読み込み
+              />
+            )}
+          </div>
           <StartButton />
         </div>
       </div>
@@ -94,10 +95,10 @@ export default function Home() {
             <p>あなたの継続的な活動が、実際のカカポ（PartyParrotのモデル）の保護活動に貢献します。</p>
             <p>カカポは絶滅が危惧されている貴重な鳥類です。</p>
           </div>
-          <a 
-            href="https://www.doc.govt.nz/kakapo-recovery" 
-            target="_blank" 
-            rel="noopener noreferrer" 
+          <a
+            href="https://www.doc.govt.nz/kakapo-recovery"
+            target="_blank"
+            rel="noopener noreferrer"
             className={styles.ecoLink}
           >
             詳しく見る <ArrowRight className={styles.ecoArrow} />
