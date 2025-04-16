@@ -2158,7 +2158,7 @@
  * タグアイテムのスタイル最適化
  */
  .tagItem {
-  display: inline-flex;  /* flexboxに変更して内部要素の配置を最適化 */
+  display: inline-flex;
   align-items: center;
   background-color: #EDE9FE;
   color: #6D28D9;
@@ -2166,7 +2166,54 @@
   font-size: 0.75rem;
   max-width: 100%;
   overflow: hidden;
-  padding: 0;  /* パディングを0に設定し、内部要素で調整 */
+  padding: 0;
+  cursor: pointer; /* タグ全体をクリック可能に */
+  height: 28px; /* 一貫した高さを設定 - 未付与タグと同じ高さに */
+  box-sizing: border-box;
+  transition: background-color 0.2s;
+}
+
+.tagItem:hover {
+  background-color: #DDD6FE; /* ホバー時の背景色変更 */
+}
+
+/* 削除ボタンを視覚的に表現するだけにする */
+.removeTagButton {
+  display: none; /* 実際のボタンは非表示にする */
+}
+
+/* 削除アイコンをタグの右側に表示 */
+.tagText {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+  padding: 0.25rem 0.75rem 0.25rem 0.5rem; /* 右側に余白を増やす */
+  position: relative; /* 相対位置指定 */
+}
+
+/* タグアイテムがホバーされたときに×マークをはっきり表示 */
+.tagItem:hover .tagText::after {
+  opacity: 1;
+}
+
+/* よく使うタグボタンの高さも一貫させる */
+.frequentTagButton {
+  height: 28px;
+  box-sizing: border-box;
+}
+
+/* モバイル対応の調整 */
+@media (max-width: 768px) {
+  .tagItem, .frequentTagButton {
+    height: 26px; /* タブレット向けに少し小さく */
+  }
+}
+
+@media (max-width: 480px) {
+  .tagItem, .frequentTagButton {
+    height: 22px; /* モバイル向けにさらに小さく */
+  }
 }
 
 /* タグのテキスト部分 */

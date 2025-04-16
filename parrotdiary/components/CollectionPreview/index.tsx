@@ -517,7 +517,6 @@ const ParrotModal = ({ parrot, onClose, allParrots }: {
 
   // タグを削除する関数
   const removeTag = async (tagId: string) => {
-    // 既存の実装を維持
     if (!currentUser) return;
     
     setLoading(true);
@@ -825,12 +824,14 @@ const ParrotModal = ({ parrot, onClose, allParrots }: {
                     <p className={styles.noTags}>タグはまだありません</p>
                   ) : (
                     tags.map((tag) => (
-                      <div key={tag.entry_id} className={styles.tagItem}>
+                      <div 
+                        key={tag.entry_id} 
+                        className={styles.tagItem}
+                        onClick={() => removeTag(tag.entry_id)} // タグ全体のクリックで削除関数を呼び出す
+                      >
                         <span className={styles.tagText}>{tag.parrot_tag_name}</span>
                         <button 
-                          onClick={() => removeTag(tag.entry_id)}
                           className={styles.removeTagButton}
-                          disabled={loading}
                           aria-label={`${tag.parrot_tag_name}を削除`}
                         >
                           ×
