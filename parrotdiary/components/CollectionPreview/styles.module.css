@@ -94,6 +94,7 @@
   width: 180px;  /* カードの幅を180pxに拡大 */
   position: relative; /* .lockOverlay 用 */
   transition: transform 0.2s ease, opacity 0.2s ease;
+  height: 320px
 }
 
 .parrotCard:hover {
