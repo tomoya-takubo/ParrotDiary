@@ -167,12 +167,38 @@
 /* 今日の日付 */
 .today {
   background-color: #f0f7ff;
-  box-shadow: 0 0 0 2px #4a90e2, 0 2px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px; /* 他のセルと同じ丸み */
+  z-index: 1;
+}
+
+.today::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 2px solid #4a90e2;
+  border-radius: 12px;
+  box-sizing: border-box;
+  z-index: 1;
+  pointer-events: none;
 }
 
 .today .dayNumber {
   color: #1890ff;
   font-weight: bold;
+}
+
+@media (max-width: 480px) {
+  /* 既存のスタイル */
+  
+  /* 今日の日付のスマホ用スタイル追加 */
+  .today::before {
+    border-width: 1px;
+  }
 }
 
 /* 日曜日のセル */
