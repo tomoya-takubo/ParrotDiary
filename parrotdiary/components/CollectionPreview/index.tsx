@@ -826,11 +826,12 @@ const ParrotModal = ({ parrot, onClose, allParrots }: {
                   ) : (
                     tags.map((tag) => (
                       <div key={tag.entry_id} className={styles.tagItem}>
-                        <span>{tag.parrot_tag_name}</span>
+                        <span className={styles.tagText}>{tag.parrot_tag_name}</span>
                         <button 
                           onClick={() => removeTag(tag.entry_id)}
                           className={styles.removeTagButton}
                           disabled={loading}
+                          aria-label={`${tag.parrot_tag_name}を削除`}
                         >
                           ×
                         </button>

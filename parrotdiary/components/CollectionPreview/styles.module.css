@@ -933,17 +933,6 @@
   gap: 0.5rem;
 }
 
-.tagItem {
-  display: flex;
-  align-items: center;
-  background-color: #EDE9FE;
-  color: #6D28D9;
-  padding: 0.25rem 0.5rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  gap: 0.25rem;
-}
-
 .removeTagButton {
   display: inline-flex;
   align-items: center;
@@ -2067,12 +2056,6 @@
   transition: all 0.15s ease;
 }
 
-/* タグアイテムのトランジション */
-.tagItem {
-  transition: opacity 0.2s ease, transform 0.2s ease;
-  /* 既存のスタイル */
-}
-
 /* よく使うタグのアニメーション最適化 */
 .frequentTagButton {
   transition: opacity 0.2s ease, background-color 0.2s ease;
@@ -2164,26 +2147,56 @@
   padding: 0.1rem 0;
 }
 
-/* タグアイテムのアニメーション最適化 */
-.tagItem {
-  display: flex;
-  align-items: center;
-  background-color: #EDE9FE;
-  color: #6D28D9;
-  padding: 0.25rem 0.5rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  gap: 0.25rem;
-  
-  /* 追加: アニメーション最適化 */
-  transform: translateZ(0);
-  transition: opacity 120ms cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: opacity, transform;
-}
-
 /* コンテナ内のアニメーション用プレースホルダー */
 .tagsContainer::after {
   content: "";
   flex: 999;
   height: 0;
+}
+
+/**
+ * タグアイテムのスタイル最適化
+ */
+ .tagItem {
+  display: inline-flex;  /* flexboxに変更して内部要素の配置を最適化 */
+  align-items: center;
+  background-color: #EDE9FE;
+  color: #6D28D9;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 0;  /* パディングを0に設定し、内部要素で調整 */
+}
+
+/* タグのテキスト部分 */
+.tagText {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;  /* タグの最大幅を制限 */
+  padding: 0.25rem 0.5rem;  /* 左右のパディングを調整 */
+}
+
+/* 削除ボタンのスタイル最適化 */
+.removeTagButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1rem;  /* 幅を小さく設定 */
+  height: 1.1rem;  /* 高さを小さく設定 */
+  min-width: 1.1rem;  /* 最小幅を固定して縮小を防止 */
+  border: none;
+  background-color: transparent;
+  color: inherit;  /* 親要素と同じ色を使用 */
+  cursor: pointer;
+  font-size: 0.7rem;  /* フォントサイズを小さく */
+  padding: 0;
+  margin: 0;
+  border-top-right-radius: 9999px;
+  border-bottom-right-radius: 9999px;
+}
+
+.removeTagButton:hover {
+  background-color: rgba(0, 0, 0, 0.05);  /* ホバー時の背景色を微妙に変更 */
 }
