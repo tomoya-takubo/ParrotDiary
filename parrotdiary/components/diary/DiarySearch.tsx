@@ -1,5 +1,5 @@
 // src/components/diary/DiarySearch.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Search, FilterIcon, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import diaryService, { DiaryEntry, TagWithCount } from '@/services/diaryService';
@@ -48,6 +48,9 @@ const DiarySearch = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [entriesPerPage, setEntriesPerPage] = useState(5);
   const [pageSizeOptions] = useState([5, 10, 20, 50]);
+
+  // エントリーコンテナへの参照を追加
+  const entriesContainerRef = useRef<HTMLDivElement>(null);
   // #endregion
 
   // #region データ取得
@@ -153,11 +156,18 @@ const DiarySearch = () => {
   // ページ変更ハンドラ
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    // ページトップにスクロール
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
+    
+    // スクロール先を日記エントリーコンテナに変更
+    if (entriesContainerRef.current) {
+      // コンテナの位置を取得して少し上にスクロール（ヘッダーが見えるように）
+      const containerTop = entriesContainerRef.current.offsetTop;
+      const scrollPosition = Math.max(0, containerTop - 80); // 80pxは調整可能
+      
+      window.scrollTo({
+        top: scrollPosition,
+        behavior: 'smooth'
+      });
+    }
   };
 
   // 編集モーダルを開く
@@ -531,7 +541,7 @@ const DiarySearch = () => {
         ) : (
           <>
             {/* 日記エントリー - 常に縦1列のリスト表示 */}
-            <div className={styles.entriesContainer}>
+            <div ref={entriesContainerRef} className={styles.entriesContainer}>
               {currentEntries.length > 0 ? (
                 currentEntries.map((entry) => (
                   <div key={entry.entry_id} className={styles.entryCard}>
