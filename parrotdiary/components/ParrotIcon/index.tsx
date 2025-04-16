@@ -14,8 +14,9 @@ const ParrotIcon: React.FC<ParrotIconProps> = ({ imageUrl, name, obtained }) => 
       <Image
         src={imageUrl}
         alt={`${name}の画像`}
-        fill  // fillを使用
-        style={{ 
+        fill
+        unoptimized
+        style={{
           objectFit: 'contain',
           opacity: obtained ? 1 : 0.3,  // obtained状態に応じて透明度を変更
         }}
@@ -24,4 +25,5 @@ const ParrotIcon: React.FC<ParrotIconProps> = ({ imageUrl, name, obtained }) => 
     </div>
   );
 };
+
 export default ParrotIcon;
