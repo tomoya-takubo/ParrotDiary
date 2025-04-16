@@ -120,6 +120,7 @@
 .dateRangeContainer {
   display: flex;
   align-items: center;
+  justify-content: center; /* 中央揃えに変更 */
   gap: 8px;
 }
 
@@ -129,10 +130,12 @@
   border-radius: 8px;
   border: 1px solid #e2e8f0;
   font-size: 14px;
+  text-align: center; /* テキストも中央揃えに */
 }
 
 .dateSeparator {
   color: #a0aec0;
+  flex-shrink: 0; /* 幅が縮まないように */
 }
 
 /* タグリスト */
@@ -648,22 +651,26 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 16px 0;
-  gap: 8px;
+  margin: 1.5rem 0;
+  padding: 0.75rem 1rem;
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  gap: 0.25rem;
 }
 
 .paginationButton {
   display: flex;
-  justify-content: center;
   align-items: center;
-  min-width: 36px;
-  height: 36px;
-  padding: 0 8px;
-  border-radius: 6px;
-  background-color: #f7fafc;
-  border: 1px solid #e2e8f0;
-  color: #4a5568;
-  font-size: 14px;
+  justify-content: center;
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 0.5rem;
+  background: white;
+  border: 1px solid #E5E7EB;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  color: #4B5563;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -672,10 +679,20 @@
   background-color: #edf2f7;
 }
 
+.paginationButton:hover:not(.disabled) {
+  background: #F3F4F6;
+  border-color: #D1D5DB;
+}
+
 .paginationButtonActive {
-  background-color: #3182ce;
-  color: white;
-  border-color: #3182ce;
+  background: #3182ce !important; /* !important で優先度を上げる */
+  color: white !important;
+  border-color: #3182ce !important;
+}
+
+.paginationButton.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .paginationButtonActive:hover {

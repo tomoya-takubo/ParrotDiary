@@ -303,7 +303,7 @@ const DiarySearch = () => {
     let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
     const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
     
-    // 表示ページ数を調整（重要：この部分が安定した表示のカギ）
+    // 表示ページ数を調整
     if (endPage - startPage + 1 < maxVisiblePages) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
@@ -324,9 +324,9 @@ const DiarySearch = () => {
     pageNumbers.push(
       <button
         key="prev"
-        onClick={() => handlePageChange(currentPage - 1)}
-        disabled={currentPage === 1}
         className={`${styles.paginationButton} ${styles.paginationArrow} ${currentPage === 1 ? styles.disabled : ''}`}
+        onClick={() => currentPage > 1 ? handlePageChange(currentPage - 1) : null}
+        disabled={currentPage === 1}
       >
         <ChevronLeft size={16} />
       </button>
@@ -341,6 +341,7 @@ const DiarySearch = () => {
           className={`${styles.paginationButton} ${
             currentPage === i ? styles.paginationButtonActive : ''
           }`}
+          aria-current={currentPage === i ? "page" : undefined}
         >
           {i}
         </button>
@@ -351,9 +352,9 @@ const DiarySearch = () => {
     pageNumbers.push(
       <button
         key="next"
-        onClick={() => handlePageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
         className={`${styles.paginationButton} ${styles.paginationArrow} ${currentPage === totalPages ? styles.disabled : ''}`}
+        onClick={() => currentPage < totalPages ? handlePageChange(currentPage + 1) : null}
+        disabled={currentPage === totalPages}
       >
         <ChevronRight size={16} />
       </button>
@@ -373,7 +374,7 @@ const DiarySearch = () => {
     
     return pageNumbers;
   };
-
+  
   // 表示するタグ
   const displayTags = showAllTags ? allTags : allTags.slice(0, 10);
 
