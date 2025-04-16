@@ -176,15 +176,18 @@
   color: white;
 }
 
-/* 人気タグセクション */
+/* よく使うタグセクションのスタイル修正 */
 .popularTagsSection {
-  margin-bottom: 2px;
+  margin-bottom: 8px;
 }
 
-.popularTagsTitle {
-  font-size: 12px;
-  color: #64748b;
-  margin-bottom: 8px;
+/* よく使うタグリストのスタイル修正 */
+.popularTagsList {
+  display: flex;
+  flex-wrap: wrap; /* タグを折り返し表示 */
+  gap: 6px;
+  max-height: 80px; /* 高さ制限 */
+  overflow-y: auto; /* 必要に応じて縦スクロール */
 }
 
 .popularTagsList {
@@ -193,17 +196,67 @@
   gap: 6px;
 }
 
+/* タグボタンのスタイル修正 */
 .tagButton {
+  display: inline-block;
+  text-align: center;
   padding: 4px 8px;
   border-radius: 6px;
   border: 1px solid #e2e8f0;
   background-color: #f8fafc;
   color: #64748b;
-  font-size: 12px;
+  font-size: 11px;
   cursor: pointer;
   transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
+  white-space: nowrap; /* テキストを1行に */
+  max-width: 100px; /* タグの最大幅 */
+  overflow: hidden;
+  text-overflow: ellipsis; /* 長いテキストは省略 */
+}
+
+/* タグボタンのホバー状態 */
+.tagButton:hover {
+  background-color: #e2e8f0;
+}
+
+/* アクティブなタグ */
+.tagButtonActive {
+  background-color: #dbeafe;
+  color: #2563eb;
+  border-color: #93c5fd;
+}
+
+/* モバイル向けスタイル調整 */
+@media (max-width: 640px) {
+  .popularTagsList {
+    flex-wrap: wrap; /* モバイルでも折り返し */
+    white-space: normal; /* 通常の折り返し */
+    max-height: 100px; /* やや高さを増やす */
+  }
+  
+  .tagButton {
+    max-width: 85px; /* モバイルではさらに幅を制限 */
+    font-size: 10px; /* フォントを小さく */
+    padding: 3px 6px; /* パディングを減らす */
+  }
+}
+
+@media (max-width: 480px) {
+  .popularTagsList {
+    gap: 4px; /* さらに間隔を縮める */
+  }
+  
+  .tagButton {
+    max-width: 75px; /* さらに幅を制限 */
+    font-size: 9px; /* フォントをさらに小さく */
+    padding: 2px 4px; /* パディングをさらに減らす */
+  }
+}
+
+/* アクティブなタグのスタイル */
+.tagButtonActive .tagCount {
+  background-color: #93c5fd;
+  color: #1e40af;
 }
 
 .tagButton:hover {

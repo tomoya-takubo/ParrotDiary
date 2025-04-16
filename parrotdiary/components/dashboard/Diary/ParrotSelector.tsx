@@ -374,15 +374,16 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
                 selectedTag === tag.tag_name ? styles.tagButtonActive : ''
               }`}
               onClick={() => handleTagClick(tag.tag_name)}
+              title={`${tag.tag_name}`} // ホバー時にフルテキストを表示
             >
-              {tag.tag_name} <span className={styles.tagCount}>{tag.count}</span>
+              {tag.tag_name}
             </button>
           ))}
         </div>
       </div>
     );
   };
-
+  
   // エラー表示
   if (loadError) {
     return (
