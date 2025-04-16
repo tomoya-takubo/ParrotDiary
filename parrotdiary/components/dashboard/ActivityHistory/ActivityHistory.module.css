@@ -192,15 +192,6 @@
   font-weight: bold;
 }
 
-@media (max-width: 480px) {
-  /* 既存のスタイル */
-  
-  /* 今日の日付のスマホ用スタイル追加 */
-  .today::before {
-    border-width: 1px;
-  }
-}
-
 /* 日曜日のセル */
 .weekRow > div:first-child .dayNumber {
   color: #e57373;
