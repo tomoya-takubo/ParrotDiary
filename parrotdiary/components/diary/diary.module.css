@@ -837,3 +837,46 @@
     contain: content; /* コンテンツの影響範囲を制限 */
   }
 }
+
+/* 既存のスタイルはそのままで、以下を追加または修正 */
+
+/* 検索バーの基本スタイルを改善 */
+.searchContainer {
+  position: relative;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 12px 16px 12px 16px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box; /* 重要: パディングを幅に含める */
+}
+
+/* スマホ向け調整 */
+@media (max-width: 480px) {
+  .searchInput {
+    padding: 10px 36px 10px 16px; /* 左右のパディングを増やし、右側は検索アイコン用に余裕を持たせる */
+    font-size: 14px;
+    width: 100%; /* 幅を明示的に100%に設定 */
+    border-radius: 8px; /* より小さな画面に合わせて角丸を調整 */
+  }
+  
+  .searchIcon {
+    right: 12px; /* アイコン位置の微調整 */
+  }
+}
+
+/* タッチデバイス向けの追加調整 */
+@media (hover: none) and (max-width: 480px) {
+  .searchInput {
+    -webkit-appearance: none; /* iOS用の外観調整 */
+    appearance: none;
+    font-size: 16px; /* iOSでのズーム防止のため16px以上に */
+  }
+}
