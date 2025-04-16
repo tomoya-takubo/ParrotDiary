@@ -3,10 +3,10 @@
 // components/CollectionPreview/index.tsx
 import { useEffect, useState, useMemo } from 'react';
 import { Search, LogIn, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
 import ParrotIcon from '../ParrotIcon';
 import styles from './styles.module.css';
 import { useAuth } from '@/lib/AuthContext'; // 認証コンテキストをインポート
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
 // 型定義を UUID に対応させる
 type Parrot = {
@@ -85,6 +85,7 @@ export default function CollectionPreview() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null); // 認証状態を追跡
   const [allTags, setAllTags] = useState<string[]>([]);
   const [searchTag, setSearchTag] = useState<string | null>(null);
+  const supabase = createClientComponentClient();
 
   // ページネーション用の状態
   const [currentPage, setCurrentPage] = useState(1);
