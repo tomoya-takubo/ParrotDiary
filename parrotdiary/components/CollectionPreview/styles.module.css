@@ -160,14 +160,20 @@
   z-index: 50;
 }
 
+/* モーダルコンテナのスタイルを修正 */
 .modalContent {
-  background: white;
-  border-radius: 1rem;
-  padding: 2rem;
-  width: 90%;
-  max-width: 500px;
   position: relative;
+  width: 100%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
+
+
 
 .closeButton {
   position: absolute;
@@ -1161,17 +1167,6 @@
   z-index: 1000;
 }
 
-.modalContent {
-  position: relative;
-  flex: 1;
-  max-width: 600px;
-  max-height: 90vh;
-  padding: 2rem;
-  border-radius: 1rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  overflow-y: auto;
-  /* 背景色は既存のmodalContent[UR/SR/R/N]クラスで設定 */
-}
 
 /* レア度に応じたナビゲーションボタンの色調整 */
 .modalContentUR + .modalNavButton,
@@ -1261,17 +1256,6 @@
   z-index: 1000;
 }
 
-.modalContent {
-  position: relative;
-  flex: 1;
-  max-width: 600px;
-  max-height: 90vh;
-  padding: 2rem;
-  border-radius: 1rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  overflow-y: auto;
-  /* 背景色は既存のmodalContent[UR/SR/R/N]クラスで設定 */
-}
 
 /* レア度に応じたナビゲーションボタンの色調整 */
 .modalContentUR + .modalNavButton,
@@ -1723,8 +1707,8 @@
 
 /* ナビゲーションボタンのスタイルを修正 */
 .modalNavButton {
-  width: 40px;
-  height: 40px;
+  width: 55px;
+  height: 55px;
   border-radius: 50%;
   background-color: rgba(255, 255, 255, 0.9);
   border: 1px solid #ddd;
@@ -1765,32 +1749,20 @@
   background-color: rgba(229, 231, 235, 0.8);
 }
 
-/* モーダルコンテナのスタイルを修正 */
-.modalContent {
-  position: relative;
-  width: 100%;
-  max-width: 600px;
-  max-height: 80vh;
-  overflow-y: auto;
-  background-color: #ffffff;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-}
 
 /* モバイル向け調整 */
 @media (max-width: 768px) {
   .modalNavButton {
-    width: 36px;
-    height: 36px;
+    width: 50px;
+    height: 50px;
   }
   
   .modalNavButtonLeft {
-    left: -10px;
+    left: -25px;
   }
   
   .modalNavButtonRight {
-    right: -10px;
+    right: -25px;
   }
   
   .modalContent {
@@ -1806,8 +1778,8 @@
   }
   
   .modalNavButton {
-    width: 32px;
-    height: 32px;
+    width: 45px;
+    height: 45px;
   }
   
   .modalNavButtonLeft {

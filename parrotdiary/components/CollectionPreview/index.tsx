@@ -562,6 +562,8 @@ const ParrotModal = ({ parrot, onClose, allParrots }: {
 
   const getModalClass = () => {
     if (!parrot.obtained) return styles.modalContentUnobtained;
+
+    console.log(`modalContent${parrot.rarity.abbreviation}`);
     return styles[`modalContent${parrot.rarity.abbreviation}`];
   };
 
