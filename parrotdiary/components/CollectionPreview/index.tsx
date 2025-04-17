@@ -360,7 +360,6 @@ const ParrotModal = ({
   parrot, 
   onClose, 
   allParrots,
-  onTagsUpdated
 }: {
   parrot: Parrot;
   onClose: () => void;
@@ -1285,7 +1284,7 @@ const ParrotModal = ({
               </button>
             ))}
           </div>
-          
+
           {isAuthenticated && allTags.length > 0 && (
           <div className={styles.tagFilter}>
             <div className={styles.tagFilterLabel}>

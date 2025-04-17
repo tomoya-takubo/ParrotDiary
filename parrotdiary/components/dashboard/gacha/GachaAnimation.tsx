@@ -453,12 +453,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
             });
           }
         });
-        interface GachaHistory {
-          user_id: string;
-          parrot_id: string;
-          executed_at: string;
-        }
-        
+
         const executePromises = async () => {
           const results = [];
           
