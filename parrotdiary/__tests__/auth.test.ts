@@ -1,4 +1,4 @@
-import { signIn, signUp } from '../app/lib/auth';
+import { signIn, signUp } from '@/lib/auth';
 
 describe('認証機能のテスト', () => {
   test('新規ユーザー登録', async () => {

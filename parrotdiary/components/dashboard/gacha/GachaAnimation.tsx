@@ -159,6 +159,8 @@ const getJSTISOString = () => {
   return new Date(now.getTime() + (9 * 60 * 60 * 1000)).toISOString();
 };
 
+
+
 /**
  * ガチャアニメーションコンポーネント
  * Supabaseと連携してパロットを抽選し、ユーザーのコレクションに追加します
@@ -208,6 +210,48 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
       setAllRevealed(false);
       setShowingSingleResult(false);
       setCurrentSingleParrot(null);
+      
+      // セッションストレージから状態を復元（もしあれば）
+      const savedState = sessionStorage.getItem('gachaState');
+      if (savedState) {
+        try {
+          const parsedState = JSON.parse(savedState);
+          if (parsedState.showResult) {
+            setGachaResults(parsedState.gachaResults);
+            setShowResult(parsedState.showResult);
+            setAllRevealed(parsedState.allRevealed);
+          }
+        } catch (e) {
+          console.error('ガチャ状態の復元エラー:', e);
+        }
+      }
+      
+      // ビジビリティ変更イベントのリスナーを追加
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'visible') {
+          // タブがアクティブになったとき、状態を復元
+          const savedState = sessionStorage.getItem('gachaState');
+          if (savedState) {
+            try {
+              const parsedState = JSON.parse(savedState);
+              if (parsedState.showResult) {
+                setGachaResults(parsedState.gachaResults);
+                setShowResult(parsedState.showResult);
+                setAllRevealed(parsedState.allRevealed);
+              }
+            } catch (e) {
+              console.error('ガチャ状態の復元エラー:', e);
+            }
+          }
+        }
+      };
+      
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      
+      // クリーンアップ関数
+      return () => {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      };
     }
   }, [isOpen, user]);
 
@@ -222,6 +266,20 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
       setAllRevealed(true);
     }
   }, [gachaResults]);
+
+  // 2. ガチャ結果が変更されたときに状態を保存するuseEffect追加（既存のuseEffectの近くに）
+  useEffect(() => {
+    // ガチャ結果が表示されている場合のみ保存
+    if (showResult && gachaResults.length > 0) {
+      // セッションストレージに状態を保存
+      const stateToSave = {
+        showResult,
+        gachaResults,
+        allRevealed
+      };
+      sessionStorage.setItem('gachaState', JSON.stringify(stateToSave));
+    }
+  }, [showResult, gachaResults, allRevealed]);
 
   // ユーザーのチケット情報を取得
   const fetchTickets = async () => {
@@ -1179,7 +1237,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                       <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
                         {gachaResults.map((result, index) => (
                           <motion.div
-                            key={`${result.parrot.parrot_id}-${index}`} // インデックスを組み合わせてユニークなキーにする
+                            key={`${result.parrot.parrot_id}-${index}`} // ユニークなキーにする
                             initial={{ opacity: 0 }}
                             animate={{ opacity: result.revealed ? 1 : 0.4 }}
                             transition={{ duration: 0.3 }}

@@ -48,7 +48,6 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
    * このメソッドは以下の認証処理を扱います：
    * - 新規ユーザー登録（サインアップ）
    * - 既存ユーザーのログイン（ログイン）
-   * - パスワードリセットメールの送信
    * 
    * 各処理では適切な入力検証を行い、Supabase認証およびデータベース操作を実行します。
    * エラー発生時は適切なエラーメッセージを表示し、成功時はダッシュボードへリダイレクトします。
@@ -83,9 +82,6 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     };
     //#endregion
 
-    // 基本的な入力検証
-    // if (!validateEmail(email) || !validatePassword(password)) return;
-
     // 送信処理の開始
     setIsLoading(true);
     setFormFeedback(null); // 前回のフィードバックをクリア
@@ -103,7 +99,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
     try {
       //#region モード別処理分岐
-      // modalModeに応じて処理を分岐（サインアップ、ログイン、パスワードリセット）
+      // modalModeに応じて処理を分岐（サインアップ、ログイン）
       if (modalMode === 'signup') {
         //#region アカウント新規作成処理
         // サインアップ用の追加検証
@@ -300,33 +296,6 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           onClose();
           setIsProcessingSuccess(false); // 処理完了後にフラグをオフ
         }, 1000);
-        //#endregion
-
-        //#region パスワードリセット処理
-        // パスワードリセット前にメールアドレスの有効性を検証
-        if (!validateEmail(email)) {
-          setIsLoading(false);
-          return;
-        }
-        
-        // パスワードリセットメール送信
-        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/auth/reset-password` // リセット後のリダイレクト先
-        });
-
-        if (resetError) throw resetError;
-
-        // 成功フィードバック
-        setFormFeedback({
-          type: 'success',
-          message: 'パスワードリセット用のメールを送信しました。メールボックスをご確認ください。'
-        });
-
-        // 3秒後にモーダルを閉じる
-        setTimeout(() => {
-          onClose();
-          resetForm();
-        }, 3000);
         //#endregion
       }
       //#endregion
