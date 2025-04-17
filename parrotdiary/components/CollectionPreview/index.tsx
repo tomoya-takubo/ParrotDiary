@@ -1270,6 +1270,7 @@ const ParrotModal = ({
             <button
               className={`${styles.rarityButton} ${searchRarity === null ? styles.active : ''}`}
               onClick={() => setSearchRarity(null)}
+              data-rarity="all"
             >
               全レアリティ
             </button>
@@ -1278,11 +1279,13 @@ const ParrotModal = ({
                 key={rarity}
                 className={`${styles.rarityButton} ${searchRarity === rarity ? styles.active : ''}`}
                 onClick={() => setSearchRarity(rarity)}
+                data-rarity={rarity}
               >
                 {rarity}
               </button>
             ))}
           </div>
+          
           {isAuthenticated && allTags.length > 0 && (
           <div className={styles.tagFilter}>
             <div className={styles.tagFilterLabel}>

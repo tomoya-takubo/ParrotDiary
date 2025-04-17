@@ -2220,3 +2220,173 @@
 .removeTagButton:hover {
   background-color: rgba(0, 0, 0, 0.05);  /* ホバー時の背景色を微妙に変更 */
 }
+
+/* レアリティボタンの基本スタイル */
+.rarityFilter {
+  justify-content: space-between;
+}
+
+.rarityButton {
+  flex: 1;
+  min-width: auto;
+  font-size: 12px;
+  padding: 8px 6px;
+  white-space: nowrap;
+  text-align: center;
+  margin: 0 2px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+/* モバイル向けフィルター修正 */
+@media (max-width: 640px) {
+/* フィルターヘッダー全体を縦並びに */
+.filterHeader {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+/* 検索ボックスを幅いっぱいに */
+.searchBox {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* 各ボタングループを横いっぱいに */
+.sortButtons,
+.obtainedFilter,
+.rarityFilter {
+  width: 100%;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 4px; /* スクロールバー用の余白 */
+}
+
+/* ソートボタンのサイズと間隔調整 */
+.sortButton {
+  flex: 1;
+  min-width: auto;
+  font-size: 12px;
+  padding: 8px 6px;
+  white-space: nowrap;
+  text-align: center;
+  margin: 0 2px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* レアリティボタン色の設定 */
+.rarityButton.active {
+  background: #8b5cf6;
+  color: white;
+  border-color: #8b5cf6;
+}
+
+/* 全レアリティボタンはアクティブ時の紫色を維持 */
+.rarityButton[data-rarity="all"].active {
+  background: #8b5cf6;
+  color: white;
+  border-color: #8b5cf6;
+}
+
+/* N(ノーマル)レアリティの色 - グレー */
+.rarityButton[data-rarity="N"] {
+  border-color: #808080;
+}
+.rarityButton[data-rarity="N"].active {
+  background: #808080;
+  color: white;
+  border-color: #808080;
+}
+
+/* R(レア)レアリティの色 - 青 */
+.rarityButton[data-rarity="R"] {
+  border-color: #3399FF;
+}
+.rarityButton[data-rarity="R"].active {
+  background: #3399FF;
+  color: white;
+  border-color: #3399FF;
+}
+
+/* SR(スーパーレア)レアリティの色 - 紫 */
+.rarityButton[data-rarity="SR"] {
+  border-color: #CC33FF;
+}
+.rarityButton[data-rarity="SR"].active {
+  background: #CC33FF;
+  color: white;
+  border-color: #CC33FF;
+}
+
+/* UR(ウルトラレア)レアリティの色 - オレンジ */
+.rarityButton[data-rarity="UR"] {
+  border-color: #FF6B00;
+}
+.rarityButton[data-rarity="UR"].active {
+  background: #FF6B00;
+  color: white;
+  border-color: #FF6B00;
+}
+
+/* 獲得済みボタンを幅いっぱいに */
+.obtainedButton {
+  width: 100%;
+  justify-content: center;
+  padding: 8px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+}
+
+/* タップエリアを十分な大きさに確保 */
+.sortButton,
+.rarityButton,
+.obtainedButton {
+  min-height: 40px;
+}
+
+/* フィルターセクション内の余白調整 */
+.filterSection {
+  margin: 1rem 0;
+}
+
+/* タグフィルターも幅いっぱいに */
+.tagFilter {
+  width: 100%;
+  flex-direction: column;
+  align-items: stretch;
+  margin-top: 12px;
+}
+
+.tagFilterLabel {
+  margin-bottom: 6px;
+}
+
+.tagFilterSelect {
+  width: 100%;
+  max-width: 100%;
+  padding: 8px;
+}
+
+.clearTagFilterButton {
+  margin-top: 6px;
+  width: 100%;
+  padding: 8px;
+}
+}
+
+/* 非常に小さい画面サイズ向けの追加調整 */
+@media (max-width: 360px) {
+.sortButton,
+.rarityButton {
+  font-size: 10px;
+  padding: 6px 4px;
+}
+}
