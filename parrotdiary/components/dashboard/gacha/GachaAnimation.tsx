@@ -462,30 +462,86 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
         const executePromises = async () => {
           const results = [];
           
-          if (newParrots.length > 0) {
-            const result = await supabase.from('user_parrots').insert(newParrots);
-            results.push(result);
+          try {
+            // 1. 最初に全パロットに対して既存パロット情報を取得する
+            const parrotIds = [...newParrots, ...updateParrots].map(p => p.parrot_id);
+            const { data: existingUserParrots } = await supabase
+              .from('user_parrots')
+              .select('parrot_id, obtain_count')
+              .eq('user_id', user.id)
+              .in('parrot_id', parrotIds);
+            
+            console.log('既存パロット情報:', existingUserParrots);
+            
+            // 既存パロットのマップを作成
+            const existingParrotMap = new Map();
+            if (existingUserParrots) {
+              existingUserParrots.forEach(p => {
+                existingParrotMap.set(p.parrot_id, p.obtain_count);
+              });
+            }
+            
+            // 2. すべてのパロットを処理する
+            for (const parrot of [...newParrots, ...updateParrots]) {
+              try {
+                if (existingParrotMap.has(parrot.parrot_id)) {
+                  // 既存パロットの場合は更新
+                  const currentCount = existingParrotMap.get(parrot.parrot_id) || 0;
+                  const newCount = currentCount + 1; // 常に1増やす
+                  
+                  const result = await supabase
+                    .from('user_parrots')
+                    .update({
+                      obtain_count: newCount,
+                      obtained_at: currentTime
+                    })
+                    .eq('user_id', user.id)
+                    .eq('parrot_id', parrot.parrot_id);
+                  
+                  console.log(`パロット更新 (ID: ${parrot.parrot_id}):`, result);
+                } else {
+                  // 新規パロットの場合は挿入
+                  const result = await supabase
+                    .from('user_parrots')
+                    .insert({
+                      user_id: user.id,
+                      parrot_id: parrot.parrot_id,
+                      obtained_at: currentTime,
+                      obtain_count: 1
+                    });
+                  
+                  console.log(`パロット新規追加 (ID: ${parrot.parrot_id}):`, result);
+                  
+                  // 追加した場合、マップに追加して次回から更新処理にする
+                  existingParrotMap.set(parrot.parrot_id, 1);
+                }
+              } catch (err) {
+                console.error(`パロット処理エラー (ID: ${parrot.parrot_id}):`, err);
+              }
+            }
+            
+            // 3. ガチャ履歴を一括登録
+            try {
+              const historyRecords = selectedParrots.map(({ parrot }) => ({
+                user_id: user.id,
+                parrot_id: parrot.parrot_id,
+                executed_at: currentTime
+              }));
+              
+              const historyResult = await supabase.from('gacha_history').insert(historyRecords);
+              console.log('ガチャ履歴登録結果:', historyResult);
+              results.push(historyResult);
+            } catch (err) {
+              console.error('ガチャ履歴登録エラー:', err);
+            }
+            
+            return results;
+          } catch (error) {
+            console.error('データベース操作エラー:', error);
+            return []; // 空の結果を返す
           }
-          
-          if (updateParrots.length > 0) {
-            // UPSERTを使用して一括更新
-            const result = await supabase.from('user_parrots').upsert(updateParrots);
-            results.push(result);
-          }
-          
-          // ガチャ履歴を一括登録
-          const historyRecords: GachaHistory[] = selectedParrots.map(({ parrot }) => ({
-            user_id: user.id,
-            parrot_id: parrot.parrot_id,
-            executed_at: currentTime
-          }));
-          
-          const historyResult = await supabase.from('gacha_history').insert(historyRecords);
-          results.push(historyResult);
-          
-          return results;
         };
-        
+
         // すべてのデータベース操作を実行
         await executePromises();
       }
@@ -1128,7 +1184,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                       <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
                         {gachaResults.map((result, index) => (
                           <motion.div
-                            key={result.parrot.parrot_id}
+                            key={`${result.parrot.parrot_id}-${index}`} // インデックスを組み合わせてユニークなキーにする
                             initial={{ opacity: 0 }}
                             animate={{ opacity: result.revealed ? 1 : 0.4 }}
                             transition={{ duration: 0.3 }}
