@@ -356,10 +356,16 @@ export default function CollectionPreview() {
 // ParrotModal関数の修正部分
 
 // ParrotModalコンポーネントの修正版
-const ParrotModal = ({ parrot, onClose, allParrots }: {
+const ParrotModal = ({ 
+  parrot, 
+  onClose, 
+  allParrots,
+  onTagsUpdated
+}: {
   parrot: Parrot;
   onClose: () => void;
   allParrots: Parrot[];
+  onTagsUpdated?: () => void;
 }) => {
   const obtainInfo = parrot.user_parrots.find(up => up.user_id === currentUser);
   
@@ -488,25 +494,42 @@ const ParrotModal = ({ parrot, onClose, allParrots }: {
         console.error('タグ追加エラー詳細:', error);
         setTagError(`タグの追加に失敗しました: ${error.message || 'エラーが発生しました'}`);
       } else if (data) {
-        // 成功したら、タグリストに新しいタグを追加
+        // モーダル内のタグリストを更新
         setTags([...tags, ...(data as ParrotTag[])]);
-        // 入力フィールドをクリア
-        setNewTagName('');
+        
         // 追加したタグ名を取得
         const newTagNames = (data as ParrotTag[]).map(tag => tag.parrot_tag_name);
-
-        // 全体のタグリストを更新（絞り込み用）
+        
+        // 全体のタグリストを更新
         setAllTags(prevTags => {
-          // 重複を避けるために新しい一意のタグリストを作成
+          // 重複を避けるため
           const updatedTags = [...prevTags];
           newTagNames.forEach(tagName => {
             if (!updatedTags.includes(tagName)) {
               updatedTags.push(tagName);
             }
           });
-          // アルファベット順にソート
           return updatedTags.sort();
         });
+        
+        // 親コンポーネントのparrots配列も更新
+        const newParrotId = parrot.parrot_id;
+        const newTagData = data as ParrotTag[];
+        
+        // parrots配列を直接更新
+        const updatedParrots = parrots.map(p => {
+          if (p.parrot_id === newParrotId) {
+            // パロットのタグ配列を更新
+            const updatedParrot = { ...p };
+            if (!updatedParrot.tags) updatedParrot.tags = [];
+            updatedParrot.tags = [...updatedParrot.tags, ...newTagData];
+            return updatedParrot;
+          }
+          return p;
+        });
+        
+        // 親コンポーネントの状態を更新
+        setParrots(updatedParrots);
       }
     } catch (error) {
       console.error('タグ追加例外:', error);
@@ -971,10 +994,9 @@ const ParrotModal = ({ parrot, onClose, allParrots }: {
   }, [sortedAndFilteredParrots.length, itemsPerPage, currentPage]);
 
   // タグが変更されたときにも、ページを1に戻す処理を追加
-  // useEffectフックに追加
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, searchRarity, showObtainedOnly, sortType, searchTag]);
+  }, [searchQuery, searchRarity, showObtainedOnly, sortType, searchTag, parrots]);
 
   // 代わりに、useEffectフックを使用してタグを読み込む
   // 以下のコードを追加または修正
@@ -1379,6 +1401,7 @@ const ParrotModal = ({ parrot, onClose, allParrots }: {
           parrot={selectedParrot}
           onClose={() => setSelectedParrot(null)}
           allParrots={sortedAndFilteredParrots} // パロット配列を渡す
+          onTagsUpdated={() => loadParrotData(currentUser)}  // データを再読み込み
         />
       )}
     </div>
