@@ -49,6 +49,10 @@ const DiarySearch = () => {
   const [entriesPerPage, setEntriesPerPage] = useState(5);
   const [pageSizeOptions] = useState([5, 10, 20, 50]);
 
+  // 状態管理に「パロット表示」のステートを追加
+  const [showParrots, setShowParrots] = useState(true); // デフォルトでは表示する
+
+
   // エントリーコンテナへの参照を追加
   const entriesContainerRef = useRef<HTMLDivElement>(null);
   // #endregion
@@ -113,6 +117,11 @@ const DiarySearch = () => {
   // #endregion
 
   // #region イベントハンドラ
+  // トグルボタンのクリックハンドラ
+  const handleParrotToggle = () => {
+    setShowParrots(!showParrots);
+  };
+
   const handleTagToggle = (tag: string) => {
     if (selectedTags.includes(tag)) {
       setSelectedTags(selectedTags.filter((t) => t !== tag));
@@ -155,19 +164,21 @@ const DiarySearch = () => {
 
   // ページ変更ハンドラ
   const handlePageChange = (page: number) => {
+    // 現在のスクロール位置を記録
+    const currentScrollPosition = window.scrollY;
+    
+    // ページネーションのみ更新
     setCurrentPage(page);
     
-    // スクロール先を日記エントリーコンテナに変更
-    if (entriesContainerRef.current) {
-      // コンテナの位置を取得して少し上にスクロール（ヘッダーが見えるように）
-      const containerTop = entriesContainerRef.current.offsetTop;
-      const scrollPosition = Math.max(0, containerTop - 80); // 80pxは調整可能
-      
+    // UIの更新後にスクロール位置を維持するための処理
+    // requestAnimationFrameを使用してDOM更新後に実行
+    requestAnimationFrame(() => {
+      // ページネーションボタン周辺の位置を維持
       window.scrollTo({
-        top: scrollPosition,
-        behavior: 'smooth'
+        top: currentScrollPosition,
+        behavior: 'auto' // 'smooth'ではなく'auto'にすることでジャンプを防止
       });
-    }
+    });
   };
 
   // 編集モーダルを開く
@@ -505,6 +516,20 @@ const DiarySearch = () => {
           <div className={styles.resultCount}>
             {filteredEntries.length}件の記録が見つかりました
           </div>
+
+          {/* パロット表示トグルボタンを追加 */}
+          <div className={styles.parrotToggle}>
+            <label className={styles.toggleLabel}>
+              <input
+                type="checkbox"
+                checked={showParrots}
+                onChange={handleParrotToggle}
+                className={styles.toggleInput}
+              />
+              <span className={styles.toggleSwitch}></span>
+              パロットを表示
+            </label>
+          </div>
           
           <div className={styles.pageSizeSelector}>
             <span>表示件数: </span>
@@ -578,7 +603,7 @@ const DiarySearch = () => {
                       {entry.line3 && <p>{entry.line3}</p>}
                       
                       {/* パロットGIFの表示 */}
-                      {entry.parrots && entry.parrots.length > 0 && (
+                      {showParrots && entry.parrots && entry.parrots.length > 0 && (
                         <div className={styles.parrotBottomRight}>
                           {entry.parrots.map((parrot, index) => (
                             <div key={index} className={styles.parrotContainer}>

@@ -879,3 +879,103 @@
     font-size: 16px; /* iOSでのズーム防止のため16px以上に */
   }
 }
+
+/* diary.module.css に追加するスタイル */
+
+/* パロット表示トグル */
+.parrotToggle {
+  display: flex;
+  align-items: center;
+  margin-right: 16px;
+}
+
+.toggleLabel {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: #4a5568;
+}
+
+.toggleInput {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggleSwitch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  background-color: #cbd5e0;
+  border-radius: 20px;
+  margin-right: 8px;
+  transition: all 0.3s;
+}
+
+.toggleSwitch::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: white;
+  top: 2px;
+  left: 2px;
+  transition: all 0.3s;
+}
+
+.toggleInput:checked + .toggleSwitch {
+  background-color: #3182ce;
+}
+
+.toggleInput:checked + .toggleSwitch::after {
+  transform: translateX(16px);
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 640px) {
+  .resultControlRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .parrotToggle {
+    margin-right: 0;
+  }
+}
+
+/* 固定位置のページネーション */
+.fixedPagination {
+  position: sticky;
+  bottom: 16px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  padding: 8px;
+  margin-top: 16px;
+  /* 横センター配置 */
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 90%;
+  display: inline-flex;
+  justify-content: center;
+}
+
+/* スマホ向け調整 */
+@media (max-width: 640px) {
+  .fixedPagination {
+    padding: 6px;
+    bottom: 12px;
+  }
+  
+  .paginationButton {
+    min-width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+}
