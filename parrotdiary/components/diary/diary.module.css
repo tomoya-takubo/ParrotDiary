@@ -979,3 +979,78 @@
     font-size: 12px;
   }
 }
+
+/* diary.module.css に追加 */
+
+/* フィルターボタンとパロットトグルを含む行 */
+.filterRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+/* パロット表示トグル */
+.parrotToggle {
+  display: flex;
+  align-items: center;
+}
+
+.toggleLabel {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: #4a5568;
+}
+
+.toggleInput {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggleSwitch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  background-color: #cbd5e0;
+  border-radius: 20px;
+  margin-right: 8px;
+  transition: all 0.3s;
+}
+
+.toggleSwitch::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: white;
+  top: 2px;
+  left: 2px;
+  transition: all 0.3s;
+}
+
+.toggleInput:checked + .toggleSwitch {
+  background-color: #3182ce;
+}
+
+.toggleInput:checked + .toggleSwitch::after {
+  transform: translateX(16px);
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 480px) {
+  .filterRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .parrotToggle {
+    align-self: flex-end; /* スマホ表示時は右寄せ */
+  }
+}

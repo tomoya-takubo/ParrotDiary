@@ -46,8 +46,8 @@ const DiarySearch = () => {
   
   // ページネーション用の状態
   const [currentPage, setCurrentPage] = useState(1);
-  const [entriesPerPage, setEntriesPerPage] = useState(5);
-  const [pageSizeOptions] = useState([5, 10, 20, 50]);
+  const [entriesPerPage, setEntriesPerPage] = useState(3);
+  const [pageSizeOptions] = useState([3, 5, 10, 20, 50]);
 
   // 状態管理に「パロット表示」のステートを追加
   const [showParrots, setShowParrots] = useState(true); // デフォルトでは表示する
@@ -427,20 +427,36 @@ const DiarySearch = () => {
           <Search className={styles.searchIcon} size={20} />
         </div>
 
-        {/* フィルターボタン */}
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          className={styles.filterButton}
-        >
-          <FilterIcon size={16} />
-          <span>フィルター</span>
-          {activeFilterCount > 0 && (
-            <span className={styles.filterBadge}>{activeFilterCount}</span>
-          )}
-          <svg className={styles.arrowIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M6 9l6 6 6-6" />
-          </svg>
-        </button>
+        {/* フィルターボタンとパロットトグルを同じ行に */}
+        <div className={styles.filterRow}>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={styles.filterButton}
+          >
+            <FilterIcon size={16} />
+            <span>フィルター</span>
+            {activeFilterCount > 0 && (
+              <span className={styles.filterBadge}>{activeFilterCount}</span>
+            )}
+            <svg className={styles.arrowIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+          
+          {/* パロット表示トグルを右端に配置 */}
+          <div className={styles.parrotToggle}>
+            <label className={styles.toggleLabel}>
+              <input
+                type="checkbox"
+                checked={showParrots}
+                onChange={handleParrotToggle}
+                className={styles.toggleInput}
+              />
+              <span className={styles.toggleSwitch}></span>
+              パロットを表示
+            </label>
+          </div>
+        </div>
 
         {/* フィルターパネル */}
         {showFilters && (
@@ -517,20 +533,6 @@ const DiarySearch = () => {
             {filteredEntries.length}件の記録が見つかりました
           </div>
 
-          {/* パロット表示トグルボタンを追加 */}
-          <div className={styles.parrotToggle}>
-            <label className={styles.toggleLabel}>
-              <input
-                type="checkbox"
-                checked={showParrots}
-                onChange={handleParrotToggle}
-                className={styles.toggleInput}
-              />
-              <span className={styles.toggleSwitch}></span>
-              パロットを表示
-            </label>
-          </div>
-          
           <div className={styles.pageSizeSelector}>
             <span>表示件数: </span>
             <select
