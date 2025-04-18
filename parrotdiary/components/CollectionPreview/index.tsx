@@ -369,11 +369,16 @@ const ParrotModal = ({
   parrot, 
   onClose, 
   allParrots,
+  onTagsUpdated,
+  parrots,
+  setParrots
 }: {
   parrot: Parrot;
   onClose: () => void;
   allParrots: Parrot[];
   onTagsUpdated?: () => void;
+  parrots: Parrot[];
+  setParrots: React.Dispatch<React.SetStateAction<Parrot[]>>;
 }) => {
   const obtainInfo = parrot.user_parrots.find(up => up.user_id === currentUser);
   
@@ -466,7 +471,6 @@ const ParrotModal = ({
 
   // 新しいタグを追加する関数
   const addTag = async () => {
-    // 既存の実装を維持
     if (!newTagName.trim()) return;
     if (!currentUser || !parrot.parrot_id) return;
     
@@ -503,14 +507,18 @@ const ParrotModal = ({
         setTagError(`タグの追加に失敗しました: ${error.message || 'エラーが発生しました'}`);
       } else if (data) {
         // モーダル内のタグリストを更新
-        setTags([...tags, ...(data as ParrotTag[])]);
+        const newTagsData = data as ParrotTag[];
+        setTags([...tags, ...newTagsData]);
         
-        // 追加したタグ名を取得
-        const newTagNames = (data as ParrotTag[]).map(tag => tag.parrot_tag_name);
+        // 新しく追加したタグ名を取得
+        const newTagNames = newTagsData.map(tag => tag.parrot_tag_name);
+        
+        // 入力欄をクリア
+        setNewTagName('');
         
         // 全体のタグリストを更新
         setAllTags(prevTags => {
-          // 重複を避けるため
+          // 重複を避けるためフィルタリング
           const updatedTags = [...prevTags];
           newTagNames.forEach(tagName => {
             if (!updatedTags.includes(tagName)) {
@@ -520,23 +528,19 @@ const ParrotModal = ({
           return updatedTags.sort();
         });
         
-        // 親コンポーネントのparrots配列も更新
-        const newParrotId = parrot.parrot_id;
-        const newTagData = data as ParrotTag[];
-        
-        // parrots配列を直接更新
+        // parrots配列も更新して画面に即時反映
         const updatedParrots = parrots.map(p => {
-          if (p.parrot_id === newParrotId) {
+          if (p.parrot_id === parrot.parrot_id) {
             // パロットのタグ配列を更新
             const updatedParrot = { ...p };
             if (!updatedParrot.tags) updatedParrot.tags = [];
-            updatedParrot.tags = [...updatedParrot.tags, ...newTagData];
+            updatedParrot.tags = [...updatedParrot.tags, ...newTagsData];
             return updatedParrot;
           }
           return p;
         });
         
-        // 親コンポーネントの状態を更新
+        // 親コンポーネントの状態を更新して絞り込み結果に反映
         setParrots(updatedParrots);
       }
     } catch (error) {
@@ -564,22 +568,42 @@ const ParrotModal = ({
         console.error('タグ削除エラー:', error);
         setTagError('タグの削除に失敗しました');
       } else {
-        // 削除するタグの名前を保存
+        // 削除するタグの情報を取得
         const tagToRemove = tags.find(tag => tag.entry_id === tagId);
         
         // モーダル内のタグリストを更新
         setTags(tags.filter(tag => tag.entry_id !== tagId));
         
         if (tagToRemove) {
-          // 全体のパロットリストから、このタグ名を使用している他のパロットを検索
-          const isTagUsedElsewhere = parrots.some(p => 
+          // 1. パロットデータ全体の更新 - このタグを持つパロットから削除
+          const updatedParrots = parrots.map(p => {
+            if (p.parrot_id === parrot.parrot_id) {
+              // パロットのタグ配列から削除対象のタグを除外
+              const updatedParrot = { ...p };
+              if (updatedParrot.tags) {
+                updatedParrot.tags = updatedParrot.tags.filter(t => t.entry_id !== tagId);
+              }
+              return updatedParrot;
+            }
+            return p;
+          });
+          
+          // 2. 親コンポーネントのパロット状態を更新（絞り込み結果に即時反映）
+          setParrots(updatedParrots);
+          
+          // 3. 全体のタグリスト更新（このタグが他で使われていなければリストから削除）
+          const isTagUsedElsewhere = updatedParrots.some(p => 
             p.parrot_id !== parrot.parrot_id && 
             p.tags?.some(t => t.parrot_tag_name === tagToRemove.parrot_tag_name)
           );
           
-          // 他に使用されていなければ、絞り込みリストからも削除
           if (!isTagUsedElsewhere) {
             setAllTags(prevTags => prevTags.filter(t => t !== tagToRemove.parrot_tag_name));
+            
+            // 4. 現在このタグで絞り込み中なら、絞り込みをクリア
+            if (searchTag === tagToRemove.parrot_tag_name) {
+              setSearchTag(null);
+            }
           }
         }
       }
@@ -640,10 +664,10 @@ const ParrotModal = ({
       return;
     }
     
-    // 追加中フラグを使わない - UI操作を最小限に抑える
+    // 一時IDを作成（前回の実装と同様）
     const tempId = `temp-${Date.now()}`;
     
-    // タグを追加 - タグオブジェクトをそのまま使用
+    // 新しいタグオブジェクトを作成
     const newTag = {
       entry_id: tempId,
       user_id: currentUser,
@@ -652,10 +676,24 @@ const ParrotModal = ({
       executed_at: new Date().toISOString()
     };
     
-    // 状態更新は一度だけ行う（UIの安定性を確保）
+    // 即座にUIを更新
     setTags(prevTags => [...prevTags, newTag]);
     
-    // サーバー処理 - UI更新とは切り離す
+    // parrots配列も即座に更新
+    const updatedParrots = parrots.map(p => {
+      if (p.parrot_id === parrot.parrot_id) {
+        const updatedParrot = { ...p };
+        if (!updatedParrot.tags) updatedParrot.tags = [];
+        updatedParrot.tags = [...updatedParrot.tags, newTag];
+        return updatedParrot;
+      }
+      return p;
+    });
+    
+    // 親コンポーネントの状態を更新して絞り込み結果に反映
+    setParrots(updatedParrots);
+    
+    // サーバー処理
     try {
       const { data, error } = await supabase
         .from('user_parrots_tags')
@@ -670,20 +708,50 @@ const ParrotModal = ({
       if (error) {
         console.error('タグ追加エラー:', error);
         
-        // エラー時のみ状態を元に戻す
+        // エラー時は状態を元に戻す
         setTags(prevTags => prevTags.filter(t => t.entry_id !== tempId));
+        
+        // parrots配列も元に戻す
+        const revertedParrots = parrots.map(p => {
+          if (p.parrot_id === parrot.parrot_id) {
+            const revertedParrot = { ...p };
+            if (revertedParrot.tags) {
+              revertedParrot.tags = revertedParrot.tags.filter(t => t.entry_id !== tempId);
+            }
+            return revertedParrot;
+          }
+          return p;
+        });
+        setParrots(revertedParrots);
+        
         setTagError('タグの追加に失敗しました');
       } else if (data && data.length > 0) {
-        // 成功時も、ID更新のみ行いタグ全体の再描画は避ける
+        // 成功時、一時IDを実際のIDに置き換え
         const realTag = data[0] as ParrotTag;
         
+        // tagsの状態を更新
         setTags(prevTags => 
           prevTags.map(tag => 
             tag.entry_id === tempId ? realTag : tag
           )
         );
         
-        // 全体のタグリストの更新 - 非表示領域のため影響は小さい
+        // parrots配列も更新
+        const finalParrots = parrots.map(p => {
+          if (p.parrot_id === parrot.parrot_id) {
+            const updatedParrot = { ...p };
+            if (updatedParrot.tags) {
+              updatedParrot.tags = updatedParrot.tags.map(t => 
+                t.entry_id === tempId ? realTag : t
+              );
+            }
+            return updatedParrot;
+          }
+          return p;
+        });
+        setParrots(finalParrots);
+        
+        // 全体のタグリストの更新（まだ存在しない場合のみ）
         const newTagName = realTag.parrot_tag_name;
         if (!allTags.includes(newTagName)) {
           setAllTags(prevTags => [...prevTags, newTagName].sort());
@@ -691,7 +759,23 @@ const ParrotModal = ({
       }
     } catch (error) {
       console.error('タグ追加例外:', error);
+      
+      // エラー時は状態を元に戻す
       setTags(prevTags => prevTags.filter(t => t.entry_id !== tempId));
+      
+      // parrots配列も元に戻す
+      const revertedParrots = parrots.map(p => {
+        if (p.parrot_id === parrot.parrot_id) {
+          const revertedParrot = { ...p };
+          if (revertedParrot.tags) {
+            revertedParrot.tags = revertedParrot.tags.filter(t => t.entry_id !== tempId);
+          }
+          return revertedParrot;
+        }
+        return p;
+      });
+      setParrots(revertedParrots);
+      
       setTagError('タグの追加中にエラーが発生しました');
     }
   };
@@ -1411,8 +1495,10 @@ const ParrotModal = ({
         <ParrotModal
           parrot={selectedParrot}
           onClose={() => setSelectedParrot(null)}
-          allParrots={sortedAndFilteredParrots} // パロット配列を渡す
-          onTagsUpdated={() => loadParrotData(currentUser)}  // データを再読み込み
+          allParrots={sortedAndFilteredParrots}
+          // ここを追加
+          parrots={parrots}
+          setParrots={setParrots}
         />
       )}
     </div>
