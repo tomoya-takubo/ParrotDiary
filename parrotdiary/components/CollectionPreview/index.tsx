@@ -331,15 +331,24 @@ export default function CollectionPreview() {
   // ページネーション制御関数
   const handlePageChange = (pageNumber: number) => {
     if (pageNumber < 1 || pageNumber > totalPages) return;
+    
+    // まずコンテンツにローディング状態を適用
+    const gridElement = document.querySelector('.' + styles.grid);
+    if (gridElement) {
+      gridElement.classList.add(styles.loading);
+    }
+    
+    // ページ番号を変更
     setCurrentPage(pageNumber);
-    // ページ上部にスクロール
-    window.scrollTo({
-      top: document.querySelector('.'+styles.filterSection)?.getBoundingClientRect().top 
-           ? (document.querySelector('.'+styles.filterSection)?.getBoundingClientRect().top as number) + window.scrollY - 20
-           : 0,
-      behavior: 'smooth'
-    });
-  };
+    
+    // ローディング状態を解除
+    setTimeout(() => {
+      if (gridElement) {
+        gridElement.classList.remove(styles.loading);
+      }
+    }, 200);
+    
+  }
 
   const getRarityOrder = (rarityAbbreviation: string): number => {
     switch (rarityAbbreviation) {
@@ -1271,7 +1280,7 @@ const ParrotModal = ({
               onClick={() => setSearchRarity(null)}
               data-rarity="all"
             >
-              全レアリティ
+              All
             </button>
             {['N', 'R', 'SR', 'UR'].map((rarity) => (
               <button
