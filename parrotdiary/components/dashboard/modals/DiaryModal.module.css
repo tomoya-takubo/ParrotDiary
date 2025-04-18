@@ -236,7 +236,7 @@
 .parrotContainer {
   position: absolute;
   bottom: 0;
-  right: 8px;
+  right: -2px;
   display: flex;
   gap: 5px;
   z-index: 5;

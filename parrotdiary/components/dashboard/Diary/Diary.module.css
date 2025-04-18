@@ -525,28 +525,6 @@
   margin: 0 16px;
 }
 
-/* パロット右下配置用コンテナ */
-.parrotBottomRight {
-  position: absolute;
-  bottom: 4px;
-  right: 4px;
-  display: flex;
-  align-items: center;
-  z-index: 2;
-  margin-right: 5px;
-  /* padding: 3px; */
-}
-
-/* パロットGIF */
-.parrotGif {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
 /* 将来的に複数のパロットを選択する際のスタイル */
 .parrotSelector {
   position: relative;
@@ -635,32 +613,6 @@
   border: 2px solid #3b82f6;
 }
 
-/* 複数パロット表示用のCSS */
-
-/* パロット右下配置用コンテナ - 複数パロット対応 */
-.parrotBottomRight {
-  position: absolute;
-  bottom: 18px;
-  right: 18px;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 5px;
-  /* max-width: 130px; 最大幅を制限 */
-  z-index: 2;
-  padding: 3px;
-}
-
-/* パロットGIF */
-.parrotGif {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
 /* 表示が多すぎる場合のオーバーレイ (任意) */
 .parrotOverflow {
   position: relative;
@@ -682,32 +634,18 @@
   justify-content: center;
 }
 
-/* パロット表示用のスタイル */   
+/* パロット表示用のスタイル修正 */   
 .parrotBottomRight {
   position: absolute;
-  bottom: -10px; /* -2pxから12pxに変更 */
-  right: -8px; /* 6pxから16pxに変更 */
+  bottom: -4px;  /* 位置調整 */
+  right: -4px;   /* 位置調整 */
   display: flex;
   justify-content: flex-end;
   align-items: center;
   gap: 10px;
-  z-index: 1;
-  padding: 6px; /* 0から6pxに変更 */
+  z-index: 2;
+  padding: 6px;
 }
-
-.parrotGif {
-  width: 42px; /* 32pxから42pxに変更 */
-  height: 42px; /* 32pxから42pxに変更 */
-  object-fit: contain;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-/* .parrotGif:hover {
-  transform: scale(1.2);
-  z-index: 3;
-} */
 
 /* モーダル内のパロット選択セクション */
 .modalParrotSection {
@@ -827,33 +765,14 @@
   margin-top: 10px;
 }
 
-/* 新しいパロットコンテナスタイル */
-/* .parrotContainer {
-  width: 50px;
-  height: 50px;
-  background-color: #FF9F43; オレンジ色の円
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  transition: transform 0.2s;
-}
-*/
-
-/* .parrotContainer:hover {
-  transform: scale(1.1);
-} */
-
 .parrotGif {
   width: 40px;
   height: 40px;
   object-fit: contain;
   border-radius: 4px;
-  cursor: pointer;
+  cursor: default; /* カーソルを通常のものに変更 */
   transition: transform 0.2s;
-  z-index: 1; /* 明示的に低い値を設定 */
-  transform: scaleX(-1);
+  transform: scaleX(-1); /* GIFを左右反転 */
 }
 
 @media (max-width: 768px) {
@@ -876,13 +795,13 @@
   
   /* パロットの位置調整 */
   .parrotBottomRight {
-    bottom: 4px;
-    right: 4px;
+    bottom: -4px;
+    right: -4px;
   }
   
   .parrotGif {
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
   }
 }
 
@@ -918,12 +837,22 @@
     box-sizing: border-box;
   }
   
-    .editButton {
+  .editButton {
     font-size: 11px;
     padding: 2px 6px;
     border-radius: 16px;
     height: 22px;
     line-height: 1;
     white-space: nowrap;
+  }
+  /* パロット表示調整 */
+  .parrotBottomRight {
+    bottom: -3px;
+    right: -3px;
+  }
+  
+  .parrotGif {
+    width: 32px;
+    height: 32px;
   }
 }
