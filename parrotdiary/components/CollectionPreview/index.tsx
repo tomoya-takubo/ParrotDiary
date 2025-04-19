@@ -369,14 +369,12 @@ const ParrotModal = ({
   parrot, 
   onClose, 
   allParrots,
-  onTagsUpdated,
   parrots,
   setParrots
 }: {
   parrot: Parrot;
   onClose: () => void;
   allParrots: Parrot[];
-  onTagsUpdated?: () => void;
   parrots: Parrot[];
   setParrots: React.Dispatch<React.SetStateAction<Parrot[]>>;
 }) => {
@@ -1496,7 +1494,6 @@ const ParrotModal = ({
           parrot={selectedParrot}
           onClose={() => setSelectedParrot(null)}
           allParrots={sortedAndFilteredParrots}
-          // ここを追加
           parrots={parrots}
           setParrots={setParrots}
         />
