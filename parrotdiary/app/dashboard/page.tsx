@@ -210,16 +210,28 @@ export default function Dashboard() {
   
               // 連続ログイン更新処理
               if (streakData.last_login_date) {
+                // 日付部分のみを比較するため、両方の日付を「YYYY-MM-DD」形式に変換
                 const today = new Date();
                 const lastLogin = new Date(streakData.last_login_date);
-                const diffInDays = Math.floor((today.getTime() - lastLogin.getTime()) / (1000 * 60 * 60 * 24));
                 
-                console.log('📅 前回ログインからの日数:', diffInDays);
+                // 日付のみの文字列を取得（タイムゾーンを考慮）
+                const todayDateString = today.toISOString().split('T')[0];
+                const lastLoginDateString = lastLogin.toISOString().split('T')[0];
                 
-                if (diffInDays >= 1) {
+                // 日付オブジェクトの作成（時刻情報なし）
+                const todayDate = new Date(todayDateString);
+                const lastLoginDate = new Date(lastLoginDateString);
+                
+                // 日数差の計算（ミリ秒→日へ変換）
+                const diffInDays = Math.round((todayDate.getTime() - lastLoginDate.getTime()) / (1000 * 60 * 60 * 24));
+                
+                console.log('📅 前回ログインからの日数:', diffInDays, '今日:', todayDateString, '前回:', lastLoginDateString);
+                
+                // 1日経過している場合はストリークを更新
+                if (diffInDays === 1) {
                   const nowIso = today.toISOString();
-                  const updatedStreak = diffInDays === 1 ? streakData.login_streak_count + 1 : 1;
-              
+                  const updatedStreak = streakData.login_streak_count + 1;
+
                   const { error: streakUpdateError } = await supabase
                     .from('user_streaks')
                     .update({
@@ -228,13 +240,37 @@ export default function Dashboard() {
                       updated_at: nowIso
                     })
                     .eq('user_id', user.id);
-              
+
                   if (streakUpdateError) {
                     console.error('❌ streak更新エラー:', streakUpdateError);
                   } else {
                     console.log('✅ streakを更新しました:', updatedStreak);
                     loginStreak = updatedStreak; // 更新された値を使用
                   }
+                } 
+                // 1日以上経過している場合はストリークをリセット
+                else if (diffInDays > 1) {
+                  const nowIso = today.toISOString();
+                  
+                  const { error: streakResetError } = await supabase
+                    .from('user_streaks')
+                    .update({
+                      login_streak_count: 1, // 1にリセット（今日のログイン）
+                      last_login_date: nowIso,
+                      updated_at: nowIso
+                    })
+                    .eq('user_id', user.id);
+                    
+                  if (streakResetError) {
+                    console.error('❌ streak更新エラー:', streakResetError);
+                  } else {
+                    console.log('✅ streakをリセットしました: 1');
+                    loginStreak = 1; // リセットした値を使用
+                  }
+                }
+                // 同日の再ログインの場合はストリークを更新しない
+                else if (diffInDays === 0) {
+                  console.log('📝 同日のログインなのでストリークは更新しません');
                 }
               }
             }
