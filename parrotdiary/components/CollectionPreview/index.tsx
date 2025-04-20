@@ -721,34 +721,34 @@ const ParrotModal = ({
           return p;
         });
         setParrots(revertedParrots);
-        
+
         setTagError('タグの追加に失敗しました');
       } else if (data && data.length > 0) {
         // 成功時、一時IDを実際のIDに置き換え
         const realTag = data[0] as ParrotTag;
-        
+
         // tagsの状態を更新
-        setTags(prevTags => 
-          prevTags.map(tag => 
+        setTags(prevTags =>
+          prevTags.map(tag =>
             tag.entry_id === tempId ? realTag : tag
           )
         );
-        
+
         // parrots配列も更新
         const finalParrots = parrots.map(p => {
           if (p.parrot_id === parrot.parrot_id) {
             const updatedParrot = { ...p };
             if (updatedParrot.tags) {
-              updatedParrot.tags = updatedParrot.tags.map(t => 
-                t.entry_id === tempId ? realTag : t
-              );
+              updatedParrot.tags.push(realTag)
             }
+
             return updatedParrot;
           }
           return p;
         });
+
         setParrots(finalParrots);
-        
+
         // 全体のタグリストの更新（まだ存在しない場合のみ）
         const newTagName = realTag.parrot_tag_name;
         if (!allTags.includes(newTagName)) {
@@ -772,6 +772,7 @@ const ParrotModal = ({
         }
         return p;
       });
+
       setParrots(revertedParrots);
       
       setTagError('タグの追加中にエラーが発生しました');
