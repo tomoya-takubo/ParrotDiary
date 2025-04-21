@@ -230,17 +230,21 @@
   gap: 8px;
 }
 
+/* エントリータグのスタイル */
 .entryTag {
-  background-color: #ebf8ff;
-  color: #3182ce;
+  font-size: 10px;
   padding: 4px 8px;
-  border-radius: 20px;
-  font-size: 14px;
-  /* 以下を追加 */
-  height: 28px;
-  box-sizing: border-box;
+  border-radius: 9999px;
+  background-color: #e0f2fe;
+  color: #0284c7;
+  /* 縦位置の調整と一貫性のために追加 */
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  line-height: 1;
+  height: 24px;
+  box-sizing: border-box;
+  vertical-align: middle;
 }
 
 .entryContent {
@@ -345,21 +349,22 @@
 
 /* 既存のdiary.module.cssに追加するスタイル */
 
-/* 編集ボタン */
+/* 編集ボタンのスタイル */
 .editButton {
-  font-size: 12px;
+  font-size: 10px; /* 12pxから10pxに変更 */
   padding: 4px 8px;
   border-radius: 9999px;
   background-color: #f1f5f9;
   color: #64748b;
   border: none;
   cursor: pointer;
-  /* 以下を追加 */
-  height: 28px;
-  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  line-height: 1;
+  height: 24px;
+  box-sizing: border-box;
+  vertical-align: middle;
 }
 
 .editButton:hover {
@@ -590,22 +595,32 @@
   }
 
   .entryTag {
-    white-space: nowrap;
-    font-size: 11px;
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 9999px;
+    background-color: #e0f2fe;
+    color: #0284c7;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    height: 22px;
+    box-sizing: border-box;
+    vertical-align: middle;
+  }
+  
+  .editButton {
+    font-size: 12px; /* 11pxから12pxに変更 */
     padding: 2px 6px;
     border-radius: 16px;
-    /* 以下を追加・修正 */
-    height: 22px;
-    line-height: 1;
-  }  
-
-  .editButton {
-    font-size: 11px;
-    padding: 2px 6px;
-    /* 以下を追加・修正 */
     height: 22px;
     line-height: 1;
     white-space: nowrap;
+    /* 縦位置の調整を追加 */
+    vertical-align: middle;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .entryContent p {
