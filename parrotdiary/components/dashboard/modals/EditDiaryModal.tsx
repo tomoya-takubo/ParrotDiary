@@ -566,9 +566,34 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
           <div className={styles.timestampErrorContainer}>
             <div className={styles.entryTimestamp}>
               {date && entry.time 
-                ? `${date} ${entry.time} の記録` 
+                ? (() => {
+                    // 日付の文字列をDate型に変換
+                    const dateStr = date.replace(/年|月|日/g, '/').replace(/(\d+)\/(\d+)\/(\d+)/, '$1/$2/$3');
+                    const d = new Date(dateStr);
+                    if (!isNaN(d.getTime())) {
+                      // 正しい日付なら曜日を取得して表示
+                      const weekDays = ['日', '月', '火', '水', '木', '金', '土'];
+                      const weekday = weekDays[d.getDay()];
+                      const weekdayClass = d.getDay() === 0 ? styles.sundayText : 
+                                          d.getDay() === 6 ? styles.saturdayText : '';
+                      
+                      // 年/月/日（曜）形式で表示
+                      const year = d.getFullYear();
+                      const month = String(d.getMonth() + 1).padStart(2, '0');
+                      const day = String(d.getDate()).padStart(2, '0');
+                      
+                      return (
+                        <>
+                          {year}/{month}/{day}（<span className={weekdayClass}>{weekday}</span>） {entry.time} の記録
+                        </>
+                      );
+                    } else {
+                      // 日付の変換に失敗した場合は元の形式で表示
+                      return `${date} ${entry.time} の記録`;
+                    }
+                  })()
                 : `${new Date().toLocaleString('ja-JP')} の記録`}
-            </div>          
+              </div>
             {/* エラーメッセージ表示 */}
             {formError && (
               <div className={styles.errorText}>

@@ -676,3 +676,12 @@
     gap: 4px; /* より密集させる */
   }
 }
+
+/* 曜日の色分け */
+.sundayText {
+  color: #e53e3e; /* 赤色 */
+}
+
+.saturdayText {
+  color: #3182ce; /* 青色 */
+}
