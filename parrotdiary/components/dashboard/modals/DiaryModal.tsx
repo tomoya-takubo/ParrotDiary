@@ -229,7 +229,38 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
           <div className={styles.modalHeader}>
             <div className={styles.headerTitleContainer}>
               <Calendar className={styles.diaryIcon} size={24} />
-              <h2 className={styles.modalTitle}>{date}の記録</h2>
+              <h2 className={styles.modalTitle}>
+                {(() => {
+                  if (!date) return 'の記録';
+                  
+                  // 日付から曜日を取得する
+                  const matches = date.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
+                  if (matches) {
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    const [_, yearStr, monthStr, dayStr] = matches;
+                    const year = parseInt(yearStr);
+                    const month = parseInt(monthStr) - 1; // JavaScriptの月は0-11
+                    const day = parseInt(dayStr);
+                    
+                    const dateObj = new Date(year, month, day);
+                    const dayOfWeek = dateObj.getDay(); // 0:日曜日, 1:月曜日, ..., 6:土曜日
+                    const weekDays = ['日', '月', '火', '水', '木', '金', '土'];
+                    const weekDay = weekDays[dayOfWeek];
+                    
+                    // 曜日のクラス名を決定
+                    const weekdayClass = dayOfWeek === 0 ? styles.sundayText : 
+                                        dayOfWeek === 6 ? styles.saturdayText : '';
+                    
+                    return (
+                      <>
+                        {date}（<span className={weekdayClass}>{weekDay}</span>）の記録
+                      </>
+                    );
+                  }
+                  
+                  return `${date}の記録`;
+                })()}
+              </h2>
             </div>
             <button 
               onClick={onClose} 
