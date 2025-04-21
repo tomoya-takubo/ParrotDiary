@@ -326,49 +326,90 @@ export const diaryService = {
     try {
       console.log('DiaryService: 日記エントリー削除開始', { entryId });
       
-      // まずパロットの関連データを削除
+      // パロットアイコンを直接削除（select文ではなく、直接deleteクエリを実行）
       try {
-        const { error: parrotDeleteError } = await supabase
-          .from('diary_parrot_icons') // パロットデータのテーブル名（実際のテーブル名に合わせて変更する必要があります）
+        const { error: parrotIconsDeleteError } = await supabase
+          .from('diary_parrot_icons')
           .delete()
           .eq('entry_id', entryId);
         
-        if (parrotDeleteError) {
-          console.error('DiaryService: パロットデータ削除エラー', parrotDeleteError);
-          // エラーを記録するが処理は続行
+        if (parrotIconsDeleteError) {
+          // エラーが「存在しない」というエラーでなければログを出力
+          if (parrotIconsDeleteError.code !== 'PGRST116') {
+            console.error('DiaryService: パロットアイコン削除エラー:', parrotIconsDeleteError);
+          }
+        } else {
+          console.log('DiaryService: パロットアイコンを削除しました');
         }
-      } catch (parrotError) {
-        console.error('DiaryService: パロットデータ削除中のエラー', parrotError);
-        // パロットデータ削除中のエラーは記録するが処理は続行
+      } catch (error) {
+        console.error('DiaryService: パロットアイコン削除処理エラー:', error);
       }
       
       // タグ使用履歴を削除
-      const { error: tagUsageDeleteError } = await supabase
-        .from('tag_usage_histories')
-        .delete()
-        .eq('entry_id', entryId);
-      
-      if (tagUsageDeleteError) {
-        console.error('DiaryService: タグ使用履歴削除エラー', tagUsageDeleteError);
-        // タグ削除エラーは記録するが処理は続行
+      try {
+        const { error: tagUsageDeleteError } = await supabase
+          .from('tag_usage_histories')
+          .delete()
+          .eq('entry_id', entryId);
+        
+        if (tagUsageDeleteError) {
+          console.error('DiaryService: タグ使用履歴削除エラー:', tagUsageDeleteError);
+        } else {
+          console.log('DiaryService: タグ使用履歴を削除しました');
+        }
+      } catch (error) {
+        console.error('DiaryService: タグ使用履歴削除処理エラー:', error);
       }
       
-      // 日記エントリーを削除
-      const { error: entryDeleteError } = await supabase
-        .from('diary_entries')
-        .delete()
-        .eq('entry_id', entryId);
-      
-      if (entryDeleteError) {
-        console.error('DiaryService: 日記エントリー削除エラー', entryDeleteError);
-        throw entryDeleteError;
+      // RPC関数を呼び出して、すべての関連データを一度に削除
+      try {
+        const { error: rpcError } = await supabase
+          .rpc('delete_diary_entry_with_relations', { 
+            entry_id_param: entryId 
+          });
+          
+        if (rpcError) {
+          console.error('DiaryService: RPC削除エラー:', rpcError);
+          // RPCが使えない場合は、通常の削除を試みる
+          const { error: directDeleteError } = await supabase
+            .from('diary_entries')
+            .delete()
+            .eq('entry_id', entryId);
+            
+          if (directDeleteError) {
+            console.error('DiaryService: 日記エントリー削除エラー:', directDeleteError);
+            throw directDeleteError;
+          }
+        } else {
+          console.log('DiaryService: RPC関数により日記とその関連データを削除しました');
+        }
+      } catch (error) {
+        // 直接SQL文を実行してみる最後の手段
+        try {
+          // トランザクションではないため、順序が重要
+          await supabase.from('diary_parrot_icons').delete().eq('entry_id', entryId);
+          await supabase.from('tag_usage_histories').delete().eq('entry_id', entryId);
+          
+          const { error: finalDeleteError } = await supabase
+            .from('diary_entries')
+            .delete()
+            .eq('entry_id', entryId);
+            
+          if (finalDeleteError) {
+            console.error('DiaryService: 最終的な日記エントリー削除エラー:', finalDeleteError);
+            throw finalDeleteError;
+          }
+        } catch (finalError) {
+          console.error('DiaryService: 最終的な削除処理エラー:', finalError);
+          throw finalError;
+        }
       }
       
       console.log('DiaryService: 日記エントリー削除成功', { entryId });
       return true;
     } catch (error) {
       console.error('DiaryService: 日記エントリー削除に失敗', error);
-      throw error; // エラーを上位に伝播
+      throw error;
     }
   }
 };

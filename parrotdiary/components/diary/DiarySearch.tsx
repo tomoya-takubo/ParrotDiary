@@ -7,6 +7,7 @@ import styles from './diary.module.css';
 import Image from 'next/image';
 import EditDiaryModal from '@/components/dashboard/modals/EditDiaryModal';
 import { getEntryParrots } from '@/components/dashboard/Diary/ParrotSelector';
+import { supabase } from '@/lib/supabase';
 
 // 拡張したDiaryEntryタイプを定義
 interface ExtendedDiaryEntry extends DiaryEntry {
@@ -290,6 +291,8 @@ const DiarySearch = () => {
     if (!entryToDelete || !user) return;
     
     try {
+      setError(null); // エラー表示をクリア
+      
       // Supabaseサービスを使って日記データを削除
       await diaryService.deleteEntry(entryToDelete.entry_id);
       
@@ -307,6 +310,7 @@ const DiarySearch = () => {
     } catch (error) {
       console.error('エントリーの削除に失敗しました:', error);
       setError('エントリーの削除中にエラーが発生しました。再度お試しください。');
+      // エラー時にモーダルを閉じない（ユーザーに再試行の機会を与える）
     }
   };
   // #endregion
@@ -449,6 +453,18 @@ const DiarySearch = () => {
     selectedTags.length + 
     (dateRange.start ? 1 : 0) + 
     (dateRange.end ? 1 : 0);
+
+  // ダッシュボードに戻るボタンのクリックハンドラを改善
+  const handleBackToDashboard = () => {
+    try {
+      // ダッシュボードへのナビゲーションは直接routerで行う
+      window.location.href = '/dashboard';
+    } catch (err) {
+      console.error('ダッシュボードへの遷移エラー:', err);
+      // エラー時もシンプルにリダイレクト
+      window.location.href = '/dashboard';
+    }
+  };
   // #endregion
 
   return (
@@ -462,7 +478,7 @@ const DiarySearch = () => {
           
           {/* ダッシュボードに戻るボタン */}
           <button
-            onClick={() => window.location.href = '/dashboard'}
+            onClick={handleBackToDashboard}
             className={styles.backToDashboardButton}
           >
             ダッシュボードに戻る
