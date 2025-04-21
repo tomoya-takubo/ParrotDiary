@@ -117,10 +117,6 @@
   background-color: #edf2f7;
 }
 
-.editButton:hover {
-  background-color: #cbd5e0;
-}
-
 /* 活動内容の表示スタイル */
 .activityItem {
   padding: 4px 0;
@@ -140,30 +136,44 @@
   color: #666666; /* 薄めのグレー */
 }
 
-/* タグの表示スタイル */
+/* エントリータグのスタイル */
 .entryTag {
-  padding: 3px 10px;
-  font-size: 12px;
+  font-size: 10px;
+  padding: 4px 8px;
   border-radius: 9999px;
-  background-color: #f0f7ff; /* 非常に薄い青色 */
+  background-color: #e0f2fe;
   color: #0284c7;
-  border: none; /* 枠線なし */
+  /* 縦位置の調整と一貫性のために追加 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  height: 24px;
+  box-sizing: border-box;
+  vertical-align: middle;
 }
 
 /* 編集ボタンのスタイル */
 .editButton {
-  background-color: #ebf8ff;
-  color: #3182ce;
+  font-size: 10px; /* サイズ統一 */
   padding: 4px 8px;
-  border-radius: 20px;
-  font-size: 14px;
+  border-radius: 9999px;
+  background-color: #f1f5f9;
+  color: #64748b;
   border: none;
   cursor: pointer;
-  /* 以下を追加 */
-  height: 28px;
-  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  line-height: 1;
+  height: 24px;
+  box-sizing: border-box;
+  vertical-align: middle;
+  gap: 4px; /* アイコンとテキストの間隔 */
+}
+
+.editButton:hover {
+  background-color: #e2e8f0;
 }
 
 /* エントリーカードのヘッダーとボディの間隔 */
@@ -443,31 +453,36 @@
     padding: 16px;
   }
   
-  /* 共通部分を削除し、個別に定義 */
+  /* タグと編集ボタンを分離して個別にスタイリング */
   .entryTag {
-    font-size: 11px;
+    font-size: 12px;
     padding: 2px 6px;
-    border-radius: 16px;
-    height: 22px;
-    line-height: 1;
+    border-radius: 9999px;
+    background-color: #e0f2fe;
+    color: #0284c7;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     line-height: 1;
     height: 22px;
     box-sizing: border-box;
-
+    vertical-align: middle;
   }
   
   .editButton {
-    font-size: 11px;
+    font-size: 12px;
     padding: 2px 6px;
     border-radius: 16px;
     height: 22px;
     line-height: 1;
     white-space: nowrap;
+    vertical-align: middle;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
   }
-
+  
   .modalTitle {
     font-size: 20px;
   }
