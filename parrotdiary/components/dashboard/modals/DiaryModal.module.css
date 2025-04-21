@@ -453,8 +453,32 @@
     padding: 16px;
   }
   
-  /* タグと編集ボタンを分離して個別にスタイリング */
+  .entryTags {
+    width: 100%;
+    display: flex;
+    flex-wrap: nowrap; /* 折り返しを無効化 */
+    overflow-x: auto; /* 横スクロールを有効化 */
+    -webkit-overflow-scrolling: touch; /* iOSでのスムーズスクロール */
+    gap: 6px;
+    padding-bottom: 8px; /* スクロールバー用の余白 */
+    /* スクロールバーの表示を改善 */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+  }
+  
+  /* スクロールバーをカスタマイズ */
+  .entryTags::-webkit-scrollbar {
+    height: 3px;
+  }
+  
+  .entryTags::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+  }
+  
   .entryTag {
+    flex-shrink: 0; /* タグの縮小を防止 */
+    white-space: nowrap; /* テキストを折り返さない */
     font-size: 12px;
     padding: 2px 6px;
     border-radius: 9999px;
@@ -470,6 +494,7 @@
   }
   
   .editButton {
+    flex-shrink: 0; /* ボタンの縮小を防止 */
     font-size: 12px;
     padding: 2px 6px;
     border-radius: 16px;
@@ -483,6 +508,17 @@
     gap: 4px;
   }
   
+  /* エントリーヘッダーの調整 */
+  .entryHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .entryTime {
+    margin-bottom: 4px;
+  }
+    
   .modalTitle {
     font-size: 20px;
   }
