@@ -49,6 +49,7 @@ interface TagData {
  * Supabaseとの通信を担当します
  */
 export const diaryService = {
+  
   /**
    * ユーザーの日記エントリーを取得
    * @param userId ユーザーID
@@ -314,6 +315,60 @@ export const diaryService = {
     } catch (error) {
       console.error('DiaryService: 日記エントリー詳細取得に失敗', error);
       return null; // エラー時はnullを返す
+    }
+  },
+
+  /**
+   * 日記エントリーを削除する
+   * @param entryId 削除する日記エントリーのID
+   */
+  async deleteEntry(entryId: string | number): Promise<boolean> {
+    try {
+      console.log('DiaryService: 日記エントリー削除開始', { entryId });
+      
+      // まずパロットの関連データを削除
+      try {
+        const { error: parrotDeleteError } = await supabase
+          .from('diary_parrot_icons') // パロットデータのテーブル名（実際のテーブル名に合わせて変更する必要があります）
+          .delete()
+          .eq('entry_id', entryId);
+        
+        if (parrotDeleteError) {
+          console.error('DiaryService: パロットデータ削除エラー', parrotDeleteError);
+          // エラーを記録するが処理は続行
+        }
+      } catch (parrotError) {
+        console.error('DiaryService: パロットデータ削除中のエラー', parrotError);
+        // パロットデータ削除中のエラーは記録するが処理は続行
+      }
+      
+      // タグ使用履歴を削除
+      const { error: tagUsageDeleteError } = await supabase
+        .from('tag_usage_histories')
+        .delete()
+        .eq('entry_id', entryId);
+      
+      if (tagUsageDeleteError) {
+        console.error('DiaryService: タグ使用履歴削除エラー', tagUsageDeleteError);
+        // タグ削除エラーは記録するが処理は続行
+      }
+      
+      // 日記エントリーを削除
+      const { error: entryDeleteError } = await supabase
+        .from('diary_entries')
+        .delete()
+        .eq('entry_id', entryId);
+      
+      if (entryDeleteError) {
+        console.error('DiaryService: 日記エントリー削除エラー', entryDeleteError);
+        throw entryDeleteError;
+      }
+      
+      console.log('DiaryService: 日記エントリー削除成功', { entryId });
+      return true;
+    } catch (error) {
+      console.error('DiaryService: 日記エントリー削除に失敗', error);
+      throw error; // エラーを上位に伝播
     }
   }
 };

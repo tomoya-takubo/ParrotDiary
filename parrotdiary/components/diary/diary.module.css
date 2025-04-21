@@ -608,7 +608,7 @@
     box-sizing: border-box;
     vertical-align: middle;
   }
-  
+
   .editButton {
     font-size: 12px; /* 11pxから12pxに変更 */
     padding: 2px 6px;
@@ -1076,4 +1076,91 @@
 
 .saturdayText {
   color: #3182ce; /* 青色 */
+}
+
+/* 削除ボタンのスタイル */
+.deleteButton {
+  font-size: 10px;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  background-color: #fee2e2;
+  color: #dc2626;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  height: 24px;
+  box-sizing: border-box;
+  vertical-align: middle;
+}
+
+.deleteButton:hover {
+  background-color: #fecaca;
+}
+
+/* 削除モーダル用スタイル */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalContainer {
+  background-color: white;
+  border-radius: 12px;
+  padding: 24px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modalTitle {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+.warningText {
+  color: #dc2626;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.modalButtonContainer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.cancelButton {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background-color: white;
+  color: #4a5568;
+  cursor: pointer;
+}
+
+.deleteConfirmButton {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  background-color: #dc2626;
+  color: white;
+  cursor: pointer;
+}
+
+.deleteConfirmButton:hover {
+  background-color: #b91c1c;
 }

@@ -1,6 +1,6 @@
 // src/components/diary/DiarySearch.tsx
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, FilterIcon, Calendar, ChevronLeft, ChevronRight, Edit2 } from 'lucide-react';
+import { Search, FilterIcon, Calendar, ChevronLeft, ChevronRight, Edit2, Trash2 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import diaryService, { DiaryEntry, TagWithCount } from '@/services/diaryService';
 import styles from './diary.module.css';
@@ -52,6 +52,9 @@ const DiarySearch = () => {
   // 状態管理に「パロット表示」のステートを追加
   const [showParrots, setShowParrots] = useState(true); // デフォルトでは表示する
 
+  // 削除確認モーダル用の状態
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [entryToDelete, setEntryToDelete] = useState<ExtendedDiaryEntry | null>(null);
 
   // エントリーコンテナへの参照を追加
   const entriesContainerRef = useRef<HTMLDivElement>(null);
@@ -267,6 +270,43 @@ const DiarySearch = () => {
       setError('データの更新中にエラーが発生しました。再度お試しください。');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // 削除確認モーダルを開く関数
+  const openDeleteModal = (entry: ExtendedDiaryEntry) => {
+    setEntryToDelete(entry);
+    setIsDeleteModalOpen(true);
+  };
+
+  // 削除確認モーダルを閉じる関数
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setEntryToDelete(null);
+  };
+
+  // エントリー削除処理
+  const handleDeleteEntry = async () => {
+    if (!entryToDelete || !user) return;
+    
+    try {
+      // Supabaseサービスを使って日記データを削除
+      await diaryService.deleteEntry(entryToDelete.entry_id);
+      
+      // UI上から削除したエントリーを除外
+      setDiaryEntries(diaryEntries.filter(entry => entry.entry_id !== entryToDelete.entry_id));
+      
+      // モーダルを閉じる
+      closeDeleteModal();
+      
+      // 最後のエントリーが削除された場合、前のページに戻る
+      const newTotalPages = Math.ceil((filteredEntries.length - 1) / entriesPerPage);
+      if (currentPage > newTotalPages && newTotalPages > 0) {
+        setCurrentPage(newTotalPages);
+      }
+    } catch (error) {
+      console.error('エントリーの削除に失敗しました:', error);
+      setError('エントリーの削除中にエラーが発生しました。再度お試しください。');
     }
   };
   // #endregion
@@ -610,6 +650,14 @@ const DiarySearch = () => {
                           <Edit2 size={14} />
                           編集
                         </button>
+                          {/* 削除ボタンを追加 */}
+                        <button 
+                          onClick={() => openDeleteModal(entry)}
+                          className={styles.deleteButton}
+                        >
+                          <Trash2 size={14} />
+                          削除
+                        </button>
                       </div>
                     </div>
 
@@ -663,6 +711,31 @@ const DiarySearch = () => {
             date={editDate}
             onSave={handleSaveComplete}
           />
+        )}
+
+        {/* 削除確認モーダル */}
+        {isDeleteModalOpen && entryToDelete && (
+          <div className={styles.modalOverlay}>
+            <div className={styles.modalContainer}>
+              <h2 className={styles.modalTitle}>日記を削除</h2>
+              <p>この日記エントリーを削除してもよろしいですか？</p>
+              <p className={styles.warningText}>この操作は取り消せません。</p>
+              <div className={styles.modalButtonContainer}>
+                <button 
+                  onClick={closeDeleteModal}
+                  className={styles.cancelButton}
+                >
+                  キャンセル
+                </button>
+                <button 
+                  onClick={handleDeleteEntry}
+                  className={styles.deleteConfirmButton}
+                >
+                  削除する
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </>
