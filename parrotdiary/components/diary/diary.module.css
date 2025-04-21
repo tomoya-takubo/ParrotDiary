@@ -1067,6 +1067,63 @@
   .parrotToggle {
     align-self: flex-end; /* スマホ表示時は右寄せ */
   }
+
+  /* タグコンテナの調整 */
+  .entryTags {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px; /* タグ間の間隔を統一 */
+    margin-bottom: 6px;
+  }
+
+  .entryTag {
+    font-size: 11px; /* フォントサイズを少し小さく */
+    padding: 3px 6px;
+    white-space: nowrap; /* 重要: タグ内のテキストを改行させない */
+    overflow: hidden;
+    text-overflow: ellipsis; /* 長すぎるテキストは省略記号で表示 */
+    max-width: fit-content; /* タグの幅を内容に合わせる */
+  }
+  
+  .editButton, .deleteButton {
+    font-size: 11px;
+    padding: 3px 6px;
+    white-space: nowrap;
+  }
+
+  .entryTags {
+    width: 100%;
+    display: flex;
+    flex-wrap: nowrap; /* 折り返しを無効化 */
+    overflow-x: auto; /* 横スクロールを有効化 */
+    -webkit-overflow-scrolling: touch; /* iOSでのスムーズスクロール */
+    gap: 6px;
+    padding-bottom: 8px; /* スクロールバー用の余白 */
+  }
+  
+  /* スクロールバーをカスタマイズ */
+  .entryTags::-webkit-scrollbar {
+    height: 3px;
+  }
+  
+  .entryTags::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+  }
+  
+  .entryTag {
+    flex-shrink: 0; /* タグの縮小を防止 */
+    white-space: nowrap;
+    font-size: 11px;
+    padding: 3px 6px;
+  }
+  
+  .editButton, .deleteButton {
+    flex-shrink: 0;
+    font-size: 11px;
+    padding: 3px 6px;
+  }
 }
 
 /* 曜日の色分け */
