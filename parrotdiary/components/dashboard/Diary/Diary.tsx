@@ -339,14 +339,28 @@ const Diary: React.FC<DiaryProps> = ({ onSave }) => {
                 <div key={entry.entry_id} className={styles.diaryEntry} style={{ position: 'relative' }}>
                   <div className={styles.entryHeader}>
                     <div className={styles.entryTimestamp}>
-                    記録時刻: {new Date(entry.recorded_at).toLocaleString('ja-JP', {
-                      year: 'numeric',
-                      month: '2-digit',
-                      day: '2-digit',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      // second は指定しない
-                    })}
+                      {(() => {
+                        const date = new Date(entry.recorded_at);
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const hours = String(date.getHours()).padStart(2, '0');
+                        const minutes = String(date.getMinutes()).padStart(2, '0');
+                        
+                        // 曜日の取得（日本語）
+                        const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+                        const weekday = weekdays[date.getDay()];
+                        
+                        // 日曜日か土曜日かに応じてクラス名を設定
+                        const weekdayClass = date.getDay() === 0 ? styles.sundayText : 
+                                            date.getDay() === 6 ? styles.saturdayText : '';
+                        
+                        return (
+                          <>
+                            {year}/{month}/{day}（<span className={weekdayClass}>{weekday}</span>） {hours}:{minutes}
+                          </>
+                        );
+                      })()}
                     </div>
                     <div className={styles.entryTags}>
                       {entry.tags?.map((tag, index) => (

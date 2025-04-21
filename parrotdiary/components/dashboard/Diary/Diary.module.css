@@ -856,3 +856,13 @@
     height: 32px;
   }
 }
+
+/* 日曜日の色 */
+.sundayText {
+  color: #e53e3e; /* 赤色 */
+}
+
+/* 土曜日の色 */
+.saturdayText {
+  color: #3182ce; /* 青色 */
+}
