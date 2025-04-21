@@ -217,7 +217,7 @@ export default function Dashboard() {
                 // 日本時間のタイムゾーンオフセット（+9時間 = +9*60*60*1000ミリ秒）
                 const jstOffset = 9 * 60 * 60 * 1000;
                 
-                // 現在時刻と前回ログイン時刻をJST基準の日付文字列に変換
+                // 現在時刻と前回ログイン時刻をJST基準の日付文字列に変S換
                 const getJstDateString = (dateString: string | Date): string => {
                   const date = new Date(dateString);
                   // UTC時間に9時間を加算して日本時間にする
@@ -267,40 +267,42 @@ export default function Dashboard() {
                 }
                 // 昨日のログインの場合のみストリークを更新
                 else if (isYesterday) {
-                  const updatedStreak = streakData.login_streak_count + 1;
-
-                  const { error: streakUpdateError } = await supabase
+                  // まず、今日すでにストリークを更新したかどうかを確認
+                  const today = new Date();
+                  const todayString = today.toISOString().split('T')[0]; // YYYY-MM-DD形式
+                  
+                  const { data: todayLoginCheck, error: todayLoginError } = await supabase
                     .from('user_streaks')
-                    .update({
-                      login_streak_count: updatedStreak,
-                      last_login_date: nowIso, // UTCのまま保存
-                      updated_at: nowIso      // UTCのまま保存
-                    })
-                    .eq('user_id', user.id);
-
-                  if (streakUpdateError) {
-                    console.error('❌ streak更新エラー:', streakUpdateError);
-                  } else {
-                    console.log('✅ streakを更新しました:', updatedStreak);
-                    loginStreak = updatedStreak; // 更新された値を使用
-                  }
-                } 
-                // それ以外（2日以上経過）の場合はストリークをリセット
-                else {
-                  const { error: streakResetError } = await supabase
-                    .from('user_streaks')
-                    .update({
-                      login_streak_count: 1, // 1にリセット（今日のログイン）
-                      last_login_date: nowIso, // UTCのまま保存
-                      updated_at: nowIso       // UTCのまま保存
-                    })
-                    .eq('user_id', user.id);
+                    .select('updated_at')
+                    .eq('user_id', user.id)
+                    .single();
                     
-                  if (streakResetError) {
-                    console.error('❌ streak更新エラー:', streakResetError);
+                  // 今日の日付でupdated_atが更新されているか確認
+                  const lastUpdatedDate = todayLoginCheck && todayLoginCheck.updated_at 
+                    ? new Date(todayLoginCheck.updated_at).toISOString().split('T')[0]
+                    : null;
+                    
+                  if (lastUpdatedDate === todayString) {
+                    console.log('✅ 今日すでにストリークを更新済みのため、更新をスキップします');
                   } else {
-                    console.log('✅ streakをリセットしました: 1');
-                    loginStreak = 1; // リセットした値を使用
+                    // ストリークを更新
+                    const updatedStreak = streakData.login_streak_count + 1;
+
+                    const { error: streakUpdateError } = await supabase
+                      .from('user_streaks')
+                      .update({
+                        login_streak_count: updatedStreak,
+                        last_login_date: nowIso, // UTCのまま保存
+                        updated_at: nowIso      // UTCのまま保存
+                      })
+                      .eq('user_id', user.id);
+
+                    if (streakUpdateError) {
+                      console.error('❌ streak更新エラー:', streakUpdateError);
+                    } else {
+                      console.log('✅ streakを更新しました:', updatedStreak);
+                      loginStreak = updatedStreak; // 更新された値を使用
+                    }
                   }
                 }
               }
