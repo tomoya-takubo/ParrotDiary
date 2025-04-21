@@ -823,35 +823,64 @@
     font-size: 12px;
   }
   
-  /* タグと編集ボタンを分離して個別にスタイリング */
+  /* タグコンテナの調整 */
+  .entryTags {
+    width: 100%;
+    display: flex;
+    flex-wrap: nowrap; /* 折り返しを無効化 */
+    overflow-x: auto; /* 横スクロールを有効化 */
+    -webkit-overflow-scrolling: touch; /* iOSでのスムーズスクロール */
+    gap: 6px;
+    padding-bottom: 8px; /* スクロールバー用の余白 */
+    /* スクロールバーの表示を改善 */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+  }
+  
+  /* スクロールバーをカスタマイズ */
+  .entryTags::-webkit-scrollbar {
+    height: 3px;
+  }
+  
+  .entryTags::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+  }
+  
   .entryTag {
-    font-size: 12px;
-    padding: 2px 6px;
+    flex-shrink: 0; /* タグの縮小を防止 */
+    white-space: nowrap; /* テキストを折り返さない */
+    font-size: 12px; /* フォントサイズを調整 */
+    padding: 3px 8px; /* パディングを調整 */
     border-radius: 9999px;
     background-color: #e0f2fe;
     color: #0284c7;
+    /* テキスト配置の改善 */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1; /* 行の高さを調整 */
+    height: 22px; /* 明示的に高さを指定 */
+    box-sizing: border-box;
+    vertical-align: middle;
+  }
+  
+  .editButton {
+    flex-shrink: 0; /* ボタンの縮小を防止 */
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 9999px;
+    /* ボタンも同様に配置を調整 */
     display: inline-flex;
     align-items: center;
     justify-content: center;
     line-height: 1;
     height: 22px;
     box-sizing: border-box;
-  }
-  
-  .editButton {
-    font-size: 12px; /* 11pxから12pxに変更してタグと合わせる */
-    padding: 2px 6px;
-    border-radius: 16px;
-    height: 22px;
-    line-height: 1;
-    white-space: nowrap;
-    /* 縦位置の調整を追加 */
     vertical-align: middle;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    white-space: nowrap;
   }
-    
+
   /* パロット表示調整 */
   .parrotBottomRight {
     bottom: -3px;
