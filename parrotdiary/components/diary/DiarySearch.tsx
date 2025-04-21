@@ -273,13 +273,27 @@ const DiarySearch = () => {
 
   // #region フィルタリングとフォーマット
   // 日付と時間のフォーマット
+  // フォーマットを「2025/04/20（日） 19:33」のように変更し、曜日に色付けするためにspanタグを使用
   const formatDateTime = (dateTimeStr: string) => {
     const d = new Date(dateTimeStr);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
     const weekDays = ['日', '月', '火', '水', '木', '金', '土'];
+    const weekday = weekDays[d.getDay()];
     const hours = d.getHours().toString().padStart(2, '0');
     const minutes = d.getMinutes().toString().padStart(2, '0');
     
-    return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日${weekDays[d.getDay()]}曜日 ${hours}:${minutes}`;
+    // 曜日のクラス名を決定
+    const weekdayClass = d.getDay() === 0 ? styles.sundayText : 
+                        d.getDay() === 6 ? styles.saturdayText : '';
+    
+    // JSXで返すように変更
+    return (
+      <>
+        {year}/{month}/{day}（<span className={weekdayClass}>{weekday}</span>） {hours}:{minutes}
+      </>
+    );
   };
 
   // フィルタリングされたエントリー
@@ -575,9 +589,9 @@ const DiarySearch = () => {
                   <div key={entry.entry_id} className={styles.entryCard}>
                     {/* 日時とタグ */}
                     <div className={styles.entryHeader}>
-                      <span className={styles.entryDate}>
-                        {formatDateTime(entry.created_at)}
-                      </span>
+                    <span className={styles.entryDate}>
+                      {formatDateTime(entry.created_at)}
+                    </span>
                       <div className={styles.entryTags}>
                         {entry.tags.map((tag, tagIndex) => (
                           <span 
