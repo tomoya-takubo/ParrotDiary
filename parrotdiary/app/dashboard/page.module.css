@@ -579,13 +579,13 @@
   
   .statItem {
     padding: 0;
-    border-left: none;
+    border-left: none !important;
     border-bottom: 1px solid #e2e8f0;
     padding-bottom: 16px;
   }
   
   .statItem:last-child {
-    border-bottom: none;
+    border-bottom: none !important;
   }
   
   .gachaButton {
