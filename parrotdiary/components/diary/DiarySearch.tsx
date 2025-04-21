@@ -7,7 +7,6 @@ import styles from './diary.module.css';
 import Image from 'next/image';
 import EditDiaryModal from '@/components/dashboard/modals/EditDiaryModal';
 import { getEntryParrots } from '@/components/dashboard/Diary/ParrotSelector';
-import { supabase } from '@/lib/supabase';
 
 // 拡張したDiaryEntryタイプを定義
 interface ExtendedDiaryEntry extends DiaryEntry {
