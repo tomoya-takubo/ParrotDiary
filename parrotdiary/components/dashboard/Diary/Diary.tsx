@@ -372,6 +372,7 @@ const Diary: React.FC<DiaryProps> = ({ onSave }) => {
                         onClick={() => openEditModal(entry)}
                         className={styles.editButton}
                       >
+                        <Edit2 size={14} />
                         {entry.line1 ? '編集' : '記録する'}
                       </button>
                     </div>

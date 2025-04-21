@@ -1,6 +1,6 @@
 // src/components/diary/DiarySearch.tsx
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, FilterIcon, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, FilterIcon, Calendar, ChevronLeft, ChevronRight, Edit2 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import diaryService, { DiaryEntry, TagWithCount } from '@/services/diaryService';
 import styles from './diary.module.css';
@@ -607,6 +607,7 @@ const DiarySearch = () => {
                           onClick={() => openEditModal(entry)}
                           className={styles.editButton}
                         >
+                          <Edit2 size={14} />
                           編集
                         </button>
                       </div>
