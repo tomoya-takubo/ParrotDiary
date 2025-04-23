@@ -281,7 +281,7 @@ export default function Dashboard() {
                   const today = new Date();
                   const todayString = today.toISOString().split('T')[0]; // YYYY-MM-DD形式
                   
-                  const { data: todayLoginCheck, error: todayLoginError } = await supabase
+                  const { data: todayLoginCheck } = await supabase
                     .from('user_streaks')
                     .select('updated_at')
                     .eq('user_id', user.id)
