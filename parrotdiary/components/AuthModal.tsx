@@ -249,7 +249,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           const nowIso = now.toISOString();
 
           try {
-            // users テーブルの更新
+            // users テーブルの更新（これは残します）
             const { error: usersError } = await supabase
               .from('users')
               .update({
@@ -262,12 +262,12 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               console.error('usersテーブルの更新エラー:', usersError);
             }
 
-            // user_streaks テーブルの更新
+            // user_streaks テーブルの更新は、以下のようにlast_login_dateを更新しないように変更
             const { error: streaksError } = await supabase
               .from('user_streaks')
               .update({
-                last_login_date: nowIso,
-                updated_at: nowIso
+                // last_login_date: nowIso, // この行を削除
+                updated_at: nowIso // updatedAtのみ更新
               })
               .eq('user_id', data.user.id);
 
