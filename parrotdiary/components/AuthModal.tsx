@@ -262,19 +262,6 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               console.error('usersテーブルの更新エラー:', usersError);
             }
 
-            // user_streaks テーブルの更新は、以下のようにlast_login_dateを更新しないように変更
-            const { error: streaksError } = await supabase
-              .from('user_streaks')
-              .update({
-                // last_login_date: nowIso, // この行を削除
-                updated_at: nowIso // updatedAtのみ更新
-              })
-              .eq('user_id', data.user.id);
-
-            if (streaksError) {
-              console.error('user_streaksテーブルの更新エラー:', streaksError);
-            }
-
           } catch (error) {
             console.error('ログイン情報更新中にエラー:', error);
           }

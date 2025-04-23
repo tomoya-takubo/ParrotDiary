@@ -277,53 +277,36 @@ export default function Dashboard() {
                 }
                 // 昨日のログインの場合のみストリークを更新
                 else if (isYesterday) {
-                  // まず、今日すでにストリークを更新したかどうかを確認
-                  const today = new Date();
-                  const todayString = today.toISOString().split('T')[0]; // YYYY-MM-DD形式
+                  console.log('📝 昨日のログインを検出しました。ストリークを更新します');
                   
-                  const { data: todayLoginCheck } = await supabase
+                  // ストリークを更新（チェックを省略して直接更新）
+                  const updatedStreak = streakData.login_streak_count + 1;
+                  
+                  // 現在の最大ストリーク取得（null の場合は 0 とする）
+                  const currentMaxStreak = streakData.login_max_streak || 0;
+                  
+                  // 更新後のストリークが最大ストリークを超えるかチェック
+                  const newMaxStreak = Math.max(currentMaxStreak, updatedStreak);
+                  
+                  // 最大ストリークも含めて更新
+                  const { error: streakUpdateError } = await supabase
                     .from('user_streaks')
-                    .select('updated_at')
-                    .eq('user_id', user.id)
-                    .single();
-                    
-                  // 今日の日付でupdated_atが更新されているか確認
-                  const lastUpdatedDate = todayLoginCheck && todayLoginCheck.updated_at 
-                    ? new Date(todayLoginCheck.updated_at).toISOString().split('T')[0]
-                    : null;
-                    
-                  if (lastUpdatedDate === todayString) {
-                    console.log('✅ 今日すでにストリークを更新済みのため、更新をスキップします');
-                  } else {
-                    // ストリークを更新
-                    const updatedStreak = streakData.login_streak_count + 1;
-                    
-                    // 現在の最大ストリーク取得（null の場合は 0 とする）
-                    const currentMaxStreak = streakData.login_max_streak || 0;
-                    
-                    // 更新後のストリークが最大ストリークを超えるかチェック
-                    const newMaxStreak = Math.max(currentMaxStreak, updatedStreak);
-                    
-                    // 最大ストリークも含めて更新
-                    const { error: streakUpdateError } = await supabase
-                      .from('user_streaks')
-                      .update({
-                        login_streak_count: updatedStreak,
-                        login_max_streak: newMaxStreak, // 最大ストリークを更新
-                        last_login_date: nowIso, // UTCのまま保存
-                        updated_at: nowIso      // UTCのまま保存
-                      })
-                      .eq('user_id', user.id);
+                    .update({
+                      login_streak_count: updatedStreak,
+                      login_max_streak: newMaxStreak, // 最大ストリークを更新
+                      last_login_date: nowIso, // UTCのまま保存
+                      updated_at: nowIso      // UTCのまま保存
+                    })
+                    .eq('user_id', user.id);
 
-                    if (streakUpdateError) {
-                      console.error('❌ streak更新エラー:', streakUpdateError);
-                    } else {
-                      console.log('✅ streakを更新しました:', updatedStreak);
-                      if (newMaxStreak > currentMaxStreak) {
-                        console.log('🏆 最大ストリークも更新しました:', newMaxStreak);
-                      }
-                      loginStreak = updatedStreak; // 更新された値を使用
+                  if (streakUpdateError) {
+                    console.error('❌ streak更新エラー:', streakUpdateError);
+                  } else {
+                    console.log('✅ streakを更新しました:', updatedStreak);
+                    if (newMaxStreak > currentMaxStreak) {
+                      console.log('🏆 最大ストリークも更新しました:', newMaxStreak);
                     }
+                    loginStreak = updatedStreak; // 更新された値を使用
                   }
                 }
                 // 昨日でも当日でもない場合（2日以上経過している場合）はストリークをリセット
