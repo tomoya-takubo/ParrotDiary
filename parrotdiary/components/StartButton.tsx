@@ -1,6 +1,5 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import AuthModal from './AuthModal';
 import styles from '../styles/Home.module.css';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
@@ -14,7 +13,6 @@ interface EnhanceTapAreaProps {
 export default function StartButton() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
   const supabase = createClientComponentClient();
 
   // コンポーネントマウント時に認証状態をチェック
