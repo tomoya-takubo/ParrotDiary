@@ -4,9 +4,8 @@ import { useRouter } from 'next/navigation';
 import AuthModal from './AuthModal';
 import styles from '../styles/Home.module.css';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import React, { ReactNode } from 'react'; // ReactNodeをインポート
+import React, { ReactNode } from 'react';
 
-// 型定義を追加したコンポーネント
 interface EnhanceTapAreaProps {
   children: ReactNode;
   padding?: string;
@@ -57,18 +56,14 @@ export default function StartButton() {
       // ボタンクリック時にローディング状態を設定
       setIsLoading(true);
       
-      // ボタンクリック時に改めて認証状態を確認
-      const { data } = await supabase.auth.getSession();
+      // セッションをチェックする前に強制的にセッションをクリア
+      await supabase.auth.signOut();
       
-      if (data.session) {
-        // 認証済みの場合はダッシュボードへリダイレクト
-        router.push('/dashboard');
-      } else {
-        // 未認証の場合はログインモーダルを表示
-        setIsModalOpen(true);
-        // ローディング状態を解除（モーダルが表示されたため）
-        setIsLoading(false);
-      }
+      // モーダルを表示
+      setIsModalOpen(true);
+      // ローディング状態を解除
+      setIsLoading(false);
+      
     } catch (error) {
       console.error('認証確認エラー:', error);
       // エラーが発生した場合は安全のためモーダルを表示
