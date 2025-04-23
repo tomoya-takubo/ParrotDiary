@@ -205,7 +205,7 @@ export default function Dashboard() {
           try {
             const { data: streakData, error: streakError } = await supabase
               .from('user_streaks')
-              .select('login_streak_count, last_login_date')
+              .select('login_streak_count, last_login_date, login_max_streak')
               .eq('user_id', user.id)
               .single();
 
@@ -297,11 +297,19 @@ export default function Dashboard() {
                   } else {
                     // ストリークを更新
                     const updatedStreak = streakData.login_streak_count + 1;
-
+                    
+                    // 現在の最大ストリーク取得（null の場合は 0 とする）
+                    const currentMaxStreak = streakData.login_max_streak || 0;
+                    
+                    // 更新後のストリークが最大ストリークを超えるかチェック
+                    const newMaxStreak = Math.max(currentMaxStreak, updatedStreak);
+                    
+                    // 最大ストリークも含めて更新
                     const { error: streakUpdateError } = await supabase
                       .from('user_streaks')
                       .update({
                         login_streak_count: updatedStreak,
+                        login_max_streak: newMaxStreak, // 最大ストリークを更新
                         last_login_date: nowIso, // UTCのまま保存
                         updated_at: nowIso      // UTCのまま保存
                       })
@@ -311,6 +319,9 @@ export default function Dashboard() {
                       console.error('❌ streak更新エラー:', streakUpdateError);
                     } else {
                       console.log('✅ streakを更新しました:', updatedStreak);
+                      if (newMaxStreak > currentMaxStreak) {
+                        console.log('🏆 最大ストリークも更新しました:', newMaxStreak);
+                      }
                       loginStreak = updatedStreak; // 更新された値を使用
                     }
                   }
