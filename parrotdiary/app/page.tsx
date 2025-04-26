@@ -84,7 +84,8 @@ export default function Home() {
           <h2 className={styles.collectionTitle}>可愛いPartyParrotを集めよう！</h2>
           <ParrotCollection />
           <p className={styles.collectionDescription}>
-            目標達成や継続記録でレアなPartyParrotをゲット！
+            獲得したPartyParrotは日記にスタンプができます！<br />
+            お気に入りのPartyParrotであなたの日記を埋めつくそう！
           </p>
         </div>
       </section>
