@@ -464,6 +464,79 @@ const DiarySearch = () => {
       window.location.href = '/dashboard';
     }
   };
+
+  // エクスポート機能の実装
+const handleExport = (format: 'txt' | 'csv') => {
+  // フィルタリングされたエントリーを使用
+  const entriesToExport = filteredEntries;
+  
+  if (format === 'csv') {
+    exportAsCSV(entriesToExport);
+  } else {
+    exportAsTXT(entriesToExport);
+  }
+};
+
+  // CSV形式でエクスポート
+  const exportAsCSV = (entries: ExtendedDiaryEntry[]) => {
+    const headers = ['日付', '時間', '1行目', '2行目', '3行目', 'タグ'];
+    
+    const csvContent = [
+      headers.join(','),
+      ...entries.map(entry => {
+        const date = new Date(entry.created_at);
+        const dateStr = `${date.getFullYear()}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}`;
+        const timeStr = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+        
+        return [
+          dateStr,
+          timeStr,
+          `"${entry.line1.replace(/"/g, '""')}"`, // エスケープ処理
+          `"${entry.line2?.replace(/"/g, '""') || ''}"`,
+          `"${entry.line3?.replace(/"/g, '""') || ''}"`,
+          `"${entry.tags.join(';')}"` // タグはセミコロンで区切る
+        ].join(',');
+      })
+    ].join('\n');
+
+    // ファイルダウンロード
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `日記データ_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // TXT形式でエクスポート
+  const exportAsTXT = (entries: ExtendedDiaryEntry[]) => {
+    const txtContent = entries.map(entry => {
+      const date = new Date(entry.created_at);
+      const dateTime = `${date.getFullYear()}年${(date.getMonth() + 1).toString().padStart(2, '0')}月${date.getDate().toString().padStart(2, '0')}日 ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+      
+      return `【${dateTime}】
+  タグ: #${entry.tags.join(' #')}
+  1. ${entry.line1}
+  ${entry.line2 ? `2. ${entry.line2}` : ''}
+  ${entry.line3 ? `3. ${entry.line3}` : ''}
+  ----------------------------------------
+  `;
+    }).join('\n');
+
+    // ファイルダウンロード
+    const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `日記データ_${new Date().toISOString().split('T')[0]}.txt`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
   // #endregion
 
   return (
@@ -615,6 +688,22 @@ const DiarySearch = () => {
                 </option>
               ))}
             </select>
+          </div>
+
+          {/* エクスポートボタンを追加 */}
+          <div className={styles.exportButtons}>
+            <button 
+              onClick={() => handleExport('txt')} 
+              className={styles.exportButton}
+            >
+              📄 TXTで出力
+            </button>
+            <button 
+              onClick={() => handleExport('csv')} 
+              className={styles.exportButton}
+            >
+              📊 CSVで出力
+            </button>
           </div>
         </div>
 

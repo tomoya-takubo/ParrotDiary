@@ -1221,3 +1221,41 @@
 .deleteConfirmButton:hover {
   background-color: #b91c1c;
 }
+
+/* diary.module.cssに追加 */
+.exportButtons {
+  display: flex;
+  gap: 8px;
+}
+
+.exportButton {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background-color: #f7fafc;
+  border: 1px solid #e2e8f0;
+  color: #4a5568;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: background-color 0.2s;
+}
+
+.exportButton:hover {
+  background-color: #edf2f7;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 640px) {
+  .resultControlRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .exportButtons {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
