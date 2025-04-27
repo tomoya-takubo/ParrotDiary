@@ -28,6 +28,14 @@ body {
   overflow-x: hidden; /* 横スクロールを防止 */
 }
 
+/* 日記ページ専用の背景 */
+html:has(.diary-page), body:has(.diary-page) {
+  min-height: 100%;
+  background: linear-gradient(to bottom, #EFF6FF, #F5F3FF);
+  margin: 0;
+  padding: 0;
+}
+
 body {
   min-height: 100vh;
   /* モバイルブラウザのアドレスバーを考慮した高さ設定 */

@@ -1,11 +1,3 @@
-/* グローバル背景設定 */
-html, body {
-  min-height: 100%;
-  background: linear-gradient(to bottom, #EFF6FF, #F5F3FF);
-  margin: 0;
-  padding: 0;
-}
-
 /* 全画面グラデーション背景 - 修正箇所 */
 .pageBackground {
   background: linear-gradient(to bottom, #EFF6FF, #F5F3FF);

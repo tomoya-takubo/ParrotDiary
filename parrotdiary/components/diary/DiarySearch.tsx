@@ -469,8 +469,8 @@ const DiarySearch = () => {
 const handleExport = (format: 'txt' | 'csv') => {
   // フィルタリングされたエントリーを使用
   const entriesToExport = filteredEntries;
-  
-  if (format === 'csv') {
+    
+    if (format === 'csv') {
     exportAsCSV(entriesToExport);
   } else {
     exportAsTXT(entriesToExport);
@@ -542,7 +542,7 @@ const handleExport = (format: 'txt' | 'csv') => {
   return (
     <>
       {/* 全画面背景 */}
-      <div className={styles.pageBackground}></div>
+      <div className={styles.pageBackground} diary-page></div>
       
       <div className={styles.container}>
         <div className={styles.titleSection}>
