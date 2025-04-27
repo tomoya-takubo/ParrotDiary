@@ -1,29 +1,36 @@
-/* src/components/diary/diary.module.css */
+/* グローバル背景設定 */
+html, body {
+  min-height: 100%;
+  background: linear-gradient(to bottom, #EFF6FF, #F5F3FF);
+  margin: 0;
+  padding: 0;
+}
 
 /* 全画面グラデーション背景 - 修正箇所 */
 .pageBackground {
   background: linear-gradient(to bottom, #EFF6FF, #F5F3FF);
-  min-height: 100vh;
-  width: 100%;
   position: fixed;
   top: 0;
   left: 0;
-  bottom: 0;
   right: 0;
+  bottom: 0;
+  width: 100vw;  /* 100%から100vwに変更 */
+  height: 100vh; /* 100%から100vhに変更 */
+  min-height: 100%;
   z-index: -1;
 }
 
-/* コンテナ - 修正箇所 */
+/* コンテナにも背景を適用 - 重要な修正 */
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 24px 24px 60px 24px; /* 下部パディングを増やす */
+  padding: 24px 24px 60px 24px;
   font-family: sans-serif;
   position: relative;
-  min-height: 100vh; /* 最低でも画面の高さ分は確保 */
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #EFF6FF, #F5F3FF); /* 追加 */
 }
 
-/* 残りのCSSはそのまま */
 /* タイトル */
 .title {
   font-size: 24px;
