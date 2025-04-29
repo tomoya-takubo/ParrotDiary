@@ -1,3 +1,5 @@
+/* #region 基本レイアウト */
+/* ページのベースレイアウトとコンテナに関するスタイル */
 .pageContainer {
   min-height: 100vh;
   background: linear-gradient(to bottom, #ebf4ff, #f5f3ff);
@@ -11,7 +13,10 @@
   flex-direction: column;
   gap: 24px;
 }
+/* #endregion */
 
+/* #region ヘッダーコンポーネント */
+/* アプリのヘッダー部分に関するスタイル */
 .headerContainer {
   display: flex;
   justify-content: space-between;
@@ -35,7 +40,10 @@
   width: 1px;
   background-color: #e2e8f0;
 }
+/* #endregion */
 
+/* #region ボタンスタイル */
+/* アプリ全体で使用される共通ボタンスタイル */
 .navButton {
   display: flex;
   align-items: center;
@@ -46,7 +54,7 @@
   border: none;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   cursor: pointer;
-  /* Link要素用に追加 */
+  /* Link要素用 */
   text-decoration: none; 
   color: inherit;
   font-size: inherit;
@@ -74,13 +82,47 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.statusCard {
+/* ログアウトボタン */
+.logoutButton {
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.logoutButton:hover {
+  background-color: #fee2e2;
+  color: #ef4444;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logoutButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+/* #endregion */
+
+/* #region カード共通スタイル */
+/* アプリ内の各種カードに共通するスタイル */
+.statusCard,
+.timerCard,
+.statsCard,
+.diaryContainer {
   background-color: white;
-  padding: 24px;
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
+.statusCard,
+.statsCard,
+.diaryContainer {
+  padding: 24px;
+}
+
+.timerCard {
+  padding: 32px;
+}
+/* #endregion */
+
+/* #region ステータスカード */
+/* レベルとXP表示に関するスタイル */
 .statusCardContent {
   display: flex;
   flex-direction: column;
@@ -110,7 +152,10 @@
   height: 100%;
   background: linear-gradient(to right, #3b82f6, #8b5cf6);
 }
+/* #endregion */
 
+/* #region ガチャボタン */
+/* ガチャ機能のボタンに関するスタイル */
 .gachaButton {
   width: 100%;
   padding: 16px 24px;
@@ -162,14 +207,10 @@
   justify-content: center;
   gap: 12px;
 }
+/* #endregion */
 
-.timerCard {
-  background-color: white;
-  padding: 32px;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-}
-
+/* #region タイマーカード */
+/* タイマー機能のスタイル */
 .timerHeader {
   display: flex;
   align-items: center;
@@ -226,14 +267,10 @@
   font-size: 14px;
   opacity: 0.9;
 }
+/* #endregion */
 
-.statsCard {
-  background-color: white;
-  padding: 24px;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-}
-
+/* #region 統計カード */
+/* ユーザー統計表示に関するスタイル */
 .statsGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -292,15 +329,10 @@
   font-size: 14px;
   color: #4a5568;
 }
+/* #endregion */
 
-/* 3行日記スタイル */
-.diaryContainer {
-  background-color: white;
-  padding: 24px;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-}
-
+/* #region 3行日記スタイル */
+/* 日記機能に関するスタイル */
 .diaryHeader {
   display: flex;
   justify-content: space-between;
@@ -435,8 +467,10 @@
   color: #94a3b8;
   font-style: italic;
 }
+/* #endregion */
 
-/* モーダルスタイル */
+/* #region モーダルスタイル */
+/* モーダル表示に関するスタイル */
 .modalOverlay {
   position: fixed;
   top: 0;
@@ -526,28 +560,17 @@
 .saveButton:hover {
   background-color: #2563eb;
 }
+/* #endregion */
 
-/* ログアウトボタン */
-.logoutButton {
-  transition: background-color 0.2s, box-shadow 0.2s;
-}
-
-.logoutButton:hover {
-  background-color: #fee2e2;
-  color: #ef4444;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.logoutButton:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
+/* #region レスポンシブ対応 */
+/* 画面サイズに応じたスタイル調整 */
 @media (max-width: 768px) {
+  /* 基本レイアウト */
   .contentContainer {
     gap: 16px; /* 縦方向の間隔を縮小 */
   }
   
+  /* ヘッダー */
   .headerContainer {
     flex-direction: column;
     align-items: flex-start;
@@ -563,15 +586,18 @@
     justify-content: space-between;
   }
   
+  /* ボタン */
   .navButton, .primaryButton {
     padding: 6px 12px;
     font-size: 14px;
   }
   
+  /* カード共通 */
   .statusCard, .statsCard, .diaryContainer {
     padding: 16px;
   }
   
+  /* 統計カード */
   .statsGrid {
     grid-template-columns: 1fr;
     gap: 16px;
@@ -588,33 +614,11 @@
     border-bottom: none !important;
   }
   
+  /* ガチャボタン */
   .gachaButton {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 16px 12px;
-    gap: 12px;
-  }
-  
-  .ticketContainer {
-    position: static;
-    transform: none;
-    margin: 0;
-    width: auto;
-    justify-content: center;
-    background-color: rgba(255, 255, 255, 0.3);
-  }
-    
-  .gachaButtonContent {
-    width: 100%;
-    justify-content: center;
-    margin-bottom: 4px;
-  }
-   
-  /* ガチャボタンのレイアウト変更 */
-  .gachaButton {
-    display: flex;
-    flex-direction: column; /* スマホでは縦並びに */
     padding: 12px;
   }
   
@@ -624,10 +628,18 @@
     margin-top: 8px;
     width: 100%;
     justify-content: center;
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+    
+  .gachaButtonContent {
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 4px;
   }
 }
 
 @media (max-width: 480px) {
+  /* 基本レイアウト */
   .pageContainer {
     padding: 16px 12px;
   }
@@ -640,11 +652,13 @@
     font-size: 1.5rem;
   }
   
+  /* ナビゲーション */
   .navButtons {
     flex-wrap: wrap;
     gap: 8px;
   }
 
+  /* ガチャボタン */
   .gachaButton {
     padding: 12px 8px;
   }
@@ -653,3 +667,4 @@
     padding: 3px 12px;
   }
 }
+/* #endregion */

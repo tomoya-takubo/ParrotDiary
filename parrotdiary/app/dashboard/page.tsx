@@ -1,5 +1,6 @@
 'use client';
 
+// #region インポート
 import React, { useState, useEffect } from 'react';
 import { Star, Gift, Book, Award, LogOut, Shield, Medal, Trophy } from 'lucide-react';
 import styles from './page.module.css';
@@ -13,15 +14,16 @@ import ActivityHistory from '@/components/dashboard/ActivityHistory/ActivityHist
 import Diary from '@/components/dashboard/Diary/Diary';
 import EditDiaryModal from '@/components/dashboard/modals/EditDiaryModal';
 import type { UserStatus } from '@/types';
+// #endregion
 
-//#region Dashboard コンポーネント - メインダッシュボード
 export default function Dashboard() {
   const router = useRouter();
   const supabase = createClientComponentClient();
   
-  //#region State
+  // #region 状態変数（State）の定義
   // モーダル表示用のstate
   const [showGachaModal, setShowGachaModal] = useState(false);
+  const [showNewDiaryModal, setShowNewDiaryModal] = useState<boolean>(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   
   // チケット情報を格納するstate
@@ -38,13 +40,12 @@ export default function Dashboard() {
     ranking: 'ブロンズ'
   });
 
-  // useStateで更新トリガーを追加
+  // データ更新用のトリガー
   const [refreshKey, setRefreshKey] = useState(0);
   const [isLoadingUserStatus, setIsLoadingUserStatus] = useState<boolean>(true);
+  // #endregion
 
-  // 1. 状態変数を追加する
-  const [showNewDiaryModal, setShowNewDiaryModal] = useState<boolean>(false);
-
+  // #region 定数と計算関数
   // ランクの閾値を定義
   const RANK_THRESHOLDS = {
     SILVER: 10,
@@ -52,6 +53,11 @@ export default function Dashboard() {
     PLATINUM: 60
   };
 
+  /**
+   * ランクに応じたスタイルを取得する関数
+   * @param rank ユーザーのランク
+   * @returns アイコンとグラデーションスタイル
+   */
   const getRankStyle = (rank: string) => {
     switch (rank) {
       case 'ブロンズ':
@@ -82,12 +88,20 @@ export default function Dashboard() {
     }
   };
 
-  // レベルに基づいて必要なXPを計算する関数
+  /**
+   * レベルに基づいて必要なXPを計算する関数
+   * @param level 現在のレベル
+   * @returns 次のレベルに必要な経験値
+   */
   const calculateRequiredXpForLevel = (level: number): number => {
     return Math.floor(1000 * Math.pow(level, 1.5));
   };
   
-  // 連続ログイン日数からランクを決定する関数
+  /**
+   * 連続ログイン日数からランクを決定する関数
+   * @param streak 連続ログイン日数
+   * @returns ランク名
+   */
   const getRankFromStreak = (streak: number): string => {
     if (streak >= RANK_THRESHOLDS.PLATINUM) return 'プラチナ';
     if (streak >= RANK_THRESHOLDS.GOLD) return 'ゴールド';
@@ -95,7 +109,12 @@ export default function Dashboard() {
     return 'ブロンズ';
   };
   
-  // 合計XPからレベル情報を計算する関数
+  /**
+   * 合計XPからレベル情報を計算する関数
+   * @param totalXp 合計経験値
+   * @param currentLevel 現在のレベル
+   * @returns レベル情報オブジェクト
+   */
   const calculateLevelInfo = (totalXp: number, currentLevel: number): { 
     level: number, 
     currentXP: number, 
@@ -125,9 +144,75 @@ export default function Dashboard() {
       nextLevelXP: nextLevelRequiredXp
     };
   };
-  //#endregion
 
-  // 2. ログイン直後にモーダルを表示するためのuseEffectを追加
+  /**
+   * ランクに応じたサブテキストを生成する関数
+   * @param streak 連続ログイン日数
+   * @returns サブテキスト
+   */
+  const getRankSubtext = (streak: number): string => {
+    if (streak >= RANK_THRESHOLDS.PLATINUM) {
+      return '最高ランクです！';
+    } else if (streak >= RANK_THRESHOLDS.GOLD) {
+      const daysToNextRank = RANK_THRESHOLDS.PLATINUM - streak;
+      return `プラチナまであと${daysToNextRank}日`;
+    } else if (streak >= RANK_THRESHOLDS.SILVER) {
+      const daysToNextRank = RANK_THRESHOLDS.GOLD - streak;
+      return `ゴールドまであと${daysToNextRank}日`;
+    } else {
+      const daysToNextRank = RANK_THRESHOLDS.SILVER - streak;
+      return `シルバーまであと${daysToNextRank}日`;
+    }
+  };
+
+  /**
+   * 継続記録のサブテキストを生成する関数
+   * @param streak 連続ログイン日数
+   * @returns サブテキスト
+   */
+  const getStreakSubtext = (streak: number): string => {
+    if (streak === 0) return '今日から始めましょう！';
+    if (streak < 7) return '一週間を目指しましょう！';
+    if (streak < 30) return '継続中、その調子！';
+    if (streak < 100) return 'もっともっと！まだまだいける！！';
+    return 'すごい継続力です！';
+  };
+
+  /**
+   * 日記総記録数のサブテキストを生成する関数
+   * @param count 日記記録数
+   * @returns サブテキスト
+   */
+  const getDiarySubtext = (count: number): string => {
+    if (count === 0) return '最初の記録を作成しましょう！';
+    if (count < 10) return 'コツコツ記録していきましょう！';
+    if (count < 50) return '継続は力なり！';
+    if (count < 100) return '素晴らしい記録数です！';
+    return '記録の達人です！';
+  };
+
+  /**
+   * 新規日記用エントリーの準備
+   * @returns 新しい日記エントリーのテンプレート
+   */
+  const getNewDiaryEntry = () => {
+    const now = new Date();
+    const formattedTime = now.toLocaleTimeString('ja-JP', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    
+    return {
+      time: formattedTime,
+      tags: [],
+      activities: [],
+      parrots: []
+    };
+  };
+  // #endregion
+
+  // #region ライフサイクル関数（useEffect）
+  // ログイン直後にモーダルを表示するためのuseEffect
   useEffect(() => {
     // ログイン後の初回レンダリング時のみモーダルを表示
     const checkAndShowModal = async () => {
@@ -152,61 +237,6 @@ export default function Dashboard() {
     
     checkAndShowModal();
   }, [isLoadingUserStatus, supabase.auth]);
-
-  // 3. モーダルを閉じる関数
-  const handleCloseDiaryModal = () => {
-    setShowNewDiaryModal(false);
-  };
-
-  // 4. 新規日記用エントリーの準備
-  const getNewDiaryEntry = () => {
-    const now = new Date();
-    const formattedTime = now.toLocaleTimeString('ja-JP', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-    
-    return {
-      time: formattedTime,
-      tags: [],
-      activities: [],
-      parrots: []
-    };
-  };
-  
-  // ランクに応じたサブテキストを生成する関数
-  const getRankSubtext = (streak: number): string => {
-    if (streak >= RANK_THRESHOLDS.PLATINUM) {
-      return '最高ランクです！';
-    } else if (streak >= RANK_THRESHOLDS.GOLD) {
-      const daysToNextRank = RANK_THRESHOLDS.PLATINUM - streak;
-      return `プラチナまであと${daysToNextRank}日`;
-    } else if (streak >= RANK_THRESHOLDS.SILVER) {
-      const daysToNextRank = RANK_THRESHOLDS.GOLD - streak;
-      return `ゴールドまであと${daysToNextRank}日`;
-    } else {
-      const daysToNextRank = RANK_THRESHOLDS.SILVER - streak;
-      return `シルバーまであと${daysToNextRank}日`;
-    }
-  };
-
-  // 継続記録のサブテキストを生成する関数
-  const getStreakSubtext = (streak: number): string => {
-    if (streak === 0) return '今日から始めましょう！';
-    if (streak < 7) return '一週間を目指しましょう！';
-    if (streak < 30) return '継続中、その調子！';
-    if (streak < 100) return 'もっともっと！まだまだいける！！';
-    return 'すごい継続力です！';
-  };
-
-  // 日記総記録数のサブテキストを生成する関数
-  const getDiarySubtext = (count: number): string => {
-    if (count === 0) return '最初の記録を作成しましょう！';
-    if (count < 10) return 'コツコツ記録していきましょう！';
-    if (count < 50) return '継続は力なり！';
-    if (count < 100) return '素晴らしい記録数です！';
-    return '記録の達人です！';
-  };
 
   // ページ読み込み時にユーザー情報とチケット情報を取得
   useEffect(() => {
@@ -276,11 +306,11 @@ export default function Dashboard() {
                 // 日本時間のタイムゾーンオフセット（+9時間 = +9*60*60*1000ミリ秒）
                 const jstOffset = 9 * 60 * 60 * 1000;
                 
-                // 現在時刻と前回ログイン時刻をJST基準の日付文字列に変S換
+                // 現在時刻と前回ログイン時刻をJST基準の日付文字列に変換
                 const getJstDateString = (dateString: string | Date): string => {
                   const date = new Date(dateString);
                   // UTC時間に9時間を加算して日本時間にする
-                  const jstDate = new Date(date.getTime() + (9 * 60 * 60 * 1000));
+                  const jstDate = new Date(date.getTime() + jstOffset);
                   // YYYY/MM/DD 形式の文字列を返す
                   return `${jstDate.getFullYear()}/${jstDate.getMonth() + 1}/${jstDate.getDate()}`;
                 };
@@ -328,7 +358,7 @@ export default function Dashboard() {
                 else if (isYesterday) {
                   console.log('📝 昨日のログインを検出しました。ストリークを更新します');
                   
-                  // ストリークを更新（チェックを省略して直接更新）
+                  // ストリークを更新
                   const updatedStreak = streakData.login_streak_count + 1;
                   
                   // 現在の最大ストリーク取得（null の場合は 0 とする）
@@ -449,11 +479,18 @@ export default function Dashboard() {
     };
 
     fetchUserData();
-  }, [supabase, refreshKey, router]); // router を依存配列に追加
+  }, [supabase, refreshKey, router]);
 
-  //#region Handlers
+  // チケットカウントを更新するuseEffect
+  useEffect(() => {
+    updateTicketCount();
+  }, [refreshKey]);
+  // #endregion
+
+  // #region イベントハンドラ
   /**
    * 活動履歴のセルがクリックされたときのハンドラ
+   * @param date クリックされた日付
    */
   const handleActivityCellClick = (date: string) => {
     if (showGachaModal) {
@@ -462,7 +499,9 @@ export default function Dashboard() {
     console.log(`セルがクリックされました: ${date}`);
   };
 
-  // ログアウト処理を行うハンドラ
+  /**
+   * ログアウト処理を行うハンドラ
+   */
   const handleLogout = async () => {
     try {
       setIsLoggingOut(true);
@@ -481,9 +520,17 @@ export default function Dashboard() {
       setIsLoggingOut(false);
     }
   };
-  //#endregion
 
-  // ガチャを開始する関数
+  /**
+   * モーダルを閉じる関数
+   */
+  const handleCloseDiaryModal = () => {
+    setShowNewDiaryModal(false);
+  };
+
+  /**
+   * ガチャを開始する関数
+   */
   const startGacha = async () => {
     if (ticketCount <= 0) {
       alert('チケットがありません。活動を行ってチケットを獲得してください。');
@@ -492,7 +539,16 @@ export default function Dashboard() {
     setShowGachaModal(true);
   };
 
-  // ガチャ完了後に画面のチケット数を更新する関数
+  /**
+   * ガチャを閉じる関数
+   */
+  const closeGacha = () => {
+    setShowGachaModal(false);
+  };
+
+  /**
+   * ガチャ完了後に画面のチケット数を更新する関数
+   */
   const updateTicketCount = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -519,19 +575,12 @@ export default function Dashboard() {
       console.error('❌ チケット更新中にエラーが発生しました:', error);
     }
   };
-
-  useEffect(() => {
-    updateTicketCount();
-  }, [refreshKey]);
-
-  // ガチャを閉じる関数
-  const closeGacha = () => {
-    setShowGachaModal(false);
-  };
+  // #endregion
 
   // 現在のランクスタイルを取得
   const rankStyle = getRankStyle(userStatus.ranking);
 
+  // #region レンダリング
   return (
     <div className={styles.pageContainer}>
       <div className={styles.contentContainer}>
@@ -634,7 +683,8 @@ export default function Dashboard() {
               <div className={styles.statDescription}>
                 {isLoadingUserStatus ? '読込中...' : getDiarySubtext(userStatus.totalDiaryEntries)}
               </div>
-            </div>
+
+              </div>
             
             {/* 継続記録 */}
             <div className={styles.statItem}>
@@ -699,6 +749,7 @@ export default function Dashboard() {
           onClose={closeGacha}
         />
 
+        {/* 新規日記モーダル */}
         {showNewDiaryModal && (
           <EditDiaryModal
             isOpen={showNewDiaryModal}
@@ -715,9 +766,8 @@ export default function Dashboard() {
             }}
           />
         )}
-        
       </div>
     </div>
   );
+  // #endregion
 }
-//#endregion
