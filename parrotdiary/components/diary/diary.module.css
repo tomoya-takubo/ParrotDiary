@@ -1,4 +1,4 @@
-/* 全画面グラデーション背景 - 修正箇所 */
+/* #region 全体レイアウト - 背景とコンテナ */
 .pageBackground {
   background: linear-gradient(to bottom, #EFF6FF, #F5F3FF);
   position: fixed;
@@ -6,13 +6,12 @@
   left: 0;
   right: 0;
   bottom: 0;
-  width: 100vw;  /* 100%から100vwに変更 */
-  height: 100vh; /* 100%から100vhに変更 */
+  width: 100vw;
+  height: 100vh;
   min-height: 100%;
   z-index: -1;
 }
 
-/* コンテナにも背景を適用 - 重要な修正 */
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -20,31 +19,58 @@
   font-family: sans-serif;
   position: relative;
   min-height: 100vh;
-  background: linear-gradient(to bottom, #EFF6FF, #F5F3FF); /* 追加 */
+  background: linear-gradient(to bottom, #EFF6FF, #F5F3FF);
 }
+/* #endregion */
 
-/* タイトル */
+/* #region タイトルとヘッダー */
 .title {
   font-size: 24px;
   font-weight: bold;
-  /* margin-bottom: 24px; */
   color: #333;
 }
 
+.titleSection {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.backToDashboardButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #3B82F6;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+/* #endregion */
+
+/* #region 検索バーとフィルター関連 */
 /* 検索バー */
 .searchContainer {
   position: relative;
   margin-bottom: 16px;
+  width: 100%;
 }
 
 .searchInput {
   width: 100%;
-  padding: 12px 16px;
+  padding: 12px 16px 12px 16px;
   border-radius: 12px;
   border: 1px solid #e2e8f0;
   font-size: 16px;
   outline: none;
   transition: border-color 0.2s;
+  box-sizing: border-box;
 }
 
 .searchInput:focus {
@@ -59,7 +85,14 @@
   color: #a0aec0;
 }
 
-/* フィルターボタン */
+/* フィルターボタンと関連UI */
+.filterRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
 .filterButton {
   display: inline-flex;
   align-items: center;
@@ -69,7 +102,6 @@
   color: #4a5568;
   cursor: pointer;
   padding: 8px 0;
-  margin-bottom: 16px;
 }
 
 .filterButton:hover {
@@ -79,6 +111,19 @@
 .arrowIcon {
   width: 16px;
   height: 16px;
+}
+
+.filterBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #3182ce;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  margin-left: 4px;
 }
 
 /* フィルターパネル */
@@ -119,7 +164,7 @@
 .dateRangeContainer {
   display: flex;
   align-items: center;
-  justify-content: center; /* 中央揃えに変更 */
+  justify-content: center;
   gap: 8px;
 }
 
@@ -129,12 +174,12 @@
   border-radius: 8px;
   border: 1px solid #e2e8f0;
   font-size: 14px;
-  text-align: center; /* テキストも中央揃えに */
+  text-align: center;
 }
 
 .dateSeparator {
   color: #a0aec0;
-  flex-shrink: 0; /* 幅が縮まないように */
+  flex-shrink: 0;
 }
 
 /* タグリスト */
@@ -189,24 +234,154 @@
   text-decoration: underline;
 }
 
-/* 検索結果カウント */
-.resultCount {
+.clearFiltersButton {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background-color: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
   color: #4a5568;
   font-size: 14px;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+}
+
+.clearFiltersButton:hover {
+  background-color: #edf2f7;
+}
+
+/* 検索結果カウントと設定 */
+.resultControlRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 16px;
 }
 
-/* 日記エントリー */
+.resultCount {
+  color: #4a5568;
+  font-size: 14px;
+  margin-bottom: 0;
+}
+
+.pageSizeSelector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #4a5568;
+  font-size: 14px;
+}
+
+.pageSizeSelect {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background-color: white;
+  font-size: 14px;
+  color: #4a5568;
+  cursor: pointer;
+}
+
+/* エクスポートボタン */
+.exportButtons {
+  display: flex;
+  gap: 8px;
+}
+
+.exportButton {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background-color: #f7fafc;
+  border: 1px solid #e2e8f0;
+  color: #4a5568;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: background-color 0.2s;
+}
+
+.exportButton:hover {
+  background-color: #edf2f7;
+}
+/* #endregion */
+
+/* #region パロット表示トグル */
+.parrotToggle {
+  display: flex;
+  align-items: center;
+}
+
+.toggleLabel {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: #4a5568;
+}
+
+.toggleInput {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggleSwitch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  background-color: #cbd5e0;
+  border-radius: 20px;
+  margin-right: 8px;
+  transition: all 0.3s;
+}
+
+.toggleSwitch::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: white;
+  top: 2px;
+  left: 2px;
+  transition: all 0.3s;
+}
+
+.toggleInput:checked + .toggleSwitch {
+  background-color: #3182ce;
+}
+
+.toggleInput:checked + .toggleSwitch::after {
+  transform: translateX(16px);
+}
+/* #endregion */
+
+/* #region 日記エントリー */
 .entriesContainer {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
+.entriesGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
 .entryCard {
   background-color: #fff;
   border-radius: 12px;
   padding: 16px;
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .entryHeader {
@@ -227,6 +402,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  contain: content; /* コンテンツの影響範囲を制限 */
 }
 
 /* エントリータグのスタイル */
@@ -236,7 +412,6 @@
   border-radius: 9999px;
   background-color: #e0f2fe;
   color: #0284c7;
-  /* 縦位置の調整と一貫性のために追加 */
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -246,111 +421,9 @@
   vertical-align: middle;
 }
 
-.entryContent {
-  color: #2d3748;
-}
-
-.entryContent p {
-  margin-bottom: 8px;
-}
-
-.entryContent p:last-child {
-  margin-bottom: 0;
-}
-
-/* ローディング & 結果無し */
-.loading, .noResults {
-  text-align: center;
-  padding: 32px;
-  color: #4a5568;
-}
-
-/* フィルターバッジとクリアボタン */
-.filterBadge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #3182ce;
-  color: white;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  font-size: 12px;
-  margin-left: 4px;
-}
-
-.clearFiltersButton {
-  margin-top: 12px;
-  padding: 8px 12px;
-  background-color: #f7fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  color: #4a5568;
-  font-size: 14px;
-  cursor: pointer;
-  width: 100%;
-  text-align: center;
-}
-
-.clearFiltersButton:hover {
-  background-color: #edf2f7;
-}
-
-/* エラーメッセージ */
-.errorMessage {
-  padding: 12px;
-  background-color: #fff5f5;
-  color: #e53e3e;
-  border-radius: 6px;
-  margin-bottom: 16px;
-  border: 1px solid #fc8181;
-}
-
-/* レスポンシブ対応 */
-@media (max-width: 640px) {
-  .entryHeader {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
-  .dateRangeContainer {
-    flex-direction: column;
-  }
-
-  .searchInput {
-    font-size: 14px;
-    padding: 10px 14px;
-  }
-}
-
-.backToDashboardButton {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background-color: #3B82F6;
-  color: white;
-  border: none;
-  border-radius: 0.375rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.titleSection {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-/* 既存のdiary.module.cssに追加するスタイル */
-
-/* 編集ボタンのスタイル */
+/* 編集ボタン */
 .editButton {
-  font-size: 10px; /* 12pxから10pxに変更 */
+  font-size: 10px;
   padding: 4px 8px;
   border-radius: 9999px;
   background-color: #f1f5f9;
@@ -370,29 +443,50 @@
   background-color: #e2e8f0;
 }
 
-/* 日記エントリーの内容コンテナを相対位置に設定（パロット配置のため） */
+/* 削除ボタン */
+.deleteButton {
+  font-size: 10px;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  background-color: #fee2e2;
+  color: #dc2626;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  height: 24px;
+  box-sizing: border-box;
+  vertical-align: middle;
+}
+
+.deleteButton:hover {
+  background-color: #fecaca;
+}
+
+/* 日記内容 */
 .entryContent {
+  color: #2d3748;
   position: relative;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-/* パロット表示修正用スタイル */
-
-/* 日記カードに相対位置を設定 */
-.entryCard {
-  position: relative;
-  background-color: #fff;
-  border-radius: 12px;
-  padding: 16px;
+.entryContent p {
+  margin-bottom: 8px;
 }
 
-/* パロット表示位置の調整 */
+.entryContent p:last-child {
+  margin-bottom: 0;
+}
+
+/* パロット表示 */
 .parrotBottomRight {
   position: absolute;
-  bottom: -4px;  /* 位置調整 */
-  right: -4px;   /* 位置調整 */
+  bottom: -4px;
+  right: -4px;
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -412,293 +506,39 @@
   height: 40px;
   object-fit: contain;
   border-radius: 4px;
-  cursor: default; /* カーソルを通常のものに変更 */
+  cursor: default;
   transition: transform 0.2s;
   transform: scaleX(-1); /* GIFを左右反転 */
 }
 
-/* コンテナの最大幅を調整 */
-.container {
-  max-width: 1200px; /* 幅を拡大 */
-  margin: 0 auto;
-  padding: 24px;
-  font-family: sans-serif;
-  position: relative;
-  min-height: 100vh;
+/* ローディング & 結果無し */
+.loading, .noResults {
+  text-align: center;
+  padding: 32px;
+  color: #4a5568;
 }
 
-.entryCard {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+/* 曜日の色分け */
+.sundayText {
+  color: #e53e3e; /* 赤色 */
 }
 
-/* レスポンシブ対応 */
-@media (max-width: 768px) {
-  .modalContainer {
-    width: calc(100% - 32px);
-    max-width: none;
-    padding: 16px;
-    margin: 0 16px;
-    max-height: 85vh;
-  }
-  
-  .modalTitle {
-    font-size: 20px;
-  }
-  
-  .modalNavigationWrapper {
-    width: 100%;
-    max-width: 100%;
-  }
-  
-  .modalNavButton {
-    width: 36px;
-    height: 36px;
-  }
-  
-  .entryCard {
-    padding: 12px;
-  }
-
-  .entriesGrid {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .searchInput:focus {
-    outline: 2px solid #3182ce;
-    border-color: transparent;
-  }
-  
-  .dateInput:focus {
-    outline: 2px solid #3182ce;
-    border-color: transparent;
-  }
-  
-  .pageSizeSelect:focus {
-    outline: 2px solid #3182ce;
-    border-color: transparent;
-  }
-
-  .entriesContainer {
-    will-change: auto; /* transformよりautoの方が良い */
-  }
-  
-  /* イベントデリゲーションのヒント */
-  .entryTags {
-    contain: content; /* コンテンツの影響範囲を制限 */
-  }
-
-  .parrotBottomRight {
-    bottom: -4px;
-    right: -4px;
-  }
-  
-  .parrotGif {
-    width: 40px;
-    height: 40px;
-  }
+.saturdayText {
+  color: #3182ce; /* 青色 */
 }
 
-@media (max-width: 480px) {
-  .filterPanel {
-    padding: 12px;
-  }
-  
-  .tagsList {
-    max-height: 150px;
-    padding: 6px;
-  }
-  
-  .tagButton {
-    font-size: 12px;
-    padding: 4px 8px;
-  }
-  
-  .dateRangeContainer {
-    width: 100%;
-  }
-  
-  .dateInput {
-    font-size: 12px;
-    padding: 6px;
-  }
-  
-  .clearFiltersButton {
-    padding: 6px 10px;
-    font-size: 12px;
-  }
-
-  .modalContainer {
-    padding: 12px;
-    margin: 0 8px;
-    max-height: 90vh;
-  }
-  
-  .modalTitle {
-    font-size: 18px;
-  }
-  
-  .headerTitleContainer {
-    gap: 8px;
-  }
-  
-  .modalNavButton {
-    width: 32px;
-    height: 32px;
-  }
-  
-  .closeButton {
-    padding: 4px;
-  }
-
-  .searchContainer {
-    margin-bottom: 12px;
-  }
-  
-  .searchInput {
-    padding: 8px 30px 8px 10px;
-    font-size: 14px;
-  }
-  
-  .searchIcon {
-    right: 10px;
-  }
-  
-  .filterButton {
-    padding: 6px 0;
-    font-size: 14px;
-    margin-bottom: 12px;
-  }
-
-  .entryCard {
-    padding: 12px;
-    margin-bottom: 12px;
-  }
-    
-  .entryDate {
-    font-size: 12px;
-    margin-bottom: 6px;
-    width: 100%;
-  }
-  
-  /* タグコンテナの調整 */
-  .entryTags {
-    width: 100%;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    justify-content: flex-start;
-    flex-wrap: nowrap;
-    gap: 4px; /* 間隔を縮小 */
-  }
-
-  .entryTag {
-    font-size: 12px;
-    padding: 2px 6px;
-    border-radius: 9999px;
-    background-color: #e0f2fe;
-    color: #0284c7;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-    height: 22px;
-    box-sizing: border-box;
-    vertical-align: middle;
-  }
-
-  .editButton {
-    font-size: 12px; /* 11pxから12pxに変更 */
-    padding: 2px 6px;
-    border-radius: 16px;
-    height: 22px;
-    line-height: 1;
-    white-space: nowrap;
-    /* 縦位置の調整を追加 */
-    vertical-align: middle;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .entryContent p {
-    font-size: 14px;
-    margin-bottom: 6px;
-  }
-  
-  /* パロット表示調整 */
-  .parrotBottomRight {
-    bottom: -3px;
-    right: -3px;
-  }
-  
-  .parrotGif {
-    width: 32px;
-    height: 32px;
-  }
-
-  .pagination {
-    gap: 4px;
-  }
-  
-  .paginationButton {
-    min-width: 32px;
-    height: 32px;
-    font-size: 12px;
-    padding: 0 4px;
-  }
-  
-  /* 画面幅が狭い場合は「最初」と「最後」のボタンを非表示 */
-  .pagination button:first-child,
-  .pagination button:last-child {
-    display: none;
-  }
-
-  .titleSection {
-    flex-direction: column;
-    align-items: flex-start;
-    margin-bottom: 1rem;
-  }
-  
-  .title {
-    font-size: 20px;
-    margin-bottom: 0.5rem;
-  }
-  
-  .backToDashboardButton {
-    width: 100%;
-    justify-content: center;
-    padding: 8px;
-    font-size: 14px;
-  }
-
-  .entryContent {
-    gap: 6px;
-  }
-  
-  .entryContent p {
-    line-height: 1.4;
-  }
-
-  /* タグ間の余白調整 */
-  .entryTags > * {
-    margin-right: 4px;
-  }
-  
-  .entryTags > *:last-child {
-    margin-right: 0;
-  }
-  
-  /* エントリーヘッダーの調整 */
-  .entryHeader {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px; /* 間隔を縮小 */
-  }
+/* エラーメッセージ */
+.errorMessage {
+  padding: 12px;
+  background-color: #fff5f5;
+  color: #e53e3e;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  border: 1px solid #fc8181;
 }
+/* #endregion */
 
-/* ページネーション関連のスタイル */
+/* #region ページネーション */
 .pagination {
   display: flex;
   justify-content: center;
@@ -727,24 +567,15 @@
   transition: all 0.2s;
 }
 
-.paginationButton:hover {
-  background-color: #edf2f7;
-}
-
 .paginationButton:hover:not(.disabled) {
   background: #F3F4F6;
   border-color: #D1D5DB;
 }
 
 .paginationButtonActive {
-  background: #3182ce !important; /* !important で優先度を上げる */
+  background: #3182ce !important;
   color: white !important;
   border-color: #3182ce !important;
-}
-
-.paginationButton.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 .paginationButtonActive:hover {
@@ -756,11 +587,6 @@
   width: 36px;
 }
 
-.paginationArrow:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
 .paginationEllipsis {
   display: flex;
   justify-content: center;
@@ -770,198 +596,6 @@
   color: #4a5568;
 }
 
-/* 検索結果とページサイズセレクタのレイアウト */
-.resultControlRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.pageSizeSelector {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #4a5568;
-  font-size: 14px;
-}
-
-.pageSizeSelect {
-  padding: 6px 8px;
-  border-radius: 6px;
-  border: 1px solid #e2e8f0;
-  background-color: white;
-  font-size: 14px;
-  color: #4a5568;
-  cursor: pointer;
-}
-
-/* レスポンシブ対応 */
-@media (max-width: 640px) {
-  .resultControlRow {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-  
-  .pagination {
-    flex-wrap: wrap;
-  }
-}
-
-.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* diary.module.css に追加 */
-@media (hover: none) {
-  /* タッチデバイス向け調整 */
-  .entryTag {
-    padding: 4px 8px; /* タップ領域を適度に */
-  }
-  
-  .tagButton {
-    padding: 4px 8px; /* タップ領域を適度に */
-  }
-  
-  .editButton {
-    padding: 4px 8px; /* タップ領域を適度に */
-  }
-  
-  /* ホバーエフェクトを無効化 */
-  .tagButton:hover, .entryTag:hover, .paginationButton:hover,
-  .filterButton:hover, .clearFiltersButton:hover {
-    background-color: inherit;
-  }
-  
-  /* 代わりにアクティブ（タップ）エフェクトを設定 */
-  .tagButton:active, .entryTag:active, .paginationButton:active,
-  .filterButton:active, .clearFiltersButton:active {
-    opacity: 0.7;
-  }
-}
-
-/* グリッドレイアウト用のスタイル */
-/* entriesGridのスタイルを修正 - PCでも1列表示にする */
-.entriesGrid {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-/* 既存のスタイルはそのままで、以下を追加または修正 */
-
-/* 検索バーの基本スタイルを改善 */
-.searchContainer {
-  position: relative;
-  margin-bottom: 16px;
-  width: 100%;
-}
-
-.searchInput {
-  width: 100%;
-  padding: 12px 16px 12px 16px;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  font-size: 16px;
-  outline: none;
-  transition: border-color 0.2s;
-  box-sizing: border-box; /* 重要: パディングを幅に含める */
-}
-
-/* スマホ向け調整 */
-@media (max-width: 480px) {
-  .searchInput {
-    padding: 10px 36px 10px 16px; /* 左右のパディングを増やし、右側は検索アイコン用に余裕を持たせる */
-    font-size: 14px;
-    width: 100%; /* 幅を明示的に100%に設定 */
-    border-radius: 8px; /* より小さな画面に合わせて角丸を調整 */
-  }
-  
-  .searchIcon {
-    right: 12px; /* アイコン位置の微調整 */
-  }
-}
-
-/* タッチデバイス向けの追加調整 */
-@media (hover: none) and (max-width: 480px) {
-  .searchInput {
-    -webkit-appearance: none; /* iOS用の外観調整 */
-    appearance: none;
-    font-size: 16px; /* iOSでのズーム防止のため16px以上に */
-  }
-}
-
-/* diary.module.css に追加するスタイル */
-
-/* パロット表示トグル */
-.parrotToggle {
-  display: flex;
-  align-items: center;
-  margin-right: 16px;
-}
-
-.toggleLabel {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  font-size: 14px;
-  color: #4a5568;
-}
-
-.toggleInput {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.toggleSwitch {
-  position: relative;
-  display: inline-block;
-  width: 36px;
-  height: 20px;
-  background-color: #cbd5e0;
-  border-radius: 20px;
-  margin-right: 8px;
-  transition: all 0.3s;
-}
-
-.toggleSwitch::after {
-  content: '';
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background-color: white;
-  top: 2px;
-  left: 2px;
-  transition: all 0.3s;
-}
-
-.toggleInput:checked + .toggleSwitch {
-  background-color: #3182ce;
-}
-
-.toggleInput:checked + .toggleSwitch::after {
-  transform: translateX(16px);
-}
-
-/* レスポンシブ対応 */
-@media (max-width: 640px) {
-  .resultControlRow {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .parrotToggle {
-    margin-right: 0;
-  }
-}
-
-/* 固定位置のページネーション */
 .fixedPagination {
   position: sticky;
   bottom: 16px;
@@ -971,7 +605,6 @@
   z-index: 10;
   padding: 8px;
   margin-top: 16px;
-  /* 横センター配置 */
   left: 50%;
   transform: translateX(-50%);
   max-width: 90%;
@@ -979,184 +612,13 @@
   justify-content: center;
 }
 
-/* スマホ向け調整 */
-@media (max-width: 640px) {
-  .fixedPagination {
-    padding: 6px;
-    bottom: 12px;
-  }
-  
-  .paginationButton {
-    min-width: 28px;
-    height: 28px;
-    font-size: 12px;
-  }
+.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
+/* #endregion */
 
-/* diary.module.css に追加 */
-
-/* フィルターボタンとパロットトグルを含む行 */
-.filterRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-/* パロット表示トグル */
-.parrotToggle {
-  display: flex;
-  align-items: center;
-}
-
-.toggleLabel {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  font-size: 14px;
-  color: #4a5568;
-}
-
-.toggleInput {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.toggleSwitch {
-  position: relative;
-  display: inline-block;
-  width: 36px;
-  height: 20px;
-  background-color: #cbd5e0;
-  border-radius: 20px;
-  margin-right: 8px;
-  transition: all 0.3s;
-}
-
-.toggleSwitch::after {
-  content: '';
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background-color: white;
-  top: 2px;
-  left: 2px;
-  transition: all 0.3s;
-}
-
-.toggleInput:checked + .toggleSwitch {
-  background-color: #3182ce;
-}
-
-.toggleInput:checked + .toggleSwitch::after {
-  transform: translateX(16px);
-}
-
-/* レスポンシブ対応 */
-@media (max-width: 480px) {
-  .filterRow {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-  
-  .parrotToggle {
-    align-self: flex-end; /* スマホ表示時は右寄せ */
-  }
-
-  /* タグコンテナの調整 */
-  .entryTags {
-    width: 100%;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px; /* タグ間の間隔を統一 */
-    margin-bottom: 6px;
-  }
-
-  .entryTag {
-    font-size: 11px; /* フォントサイズを少し小さく */
-    padding: 3px 6px;
-    white-space: nowrap; /* 重要: タグ内のテキストを改行させない */
-    overflow: hidden;
-    text-overflow: ellipsis; /* 長すぎるテキストは省略記号で表示 */
-    max-width: fit-content; /* タグの幅を内容に合わせる */
-  }
-  
-  .editButton, .deleteButton {
-    font-size: 11px;
-    padding: 3px 6px;
-    white-space: nowrap;
-  }
-
-  .entryTags {
-    width: 100%;
-    display: flex;
-    flex-wrap: nowrap; /* 折り返しを無効化 */
-    overflow-x: auto; /* 横スクロールを有効化 */
-    -webkit-overflow-scrolling: touch; /* iOSでのスムーズスクロール */
-    gap: 6px;
-    padding-bottom: 8px; /* スクロールバー用の余白 */
-  }
-    
-  /* スクロールバーをカスタマイズ */
-  .entryTags::-webkit-scrollbar {
-    height: 3px;
-  }
-  
-  .entryTags::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 3px;
-  }
-  
-  .entryTag {
-    flex-shrink: 0; /* タグの縮小を防止 */
-    white-space: nowrap;
-    font-size: 11px;
-    padding: 3px 6px;
-  }
-  
-  .editButton, .deleteButton {
-    flex-shrink: 0;
-    font-size: 11px;
-    padding: 3px 6px;
-  }
-}
-
-/* 曜日の色分け */
-.sundayText {
-  color: #e53e3e; /* 赤色 */
-}
-
-.saturdayText {
-  color: #3182ce; /* 青色 */
-}
-
-/* 削除ボタンのスタイル */
-.deleteButton {
-  font-size: 10px;
-  padding: 4px 8px;
-  border-radius: 9999px;
-  background-color: #fee2e2;
-  color: #dc2626;
-  border: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-  height: 24px;
-  box-sizing: border-box;
-  vertical-align: middle;
-}
-
-.deleteButton:hover {
-  background-color: #fecaca;
-}
-
-/* 削除モーダル用スタイル */
+/* #region モーダル関連 */
 .modalOverlay {
   position: fixed;
   top: 0;
@@ -1220,41 +682,4 @@
 .deleteConfirmButton:hover {
   background-color: #b91c1c;
 }
-
-/* diary.module.cssに追加 */
-.exportButtons {
-  display: flex;
-  gap: 8px;
-}
-
-.exportButton {
-  padding: 6px 12px;
-  border-radius: 6px;
-  background-color: #f7fafc;
-  border: 1px solid #e2e8f0;
-  color: #4a5568;
-  font-size: 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  transition: background-color 0.2s;
-}
-
-.exportButton:hover {
-  background-color: #edf2f7;
-}
-
-/* レスポンシブ対応 */
-@media (max-width: 640px) {
-  .resultControlRow {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-  
-  .exportButtons {
-    width: 100%;
-    justify-content: flex-start;
-  }
-}
+/* #endregion */

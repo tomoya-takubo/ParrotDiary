@@ -1,4 +1,3 @@
-// src/components/diary/DiarySearch.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, FilterIcon, Calendar, ChevronLeft, ChevronRight, Edit2, Trash2 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
@@ -8,20 +7,26 @@ import Image from 'next/image';
 import EditDiaryModal from '@/components/dashboard/modals/EditDiaryModal';
 import { getEntryParrots } from '@/components/dashboard/Diary/ParrotSelector';
 
-// 拡張したDiaryEntryタイプを定義
+// #region 型定義
+/**
+ * 基本のDiaryEntryにパロット情報を追加した拡張型
+ */
 interface ExtendedDiaryEntry extends DiaryEntry {
-  parrots?: string[];
+  parrots?: string[]; // パロットGIF画像のURL配列
 }
 
-// 編集用のエントリータイプ定義
+/**
+ * 編集モーダル用のエントリータイプ
+ */
 type EditDiaryEntryType = {
-  time: string;
-  tags: string[];
-  activities: string[];
-  created_at?: string;
-  entry_id?: number | string;
-  parrots?: string[];
+  time: string;         // 時刻（HH:MM形式）
+  tags: string[];       // タグの配列
+  activities: string[]; // 日記の内容（最大3行）
+  created_at?: string;  // 作成日時
+  entry_id?: number | string; // エントリーID
+  parrots?: string[];   // パロットGIF画像のURL配列
 };
+// #endregion
 
 /**
  * 日記検索ページのコンポーネント
@@ -29,16 +34,22 @@ type EditDiaryEntryType = {
  */
 const DiarySearch = () => {
   // #region 状態管理
+  // 認証情報
   const { user } = useAuth();
+  
+  // 検索・フィルター関連の状態
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [showAllTags, setShowAllTags] = useState(false);
+  
+  // データ関連の状態
   const [diaryEntries, setDiaryEntries] = useState<ExtendedDiaryEntry[]>([]);
   const [allTags, setAllTags] = useState<TagWithCount[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
   // 編集モーダル用の状態
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editEntry, setEditEntry] = useState<EditDiaryEntryType | null>(null);
@@ -49,18 +60,21 @@ const DiarySearch = () => {
   const [entriesPerPage, setEntriesPerPage] = useState(3);
   const [pageSizeOptions] = useState([3, 5, 10, 20, 50]);
 
-  // 状態管理に「パロット表示」のステートを追加
+  // パロット表示制御の状態
   const [showParrots, setShowParrots] = useState(true); // デフォルトでは表示する
 
   // 削除確認モーダル用の状態
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [entryToDelete, setEntryToDelete] = useState<ExtendedDiaryEntry | null>(null);
 
-  // エントリーコンテナへの参照を追加
+  // DOM参照
   const entriesContainerRef = useRef<HTMLDivElement>(null);
   // #endregion
 
   // #region データ取得
+  /**
+   * 初期データ取得（コンポーネントマウント時）
+   */
   useEffect(() => {
     const fetchData = async () => {
       if (!user) return;
@@ -117,123 +131,11 @@ const DiarySearch = () => {
 
     fetchData();
   }, [user]);
-  // #endregion
-
-  // #region イベントハンドラ
-  // トグルボタンのクリックハンドラ
-  const handleParrotToggle = () => {
-    setShowParrots(!showParrots);
-  };
-
-  const handleTagToggle = (tag: string) => {
-    if (selectedTags.includes(tag)) {
-      setSelectedTags(selectedTags.filter((t) => t !== tag));
-    } else {
-      setSelectedTags([...selectedTags, tag]);
-    }
-    // フィルター変更時は1ページ目に戻す
-    setCurrentPage(1);
-  };
-
-  const handleClearFilters = () => {
-    setSearchTerm('');
-    setSelectedTags([]);
-    setDateRange({ start: '', end: '' });
-    // フィルタークリア時は1ページ目に戻す
-    setCurrentPage(1);
-  };
-
-  // 検索キーワード変更時
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    // 検索条件変更時は1ページ目に戻す
-    setCurrentPage(1);
-  };
-
-  // 日付範囲変更時
-  const handleDateRangeChange = (type: 'start' | 'end', value: string) => {
-    setDateRange(prev => ({ ...prev, [type]: value }));
-    // 日付条件変更時は1ページ目に戻す
-    setCurrentPage(1);
-  };
-
-  // ページサイズ変更ハンドラ
-  const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newSize = parseInt(e.target.value);
-    setEntriesPerPage(newSize);
-    // ページサイズ変更時は1ページ目に戻す
-    setCurrentPage(1);
-  };
-
-  // ページ変更ハンドラ
-  const handlePageChange = (page: number) => {
-    // 現在のスクロール位置を記録
-    const currentScrollPosition = window.scrollY;
-    
-    // ページネーションのみ更新
-    setCurrentPage(page);
-    
-    // UIの更新後にスクロール位置を維持するための処理
-    // requestAnimationFrameを使用してDOM更新後に実行
-    requestAnimationFrame(() => {
-      // ページネーションボタン周辺の位置を維持
-      window.scrollTo({
-        top: currentScrollPosition,
-        behavior: 'auto' // 'smooth'ではなく'auto'にすることでジャンプを防止
-      });
-    });
-  };
-
-  // 編集モーダルを開く
-  const openEditModal = (entry: ExtendedDiaryEntry) => {
-    // 日付フォーマット
-    const entryDate = new Date(entry.created_at);
-    const year = entryDate.getFullYear();
-    const month = (entryDate.getMonth() + 1).toString().padStart(2, '0');
-    const day = entryDate.getDate().toString().padStart(2, '0');
-    const hours = entryDate.getHours().toString().padStart(2, '0');
-    const minutes = entryDate.getMinutes().toString().padStart(2, '0');
-    
-    const formattedDate = `${year}年${month}月${day}日`;
-    const formattedTime = `${hours}:${minutes}`;
-    
-    // EditDiaryModalに渡すデータ形式に変換
-    const activities = [];
-    if (entry.line1) activities.push(entry.line1);
-    if (entry.line2) activities.push(entry.line2);
-    if (entry.line3) activities.push(entry.line3);
-    
-    setEditEntry({
-      time: formattedTime,
-      tags: entry.tags || [],
-      activities,
-      created_at: entry.created_at,
-      entry_id: entry.entry_id,
-      parrots: entry.parrots || []
-    });
-    
-    setEditDate(formattedDate);
-    setIsModalOpen(true);
-  };
   
-  // モーダルを閉じる
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setEditEntry(null);
-    setEditDate(null);
-  };
-  
-  // 編集保存後の処理
-  const handleSaveComplete = () => {
-    closeModal();
-    // データを再取得
-    if (user) {
-      // フルリロード
-      fetchDataWithParrots(user.id);
-    }
-  };
-  
-  // パロット情報を含むデータ取得関数
+  /**
+   * パロット情報を含むデータ再取得関数
+   * 編集や削除後のデータ更新に使用
+   */
   const fetchDataWithParrots = async (userId: string) => {
     try {
       setIsLoading(true);
@@ -272,20 +174,164 @@ const DiarySearch = () => {
       setIsLoading(false);
     }
   };
+  // #endregion
 
-  // 削除確認モーダルを開く関数
+  // #region イベントハンドラ
+  /**
+   * パロット表示/非表示切り替え
+   */
+  const handleParrotToggle = () => {
+    setShowParrots(!showParrots);
+  };
+
+  /**
+   * タグ選択/解除の切り替え
+   */
+  const handleTagToggle = (tag: string) => {
+    if (selectedTags.includes(tag)) {
+      setSelectedTags(selectedTags.filter((t) => t !== tag));
+    } else {
+      setSelectedTags([...selectedTags, tag]);
+    }
+    // フィルター変更時は1ページ目に戻す
+    setCurrentPage(1);
+  };
+
+  /**
+   * フィルター条件をすべてクリア
+   */
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setSelectedTags([]);
+    setDateRange({ start: '', end: '' });
+    // フィルタークリア時は1ページ目に戻す
+    setCurrentPage(1);
+  };
+
+  /**
+   * 検索キーワード変更処理
+   */
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    // 検索条件変更時は1ページ目に戻す
+    setCurrentPage(1);
+  };
+
+  /**
+   * 日付範囲変更処理
+   */
+  const handleDateRangeChange = (type: 'start' | 'end', value: string) => {
+    setDateRange(prev => ({ ...prev, [type]: value }));
+    // 日付条件変更時は1ページ目に戻す
+    setCurrentPage(1);
+  };
+
+  /**
+   * ページサイズ変更処理
+   */
+  const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newSize = parseInt(e.target.value);
+    setEntriesPerPage(newSize);
+    // ページサイズ変更時は1ページ目に戻す
+    setCurrentPage(1);
+  };
+
+  /**
+   * ページ変更処理
+   * スクロール位置を維持するロジックを含む
+   */
+  const handlePageChange = (page: number) => {
+    // 現在のスクロール位置を記録
+    const currentScrollPosition = window.scrollY;
+    
+    // ページネーションのみ更新
+    setCurrentPage(page);
+    
+    // UIの更新後にスクロール位置を維持するための処理
+    // requestAnimationFrameを使用してDOM更新後に実行
+    requestAnimationFrame(() => {
+      // ページネーションボタン周辺の位置を維持
+      window.scrollTo({
+        top: currentScrollPosition,
+        behavior: 'auto' // 'smooth'ではなく'auto'にすることでジャンプを防止
+      });
+    });
+  };
+
+  /**
+   * 編集モーダルを開く処理
+   */
+  const openEditModal = (entry: ExtendedDiaryEntry) => {
+    // 日付フォーマット
+    const entryDate = new Date(entry.created_at);
+    const year = entryDate.getFullYear();
+    const month = (entryDate.getMonth() + 1).toString().padStart(2, '0');
+    const day = entryDate.getDate().toString().padStart(2, '0');
+    const hours = entryDate.getHours().toString().padStart(2, '0');
+    const minutes = entryDate.getMinutes().toString().padStart(2, '0');
+    
+    const formattedDate = `${year}年${month}月${day}日`;
+    const formattedTime = `${hours}:${minutes}`;
+    
+    // EditDiaryModalに渡すデータ形式に変換
+    const activities = [];
+    if (entry.line1) activities.push(entry.line1);
+    if (entry.line2) activities.push(entry.line2);
+    if (entry.line3) activities.push(entry.line3);
+    
+    setEditEntry({
+      time: formattedTime,
+      tags: entry.tags || [],
+      activities,
+      created_at: entry.created_at,
+      entry_id: entry.entry_id,
+      parrots: entry.parrots || []
+    });
+    
+    setEditDate(formattedDate);
+    setIsModalOpen(true);
+  };
+  
+  /**
+   * モーダルを閉じる処理
+   */
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditEntry(null);
+    setEditDate(null);
+  };
+  
+  /**
+   * 編集保存完了後の処理
+   */
+  const handleSaveComplete = () => {
+    closeModal();
+    // データを再取得
+    if (user) {
+      // フルリロード
+      fetchDataWithParrots(user.id);
+    }
+  };
+
+  /**
+   * 削除確認モーダルを開く処理
+   */
   const openDeleteModal = (entry: ExtendedDiaryEntry) => {
     setEntryToDelete(entry);
     setIsDeleteModalOpen(true);
   };
 
-  // 削除確認モーダルを閉じる関数
+  /**
+   * 削除確認モーダルを閉じる処理
+   */
   const closeDeleteModal = () => {
     setIsDeleteModalOpen(false);
     setEntryToDelete(null);
   };
 
-  // エントリー削除処理
+  /**
+   * エントリー削除処理
+   */
   const handleDeleteEntry = async () => {
     if (!entryToDelete || !user) return;
     
@@ -312,11 +358,107 @@ const DiarySearch = () => {
       // エラー時にモーダルを閉じない（ユーザーに再試行の機会を与える）
     }
   };
+  
+  /**
+   * ダッシュボードに戻るボタンのクリックハンドラ
+   */
+  const handleBackToDashboard = () => {
+    try {
+      // ダッシュボードへのナビゲーション
+      window.location.href = '/dashboard';
+    } catch (err) {
+      console.error('ダッシュボードへの遷移エラー:', err);
+      // エラー時もシンプルにリダイレクト
+      window.location.href = '/dashboard';
+    }
+  };
+
+  /**
+   * エクスポート機能のメインハンドラ
+   */
+  const handleExport = (format: 'txt' | 'csv') => {
+    // フィルタリングされたエントリーを使用
+    const entriesToExport = filteredEntries;
+      
+    if (format === 'csv') {
+      exportAsCSV(entriesToExport);
+    } else {
+      exportAsTXT(entriesToExport);
+    }
+  };
+
+  /**
+   * CSV形式でエクスポート
+   */
+  const exportAsCSV = (entries: ExtendedDiaryEntry[]) => {
+    const headers = ['日付', '時間', '1行目', '2行目', '3行目', 'タグ'];
+    
+    const csvContent = [
+      headers.join(','),
+      ...entries.map(entry => {
+        const date = new Date(entry.created_at);
+        const dateStr = `${date.getFullYear()}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}`;
+        const timeStr = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+        
+        return [
+          dateStr,
+          timeStr,
+          `"${entry.line1.replace(/"/g, '""')}"`, // エスケープ処理
+          `"${entry.line2?.replace(/"/g, '""') || ''}"`,
+          `"${entry.line3?.replace(/"/g, '""') || ''}"`,
+          `"${entry.tags.join(';')}"` // タグはセミコロンで区切る
+        ].join(',');
+      })
+    ].join('\n');
+
+    // ファイルダウンロード
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `日記データ_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  /**
+   * TXT形式でエクスポート
+   */
+  const exportAsTXT = (entries: ExtendedDiaryEntry[]) => {
+    const txtContent = entries.map(entry => {
+      const date = new Date(entry.created_at);
+      const dateTime = `${date.getFullYear()}年${(date.getMonth() + 1).toString().padStart(2, '0')}月${date.getDate().toString().padStart(2, '0')}日 ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+      
+      return `【${dateTime}】
+  タグ: #${entry.tags.join(' #')}
+  1. ${entry.line1}
+  ${entry.line2 ? `2. ${entry.line2}` : ''}
+  ${entry.line3 ? `3. ${entry.line3}` : ''}
+  ----------------------------------------
+  `;
+    }).join('\n');
+
+    // ファイルダウンロード
+    const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `日記データ_${new Date().toISOString().split('T')[0]}.txt`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
   // #endregion
 
   // #region フィルタリングとフォーマット
-  // 日付と時間のフォーマット
-  // フォーマットを「2025/04/20（日） 19:33」のように変更し、曜日に色付けするためにspanタグを使用
+  /**
+   * 日付と時間のフォーマット
+   * フォーマットを「2025/04/20（日） 19:33」のように変更し、
+   * 曜日に色付けするためにspanタグを使用
+   */
   const formatDateTime = (dateTimeStr: string) => {
     const d = new Date(dateTimeStr);
     const year = d.getFullYear();
@@ -327,11 +469,11 @@ const DiarySearch = () => {
     const hours = d.getHours().toString().padStart(2, '0');
     const minutes = d.getMinutes().toString().padStart(2, '0');
     
-    // 曜日のクラス名を決定
+    // 曜日のクラス名を決定（日曜は赤、土曜は青）
     const weekdayClass = d.getDay() === 0 ? styles.sundayText : 
                         d.getDay() === 6 ? styles.saturdayText : '';
     
-    // JSXで返すように変更
+    // JSXで返す
     return (
       <>
         {year}/{month}/{day}（<span className={weekdayClass}>{weekday}</span>） {hours}:{minutes}
@@ -339,17 +481,22 @@ const DiarySearch = () => {
     );
   };
 
-  // フィルタリングされたエントリー
+  /**
+   * 検索条件に基づくエントリーのフィルタリング
+   */
   const filteredEntries = diaryEntries.filter((entry) => {
+    // 検索キーワードにマッチするか
     const entryContent = `${entry.line1} ${entry.line2 || ''} ${entry.line3 || ''}`;
     const matchesSearch =
       searchTerm === '' ||
       entryContent.toLowerCase().includes(searchTerm.toLowerCase());
     
+    // 選択されたタグにすべてマッチするか
     const matchesTags =
       selectedTags.length === 0 ||
       selectedTags.every((tag) => entry.tags.includes(tag));
     
+    // 日付範囲にマッチするか
     const entryDate = new Date(entry.created_at);
     const afterStart = !dateRange.start || entryDate >= new Date(dateRange.start);
     const beforeEnd = !dateRange.end || entryDate <= new Date(dateRange.end + 'T23:59:59'); // 終了日の終わりまで含める
@@ -357,13 +504,17 @@ const DiarySearch = () => {
     return matchesSearch && matchesTags && afterStart && beforeEnd;
   });
 
-  // ページネーションのためのデータ計算
+  /**
+   * ページネーションのためのデータ計算
+   */
   const indexOfLastEntry = currentPage * entriesPerPage;
   const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
   const currentEntries = filteredEntries.slice(indexOfFirstEntry, indexOfLastEntry);
   const totalPages = Math.ceil(filteredEntries.length / entriesPerPage);
 
-  // ページボタンの生成
+  /**
+   * ページネーションボタンのレンダリング
+   */
   const renderPageNumbers = () => {
     const pageNumbers = [];
     const maxVisiblePages = 5; // 表示するページボタンの最大数
@@ -443,108 +594,29 @@ const DiarySearch = () => {
     return pageNumbers;
   };
   
-  // 表示するタグ
+  /**
+   * 表示するタグの制限（「すべて表示」が選択されていない場合は10件まで）
+   */
   const displayTags = showAllTags ? allTags : allTags.slice(0, 10);
 
-  // アクティブなフィルターの数をカウント
+  /**
+   * アクティブなフィルターの数をカウント（バッジ表示用）
+   */
   const activeFilterCount = 
     (searchTerm ? 1 : 0) + 
     selectedTags.length + 
     (dateRange.start ? 1 : 0) + 
     (dateRange.end ? 1 : 0);
-
-  // ダッシュボードに戻るボタンのクリックハンドラを改善
-  const handleBackToDashboard = () => {
-    try {
-      // ダッシュボードへのナビゲーションは直接routerで行う
-      window.location.href = '/dashboard';
-    } catch (err) {
-      console.error('ダッシュボードへの遷移エラー:', err);
-      // エラー時もシンプルにリダイレクト
-      window.location.href = '/dashboard';
-    }
-  };
-
-  // エクスポート機能の実装
-const handleExport = (format: 'txt' | 'csv') => {
-  // フィルタリングされたエントリーを使用
-  const entriesToExport = filteredEntries;
-    
-    if (format === 'csv') {
-    exportAsCSV(entriesToExport);
-  } else {
-    exportAsTXT(entriesToExport);
-  }
-};
-
-  // CSV形式でエクスポート
-  const exportAsCSV = (entries: ExtendedDiaryEntry[]) => {
-    const headers = ['日付', '時間', '1行目', '2行目', '3行目', 'タグ'];
-    
-    const csvContent = [
-      headers.join(','),
-      ...entries.map(entry => {
-        const date = new Date(entry.created_at);
-        const dateStr = `${date.getFullYear()}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}`;
-        const timeStr = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-        
-        return [
-          dateStr,
-          timeStr,
-          `"${entry.line1.replace(/"/g, '""')}"`, // エスケープ処理
-          `"${entry.line2?.replace(/"/g, '""') || ''}"`,
-          `"${entry.line3?.replace(/"/g, '""') || ''}"`,
-          `"${entry.tags.join(';')}"` // タグはセミコロンで区切る
-        ].join(',');
-      })
-    ].join('\n');
-
-    // ファイルダウンロード
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `日記データ_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  // TXT形式でエクスポート
-  const exportAsTXT = (entries: ExtendedDiaryEntry[]) => {
-    const txtContent = entries.map(entry => {
-      const date = new Date(entry.created_at);
-      const dateTime = `${date.getFullYear()}年${(date.getMonth() + 1).toString().padStart(2, '0')}月${date.getDate().toString().padStart(2, '0')}日 ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-      
-      return `【${dateTime}】
-  タグ: #${entry.tags.join(' #')}
-  1. ${entry.line1}
-  ${entry.line2 ? `2. ${entry.line2}` : ''}
-  ${entry.line3 ? `3. ${entry.line3}` : ''}
-  ----------------------------------------
-  `;
-    }).join('\n');
-
-    // ファイルダウンロード
-    const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `日記データ_${new Date().toISOString().split('T')[0]}.txt`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
   // #endregion
 
+  // #region レンダリング
   return (
     <>
       {/* 全画面背景 */}
       <div className={styles.pageBackground} diary-page></div>
       
       <div className={styles.container}>
+        {/* ヘッダー部分 */}
         <div className={styles.titleSection}>
           <h1 className={styles.title}>3行日記を振り返る</h1>
           
@@ -690,7 +762,7 @@ const handleExport = (format: 'txt' | 'csv') => {
             </select>
           </div>
 
-          {/* エクスポートボタンを追加 */}
+          {/* エクスポートボタン */}
           <div className={styles.exportButtons}>
             <button 
               onClick={() => handleExport('txt')} 
@@ -721,7 +793,7 @@ const handleExport = (format: 'txt' | 'csv') => {
           </div>
         )}
 
-        {/* ローディング状態 */}
+        {/* ローディング状態と日記エントリー表示 */}
         {isLoading ? (
           <div className={styles.loading}>データを読み込み中...</div>
         ) : (
@@ -746,7 +818,7 @@ const handleExport = (format: 'txt' | 'csv') => {
                             #{tag}
                           </span>
                         ))}
-                        {/* 編集ボタンを追加 */}
+                        {/* 編集ボタン */}
                         <button 
                           onClick={() => openEditModal(entry)}
                           className={styles.editButton}
@@ -754,7 +826,7 @@ const handleExport = (format: 'txt' | 'csv') => {
                           <Edit2 size={14} />
                           編集
                         </button>
-                          {/* 削除ボタンを追加 */}
+                        {/* 削除ボタン */}
                         <button 
                           onClick={() => openDeleteModal(entry)}
                           className={styles.deleteButton}
@@ -765,7 +837,7 @@ const handleExport = (format: 'txt' | 'csv') => {
                       </div>
                     </div>
 
-                    {/* 内容 */}
+                    {/* 日記内容 */}
                     <div className={styles.entryContent}>
                       <p>{entry.line1}</p>
                       {entry.line2 && <p>{entry.line2}</p>}
@@ -844,6 +916,7 @@ const handleExport = (format: 'txt' | 'csv') => {
       </div>
     </>
   );
+  // #endregion
 };
 
 export default DiarySearch;

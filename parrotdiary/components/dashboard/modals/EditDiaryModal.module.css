@@ -1,3 +1,4 @@
+/* #region 基本レイアウト - モーダル全体の構造を定義 */
 /* モーダルオーバーレイ */
 .modalOverlay {
   position: fixed;
@@ -43,12 +44,60 @@
   gap: 12px;
 }
 
+/* 閉じるボタン */
+.closeButton {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+}
+
+.closeButton:hover {
+  background-color: #f1f5f9;
+  color: #475569;
+}
+/* #endregion 基本レイアウト */
+
+/* #region タイムスタンプと日付表示 */
+/* タイムスタンプとエラーメッセージを横並びにするコンテナ */
+.timestampErrorContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* タイムスタンプスタイル */
 .entryTimestamp {
   font-size: 14px;
   color: #718096;
   margin-bottom: 0;
+  flex-shrink: 0;
 }
 
+/* 曜日の色分け */
+.sundayText {
+  color: #e53e3e; /* 赤色 */
+}
+
+.saturdayText {
+  color: #3182ce; /* 青色 */
+}
+/* #endregion タイムスタンプと日付表示 */
+
+/* #region 入力フィールド - テキスト入力要素のスタイル */
 /* 入力グループ */
 .inputGroup {
   display: flex;
@@ -97,18 +146,24 @@
   font-size: 12px;
   color: #94a3b8;
 }
+/* #endregion 入力フィールド */
 
+/* #region エラー表示 */
 /* エラーテキスト */
 .errorText {
   color: #e53e3e;
   font-size: 14px;
-  margin-bottom: 12px;
-  padding: 8px 12px;
-  background-color: #fff5f5; /* 非常に薄い赤色 */
+  padding: 6px 12px;
+  background-color: #fff5f5;
   border-radius: 8px;
-  border: none; /* 枠線なし */
+  border: none;
+  flex-grow: 1;
+  margin: 0;
+  max-width: 70%;
 }
+/* #endregion エラー表示 */
 
+/* #region タグ関連スタイル - タグの表示・入力・選択に関するスタイル */
 /* タグセクション */
 .tagSection {
   margin-top: 2px;
@@ -130,6 +185,7 @@
   gap: 8px;
   height: 38px; /* 高さを統一 */
 }
+
 /* タグアイコン */
 .tagIcon {
   color: #94a3b8;
@@ -279,59 +335,9 @@
 .removeTagButton:hover {
   color: #0369a1;
 }
+/* #endregion タグ関連スタイル */
 
-/* 閉じるボタン */
-.closeButton {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  background: none;
-  border: none;
-  font-size: 20px;
-  color: #64748b;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-}
-
-.closeButton:hover {
-  background-color: #f1f5f9;
-  color: #475569;
-}
-
-/* 記録ボタン */
-.recordButton {
-  width: 100%;
-  padding: 12px;
-  border-radius: 8px;
-  background-color: #3b82f6;
-  color: white;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  gap: 8px;
-  transition: background-color 0.2s;
-  margin-top: 4px;
-}
-
-.recordButton:hover {
-  background-color: #2563eb;
-}
-
-.recordButton:disabled {
-  background-color: #93c5fd;
-  cursor: not-allowed;
-}
-
-/* 既存のEditDiaryModal.module.cssに追加するスタイル */
-
+/* #region パロット関連スタイル - パロットの表示と選択に関するスタイル */
 /* パロットセクションのスタイル */
 .modalParrotSection {
   margin-top: 6px;
@@ -340,6 +346,7 @@
   gap: 12px;
   border-top: 1px solid #e2e8f0;
   padding-top: 16px;
+  width: 100%;
 }
 
 .modalParrotTitle {
@@ -356,8 +363,25 @@
   margin-bottom: 15px;
 }
 
+/* パロットオプションのサイズを固定する */
+.parrotOption {
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 5px;
+  padding: 3px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  box-sizing: border-box; /* パディングとボーダーを含む */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .parrotOption:hover {
   background-color: #f0f0f0;
+  animation: parrotBounce 0.5s ease;
 }
 
 .parrotOptionSelected {
@@ -371,6 +395,18 @@
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 8px;
+}
+
+/* 選択済みパロットアイテムのサイズを固定する */
+.selectedParrotItem {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  box-sizing: border-box; /* サイズ計算を明確に */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .removeParrotButton {
@@ -400,11 +436,9 @@
     transform: translateY(-5px);
   }
 }
+/* #endregion パロット関連スタイル */
 
-.parrotOption:hover {
-  animation: parrotBounce 0.5s ease;
-}
-
+/* #region 報酬通知スタイル - ユーザーへの報酬表示 */
 /* 報酬通知スタイル */
 .rewardNotification {
   position: fixed;
@@ -451,77 +485,38 @@
   from { opacity: 1; }
   to { opacity: 0; }
 }
+/* #endregion 報酬通知スタイル */
 
-/* タイムスタンプとエラーメッセージを横並びにするコンテナ */
-.timestampErrorContainer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 4px;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-/* タイムスタンプスタイルの修正 */
-.entryTimestamp {
-  font-size: 14px;
-  color: #718096;
-  margin-bottom: 0;
-  flex-shrink: 0;
-}
-
-/* エラーテキストスタイルの修正 */
-.errorText {
-  color: #e53e3e;
-  font-size: 14px;
-  padding: 6px 12px;
-  background-color: #fff5f5;
-  border-radius: 8px;
-  border: none;
-  flex-grow: 1;
-  margin: 0;
-  max-width: 70%;
-}
-
-/* パロットセクションのサイズを安定させる */
-.modalParrotSection {
-  margin-top: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  border-top: 1px solid #e2e8f0;
-  padding-top: 16px;
+/* #region アクションボタン - 保存・送信ボタン */
+/* 記録ボタン */
+.recordButton {
   width: 100%;
-}
-
-/* パロットオプションのサイズを固定する */
-.parrotOption {
-  width: 40px;
-  height: 40px;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
   cursor: pointer;
-  border: 2px solid transparent;
-  border-radius: 5px;
-  padding: 3px;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-  box-sizing: border-box; /* パディングとボーダーを含む */
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 16px;
+  gap: 8px;
+  transition: background-color 0.2s;
+  margin-top: 4px;
 }
 
-/* 選択済みパロットアイテムのサイズを固定する */
-.selectedParrotItem {
-  position: relative;
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
-  box-sizing: border-box; /* サイズ計算を明確に */
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.recordButton:hover {
+  background-color: #2563eb;
 }
 
+.recordButton:disabled {
+  background-color: #93c5fd;
+  cursor: not-allowed;
+}
+/* #endregion アクションボタン */
+
+/* #region レスポンシブスタイル - 画面サイズに応じたレイアウト調整 */
 @media (max-width: 768px) {
   .modalContainer {
     width: calc(100% - 32px);
@@ -549,7 +544,6 @@
   }
   
   /* 選択済みタグ */
-  /* 選択済みタグ */
   .selectedTag {
     padding: 4px 8px;
     font-size: 12px;
@@ -568,10 +562,6 @@
   /* タグ削除ボタン */
   .removeTagButton {
     padding: 1px;
-  }
-
-  .removeTagButton {
-    padding: 2px;
   }
 
   .selectedParrotItem {
@@ -676,12 +666,4 @@
     gap: 4px; /* より密集させる */
   }
 }
-
-/* 曜日の色分け */
-.sundayText {
-  color: #e53e3e; /* 赤色 */
-}
-
-.saturdayText {
-  color: #3182ce; /* 青色 */
-}
+/* #endregion レスポンシブスタイル */
