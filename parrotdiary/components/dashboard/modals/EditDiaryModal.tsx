@@ -2,12 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, Edit3, Hash, Plus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
-import styles from './EditDiaryModal.module.css'; // 専用のスタイルシートを使用
-// パロット関連のimport
+import styles from './EditDiaryModal.module.css';
 import { ParrotSelector, saveEntryParrots, getEntryParrots } from '@/components/dashboard/Diary/ParrotSelector';
 import { useReward } from '@/lib/RewardContext';
 
-// タグの型定義
+// #region 型定義
+/**
+ * タグの型定義
+ */
 type TagType = {
   id: number;
   name: string;
@@ -15,6 +17,21 @@ type TagType = {
   lastUsed: string;
 };
 
+/**
+ * 日記エントリーの型定義
+ */
+type EditDiaryEntryType = {
+  time: string;
+  tags: string[];
+  activities: string[];
+  created_at?: string;
+  entry_id?: number | string;
+  parrots?: string[]; // パロットの配列
+};
+
+/**
+ * モーダルのプロパティ型定義
+ */
 type EditDiaryModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -22,17 +39,11 @@ type EditDiaryModalProps = {
   date: string | null;
   onSave: () => void;
 };
+// #endregion
 
-type EditDiaryEntryType = {
-  time: string;
-  tags: string[];
-  activities: string[];
-  created_at?: string;
-  entry_id?: number | string;
-  parrots?: string[]; // parrots プロパティを追加
-};
-
-
+/**
+ * 3行日記の編集・作成を行うモーダルコンポーネント
+ */
 const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
   isOpen,
   onClose,
@@ -41,33 +52,28 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
   onSave,
 }) => {
   const { user } = useAuth();
+  const { showReward } = useReward();
   
-  // 状態管理
+  // #region 状態管理
+  // 行の入力状態
   const [line1, setLine1] = useState(entry.activities[0] || '');
   const [line2, setLine2] = useState(entry.activities.length > 1 ? entry.activities[1] : '');
   const [line3, setLine3] = useState(entry.activities.length > 2 ? entry.activities[2] : '');
+  
+  // タグ関連の状態
   const [selectedTags, setSelectedTags] = useState<string[]>(entry.tags || []);
   const [currentTag, setCurrentTag] = useState('');
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
+  const [allTags, setAllTags] = useState<TagType[]>([]);
+  
+  // パロット関連の状態
+  const [selectedParrots, setSelectedParrots] = useState<string[]>(entry.parrots || []);
+  
+  // フォーム状態
   const [formError, setFormError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [allTags, setAllTags] = useState<TagType[]>([]);
-  // パロット関連のstate追加
-  const [selectedParrots, setSelectedParrots] = useState<string[]>(entry.parrots || []);
-
-  // refの追加
-  const line1Ref = useRef<HTMLInputElement>(null);
-  const line2Ref = useRef<HTMLInputElement>(null);
-  const line3Ref = useRef<HTMLInputElement>(null);
-  const tagInputRef = useRef<HTMLInputElement>(null);
-
-
-  const { showReward } = useReward();
-
-  // よく使うタグ
-  const frequentTags = allTags.slice(0, 5);
-
-  // 報酬状態の管理用（useState定義の近くに追加）
+  
+  // 報酬状態
   const [rewardState] = useState<{
     show: boolean;
     xp: number;
@@ -81,8 +87,24 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
     levelUp: false,
     newLevel: null
   });
+  // #endregion
 
-  // 書いた行数に応じてXP報酬を計算する関数（関数定義部分に追加）
+  // #region 参照
+  const line1Ref = useRef<HTMLInputElement>(null);
+  const line2Ref = useRef<HTMLInputElement>(null);
+  const line3Ref = useRef<HTMLInputElement>(null);
+  const tagInputRef = useRef<HTMLInputElement>(null);
+  // #endregion
+
+  // よく使うタグ
+  const frequentTags = allTags.slice(0, 5);
+
+  // #region 報酬計算関連の関数
+  /**
+   * 文字数に応じたXP報酬を計算する
+   * @param totalChars 合計文字数
+   * @returns 獲得XP (最大600)
+   */
   const calculateXpReward = (totalChars: number): number => {
     // 1文字 = 2XP、上限300文字で最大600XP
     const xpPerChar = 2;
@@ -91,13 +113,22 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
     return Math.min(totalChars * xpPerChar, maxXp);
   };
   
-  // 書いた行数に応じてチケット報酬を計算する関数（関数定義部分に追加）
+  /**
+   * 文字数に応じたチケット報酬を計算する
+   * @param totalChars 合計文字数
+   * @returns 獲得チケット数 (最大5)
+   */
   const calculateTicketReward = (totalChars: number): number => {
     // 100文字ごとに1枚、最大5枚
-    return Math.min(Math.floor(totalChars), 100);
+    return Math.min(Math.floor(totalChars / 100), 5);
   };
   
-  // レベルアップをチェックする関数（関数定義部分に追加）
+  /**
+   * レベルアップの判定を行う
+   * @param totalXp 総XP
+   * @param currentLevel 現在のレベル
+   * @returns レベルアップ情報
+   */
   const checkLevelUp = (totalXp: number, currentLevel: number) => {
     // レベルごとの必要XPを計算する関数
     const calculateRequiredXpForLevel = (level: number): number => {
@@ -138,8 +169,12 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
       newLevel: currentLevel 
     };
   };
+  // #endregion
 
-  // パロット情報をロード（初期表示時）
+  // #region useEffect フック
+  /**
+   * パロット情報をロード（初期表示時）
+   */
   useEffect(() => {
     const loadParrots = async () => {
       if (entry.entry_id && !entry.parrots) {
@@ -164,12 +199,18 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
     }
   }, [isOpen, entry]);
 
+  /**
+   * 報酬通知状態の変化を監視
+   */
   useEffect(() => {
     if (rewardState.show) {
       console.log('報酬通知状態が変化しました:', rewardState);
     }
   }, [rewardState]);
 
+  /**
+   * タグ情報の取得
+   */
   useEffect(() => {
     const fetchTags = async () => {
       if (!user?.id) return;
@@ -202,8 +243,12 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
       fetchTags();
     }
   }, [isOpen, user]);
+  // #endregion
 
-  // エンターキー押下時のハンドラー
+  // #region イベントハンドラー
+  /**
+   * 1行目のEnterキー押下時処理
+   */
   const handleLine1KeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -213,6 +258,9 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
     }
   };
 
+  /**
+   * 2行目のEnterキー押下時処理
+   */
   const handleLine2KeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -222,6 +270,9 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
     }
   };
 
+  /**
+   * 3行目のEnterキー押下時処理
+   */
   const handleLine3KeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -229,14 +280,83 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
     }
   };
   
-  // モーダル外クリックハンドラー
+  /**
+   * モーダル外クリック時の処理
+   */
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       onClose();
     }
   };
 
-  // 入力検証
+  /**
+   * 2行目の入力変更処理
+   */
+  const handleLine2Change = (value: string) => {
+    if (!line1.trim() && value.trim()) {
+      setFormError('1行目が空の場合、2行目に入力できません。');
+      return;
+    }
+    setLine2(value);
+    setFormError(null);
+  };
+
+  /**
+   * 3行目の入力変更処理
+   */
+  const handleLine3Change = (value: string) => {
+    if ((!line1.trim() || !line2.trim()) && value.trim()) {
+      setFormError(line1.trim() ? '2行目が空の場合、3行目に入力できません。' : '1行目が空の場合、3行目に入力できません。');
+      return;
+    }
+    setLine3(value);
+    setFormError(null);
+  };
+
+  /**
+   * タグの追加処理
+   */
+  const handleAddTag = (tagName: string) => {
+    if (!selectedTags.includes(tagName)) {
+      setSelectedTags([...selectedTags, tagName]);
+    }
+    setCurrentTag('');
+    setShowTagSuggestions(false);
+  };
+
+  /**
+   * タグの削除処理
+   */
+  const handleRemoveTag = (tagToRemove: string) => {
+    setSelectedTags(selectedTags.filter(tag => tag !== tagToRemove));
+  };
+
+  /**
+   * タグ入力処理
+   */
+  const handleTagInput = (value: string) => {
+    setCurrentTag(value);
+    setShowTagSuggestions(value.length > 0);
+  };
+
+  /**
+   * タグ入力欄でのEnterキー押下時処理
+   */
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault(); // フォーム送信を防ぐ
+      if (currentTag) {
+        handleAddTag(currentTag);
+      }
+    }
+  };
+  // #endregion
+
+  // #region 入力検証・保存処理
+  /**
+   * フォーム入力の検証
+   * @returns 入力が有効かどうか
+   */
   const validateForm = () => {
     // 空白を除去して検証
     const trimmedLine1 = line1.trim();
@@ -267,66 +387,22 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
     return true;
   };
 
-  // 入力ハンドラー
-  const handleLine2Change = (value: string) => {
-    if (!line1.trim() && value.trim()) {
-      setFormError('1行目が空の場合、2行目に入力できません。');
-      return;
-    }
-    setLine2(value);
-    setFormError(null);
-  };
-
-  const handleLine3Change = (value: string) => {
-    if ((!line1.trim() || !line2.trim()) && value.trim()) {
-      setFormError(line1.trim() ? '2行目が空の場合、3行目に入力できません。' : '1行目が空の場合、3行目に入力できません。');
-      return;
-    }
-    setLine3(value);
-    setFormError(null);
-  };
-
-  // タグ処理
-  const handleAddTag = (tagName: string) => {
-    if (!selectedTags.includes(tagName)) {
-      setSelectedTags([...selectedTags, tagName]);
-    }
-    setCurrentTag('');
-    setShowTagSuggestions(false);
-  };
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    setSelectedTags(selectedTags.filter(tag => tag !== tagToRemove));
-  };
-
-  const handleTagInput = (value: string) => {
-    setCurrentTag(value);
-    setShowTagSuggestions(value.length > 0);
-  };
-
-  // エンターキーでタグ追加
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault(); // フォーム送信を防ぐ
-      if (currentTag) {
-        handleAddTag(currentTag);
-      }
-    }
-  };
-
-  // 保存処理
+  /**
+   * 日記の保存処理
+   */
   const handleSave = async () => {
     if (!validateForm() || !user?.id) return;
   
     setIsLoading(true);
   
-    // 🎁 報酬関連の値（初期値）
+    // 報酬関連の値（初期値）
     let xpAmount = 0;
     let ticketsAmount = 0;
-    const shouldLevelUp = false;
+    let shouldLevelUp = false;
     let newLevel: number | null = null;
   
     try {
+      // 入力された内容を配列に整理
       const activities: string[] = [];
       if (line1.trim()) activities.push(line1.trim());
       if (line2.trim()) activities.push(line2.trim());
@@ -334,6 +410,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
   
       const isoString = new Date().toISOString(); // UTCのままで保存し、表示時にJST変換
   
+      // 保存するエントリーデータの準備
       const entryData = {
         line1: line1.trim() || null,
         line2: line2.trim() || null,
@@ -344,8 +421,10 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
         recorded_at: isoString
       };
   
+      // 日付と時間の処理
       if (date && entry.time) {
         try {
+          // 日本語形式の日付を正規化
           let normalizedDate = date;
           if (date.includes('年')) {
             const parts = date.match(/(\d+)年(\d+)月(\d+)日/);
@@ -357,13 +436,16 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
             }
           }
   
+          // 時間の正規化
           const formattedTime = entry.time.includes(':') && entry.time.split(':').length === 2
             ? `${entry.time}:00`
             : entry.time;
   
+          // 日時文字列の作成と変換
           const dateTimeString = `${normalizedDate}T${formattedTime}`;
           const dateObj = new Date(dateTimeString);
           if (!isNaN(dateObj.getTime())) {
+            // 日本時間(+9時間)に調整
             const adjustedTime = new Date(dateObj.getTime() + 9 * 60 * 60 * 1000);
             const iso = adjustedTime.toISOString();
             entryData.created_at = iso;
@@ -376,11 +458,14 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
         }
       }
   
+      // 新規エントリーかどうかの判定
       const isNewEntry = !(entry.activities.some(a => a !== '') && entry.entry_id);
       let entryOperation;
       let entryId: string;
   
+      // データベース操作（更新または新規作成）
       if (!isNewEntry && entry.entry_id) {
+        // 既存エントリーの更新
         entryId = entry.entry_id.toString();
         entryOperation = supabase
           .from('diary_entries')
@@ -392,24 +477,27 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
           })
           .eq('entry_id', entryId);
       } else {
+        // 新規エントリーの作成
         entryOperation = supabase
           .from('diary_entries')
           .insert(entryData);
       }
   
+      // データベース操作の実行と結果取得
       const { data, error } = await entryOperation.select('entry_id');
       if (error || !data || !data[0]?.entry_id) {
         console.error("DB操作エラー:", error);
         throw new Error('日記エントリーの保存に失敗しました');
       }
   
+      // エントリーIDの取得とパロットの保存
       entryId = data[0].entry_id.toString();
       await saveEntryParrots(entryId, user.id, selectedParrots);
   
-      // タグ処理（省略なし）
-  
+      // タグの処理
       for (const tagName of selectedTags) {
         try {
+          // 既存タグの検索
           const { data: existingTags, error: tagError } = await supabase
             .from('tags')
             .select('tag_id, name, usage_count')
@@ -421,6 +509,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
           let tagId: string = '';
   
           if (existingTags) {
+            // 既存タグの更新
             tagId = String(existingTags.tag_id);
             const currentCount = typeof existingTags.usage_count === 'number' ? existingTags.usage_count : 0;
             await supabase.from('tags').update({
@@ -428,6 +517,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
               last_used_at: entryData.updated_at
             }).eq('tag_id', tagId);
           } else {
+            // 新規タグの作成
             const { data: newTag, error: createError } = await supabase
               .from('tags')
               .insert({
@@ -443,6 +533,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
             tagId = String(newTag?.[0]?.tag_id || '');
           }
   
+          // タグの使用履歴の作成（重複防止）
           if (tagId) {
             const { data: existingHistory } = await supabase
               .from('tag_usage_histories')
@@ -463,21 +554,24 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
           }
         } catch (tagProcessError) {
           console.error('タグ処理エラー:', tagProcessError);
-          continue;
+          continue; // エラーがあっても次のタグ処理を続行
         }
       }
   
-      // 🎁 報酬付与（新規のみ）
+      // 報酬付与処理（新規エントリーの場合のみ）
       if (isNewEntry) {
         try {
+          // 総文字数の計算
           const totalChars =
-          (line1.trim().length || 0) +
-          (line2.trim().length || 0) +
-          (line3.trim().length || 0);
+            (line1.trim().length || 0) +
+            (line2.trim().length || 0) +
+            (line3.trim().length || 0);
         
+          // 報酬の計算
           xpAmount = calculateXpReward(totalChars);
           ticketsAmount = calculateTicketReward(totalChars);
           
+          // ユーザー情報の取得
           const { data: userData, error: userError } = await supabase
             .from('users')
             .select('total_xp, level')
@@ -486,12 +580,15 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
   
           if (userError) throw userError;
   
+          // 新しい総XPとレベルアップ判定
           const newTotalXp = Number(userData?.total_xp ?? 0) + xpAmount;
           const currentLevel = Number(userData?.level ?? 1);
   
-          const { shouldLevelUp, newLevel: calculatedLevel } = checkLevelUp(newTotalXp, currentLevel);
-          newLevel = calculatedLevel;
+          const levelUpResult = checkLevelUp(newTotalXp, currentLevel);
+          shouldLevelUp = levelUpResult.shouldLevelUp;
+          newLevel = levelUpResult.newLevel;
   
+          // ユーザー情報の更新（XP、レベル）
           const { error: xpError } = await supabase.from('users').update({
             total_xp: newTotalXp,
             level: shouldLevelUp ? newLevel : currentLevel,
@@ -502,6 +599,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
             console.error('XP更新失敗:', xpError);
           }
 
+          // 経験値履歴の記録
           await supabase.from('user_experience').insert({
             user_id: user.id,
             xp_amount: xpAmount,
@@ -509,7 +607,9 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
             earned_at: isoString,
           });
   
+          // チケット報酬の付与
           if (ticketsAmount > 0) {
+            // 既存のチケット情報を取得
             const { data: ticketData } = await supabase
               .from('gacha_tickets')
               .select('ticket_count')
@@ -517,6 +617,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
               .single();
   
             if (ticketData) {
+              // 既存のチケット数を更新
               const { error: updateError } = await supabase.from('gacha_tickets').update({
                 ticket_count: (ticketData?.ticket_count as number) + ticketsAmount,
                 last_updated: isoString
@@ -526,6 +627,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
                 console.error('🎫 チケット更新エラー（update）:', updateError);
               }
             } else {
+              // 新規にチケット情報を作成
               const { error: insertError } = await supabase.from('gacha_tickets').insert({
                 user_id: user.id,
                 ticket_count: ticketsAmount,
@@ -542,7 +644,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
         }
       }
   
-      // ✅ 通知は try の外で出す（失敗しても出す）
+      // 報酬通知（新規エントリーの場合のみ）
       if (isNewEntry) {
         showReward({
           xp: xpAmount,
@@ -552,16 +654,20 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
         });
       }
   
-      // ✅ 完全に成功している場合のみ、更新トリガーを送る
+      // 保存完了処理
       if (entryId) {
         console.log('✅ 保存完了: entryId =', entryId);
         console.log('✅ 報酬: XP =', xpAmount, 'チケット =', ticketsAmount);
         console.log('✅ onSave 実行直前');
 
-        await new Promise(resolve => setTimeout(resolve, 500)); // ← DB反映待ち
+        // DB反映待ち（0.5秒）
+        await new Promise(resolve => setTimeout(resolve, 500));
 
-        onSave?.(); // ← ここがちゃんと呼ばれているか見る
+        // 親コンポーネントに保存完了を通知
+        onSave?.();
         console.log('✅ onSave 実行後');
+        
+        // モーダルを閉じる
         onClose();
         console.log('✅ モーダルを閉じました');
       }
@@ -573,15 +679,19 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
       setIsLoading(false);
     }
   };
-  
+  // #endregion
+
+  // モーダルが開いていない場合は何も表示しない
   if (!isOpen) return null;
 
+  // #region モーダルのレンダリング
   return (
     <div 
       className={styles.modalOverlay}
       onClick={handleOverlayClick}
     >
       <div className={styles.modalContainer}>
+        {/* 閉じるボタン */}
         <button
           onClick={onClose}
           className={styles.closeButton}
@@ -590,12 +700,16 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
           <X size={20} />
         </button>
         
+        {/* モーダルヘッダー */}
         <div className={styles.modalHeader}>
           <h2 className={styles.modalTitle}>
             {entry.activities.some(a => a !== '') ? '3行日記を編集' : '3行日記を作成'}
           </h2>
         </div>
+        
+        {/* モーダルコンテンツ */}
         <div className={styles.modalContent}>
+          {/* タイムスタンプとエラーメッセージ */}
           <div className={styles.timestampErrorContainer}>
             <div className={styles.entryTimestamp}>
               {date && entry.time 
@@ -635,7 +749,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
             )}
           </div>
 
-          {/* 入力フィールド */}
+          {/* 1行目入力フィールド */}
           <div className={styles.inputGroup}>
             <div className={styles.inputWrapper}>
               <input
@@ -653,6 +767,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
             </div>
           </div>
 
+          {/* 2行目入力フィールド */}
           <div className={styles.inputGroup}>
             <div className={styles.inputWrapper}>
               <input
@@ -671,6 +786,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
             </div>
           </div>
 
+          {/* 3行目入力フィールド */}
           <div className={styles.inputGroup}>
             <div className={styles.inputWrapper}>
               <input
@@ -795,7 +911,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
                 onParrotsChange={setSelectedParrots}
                 maxParrots={5}
                 compact={window.innerWidth <= 480} // 画面幅に応じてコンパクトモードを切り替え
-                forceOpen={true} // ← 新しく追加するprops
+                forceOpen={true} // 常に開いた状態にする
               />
             )}
           </div>
@@ -823,7 +939,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
             </div>
           )}
 
-          {/* 記録ボタン（既存の要素） */}
+          {/* 記録ボタン */}
           <button
             onClick={handleSave}
             className={styles.recordButton}
@@ -836,6 +952,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
       </div>
     </div>
   );
+  // #endregion
 };
 
 export default EditDiaryModal;
