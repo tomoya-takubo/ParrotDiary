@@ -11,6 +11,7 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import GachaAnimation from '@/components/dashboard/gacha/GachaAnimation';
 import ActivityHistory from '@/components/dashboard/ActivityHistory/ActivityHistory';
 import Diary from '@/components/dashboard/Diary/Diary';
+import EditDiaryModal from '@/components/dashboard/modals/EditDiaryModal';
 import type { UserStatus } from '@/types';
 
 //#region Dashboard コンポーネント - メインダッシュボード
@@ -40,7 +41,10 @@ export default function Dashboard() {
   // useStateで更新トリガーを追加
   const [refreshKey, setRefreshKey] = useState(0);
   const [isLoadingUserStatus, setIsLoadingUserStatus] = useState<boolean>(true);
-  
+
+  // 1. 状態変数を追加する
+  const [showNewDiaryModal, setShowNewDiaryModal] = useState<boolean>(false);
+
   // ランクの閾値を定義
   const RANK_THRESHOLDS = {
     SILVER: 10,
@@ -123,7 +127,52 @@ export default function Dashboard() {
   };
   //#endregion
 
-  // ===== サブテキスト生成関数 =====
+  // 2. ログイン直後にモーダルを表示するためのuseEffectを追加
+  useEffect(() => {
+    // ログイン後の初回レンダリング時のみモーダルを表示
+    const checkAndShowModal = async () => {
+      try {
+        if (!isLoadingUserStatus) {
+          const { data: { user } } = await supabase.auth.getUser();
+          
+          if (user?.id) {
+            // ローカルストレージを使ってログインセッションごとに1回だけ表示
+            const sessionKey = `diary_modal_shown_${user.id}`;
+            if (!sessionStorage.getItem(sessionKey)) {
+              // セッション中にまだ表示していない場合
+              setShowNewDiaryModal(true);
+              sessionStorage.setItem(sessionKey, 'true');
+            }
+          }
+        }
+      } catch (error) {
+        console.error('認証確認エラー:', error);
+      }
+    };
+    
+    checkAndShowModal();
+  }, [isLoadingUserStatus, supabase.auth]);
+
+  // 3. モーダルを閉じる関数
+  const handleCloseDiaryModal = () => {
+    setShowNewDiaryModal(false);
+  };
+
+  // 4. 新規日記用エントリーの準備
+  const getNewDiaryEntry = () => {
+    const now = new Date();
+    const formattedTime = now.toLocaleTimeString('ja-JP', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    
+    return {
+      time: formattedTime,
+      tags: [],
+      activities: [],
+      parrots: []
+    };
+  };
   
   // ランクに応じたサブテキストを生成する関数
   const getRankSubtext = (streak: number): string => {
@@ -648,7 +697,25 @@ export default function Dashboard() {
           isOpen={showGachaModal}
           startGacha={updateTicketCount}
           onClose={closeGacha}
-        />        
+        />
+
+        {showNewDiaryModal && (
+          <EditDiaryModal
+            isOpen={showNewDiaryModal}
+            onClose={handleCloseDiaryModal}
+            entry={getNewDiaryEntry()}
+            date={new Date().toLocaleDateString('ja-JP', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}
+            onSave={() => {
+              setRefreshKey(k => k + 1);
+              setShowNewDiaryModal(false);
+            }}
+          />
+        )}
+        
       </div>
     </div>
   );
