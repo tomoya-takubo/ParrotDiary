@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Edit3, Hash, Plus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
@@ -54,6 +54,13 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
   const [allTags, setAllTags] = useState<TagType[]>([]);
   // パロット関連のstate追加
   const [selectedParrots, setSelectedParrots] = useState<string[]>(entry.parrots || []);
+
+  // refの追加
+  const line1Ref = useRef<HTMLInputElement>(null);
+  const line2Ref = useRef<HTMLInputElement>(null);
+  const line3Ref = useRef<HTMLInputElement>(null);
+  const tagInputRef = useRef<HTMLInputElement>(null);
+
 
   const { showReward } = useReward();
 
@@ -195,6 +202,32 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
       fetchTags();
     }
   }, [isOpen, user]);
+
+  // エンターキー押下時のハンドラー
+  const handleLine1KeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (line1.trim()) {
+        line2Ref.current?.focus();
+      }
+    }
+  };
+
+  const handleLine2KeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (line2.trim()) {
+        line3Ref.current?.focus();
+      }
+    }
+  };
+
+  const handleLine3KeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      tagInputRef.current?.focus();
+    }
+  };
   
   // モーダル外クリックハンドラー
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -609,6 +642,8 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
                 type="text"
                 value={line1}
                 onChange={(e) => setLine1(e.target.value)}
+                onKeyPress={handleLine1KeyPress}
+                ref={line1Ref}
                 className={styles.textInput}
                 maxLength={50}
               />
@@ -624,6 +659,8 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
                 type="text"
                 value={line2}
                 onChange={(e) => handleLine2Change(e.target.value)}
+                onKeyPress={handleLine2KeyPress}
+                ref={line2Ref}
                 className={styles.textInput}
                 maxLength={50}
                 disabled={!line1.trim()}
@@ -640,6 +677,8 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
                 type="text"
                 value={line3}
                 onChange={(e) => handleLine3Change(e.target.value)}
+                onKeyPress={handleLine3KeyPress}
+                ref={line3Ref}
                 className={styles.textInput}
                 maxLength={50}
                 disabled={!line1.trim() || !line2.trim()}
@@ -654,18 +693,19 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
           <div className={styles.tagSection}>
             <label className={styles.inputLabel}>タグ</label>
             
-            {/* タグ入力フィールド */}
-            <div className={styles.tagInputContainer}>
-              <div className={styles.tagInputWrapper}>
-                <Hash size={16} className={styles.tagIcon} />
-                <input
-                  type="text"
-                  value={currentTag}
-                  onChange={(e) => handleTagInput(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="新しいタグを追加"
-                  className={styles.textInput}
-                />
+          {/* タグ入力フィールド */}
+          <div className={styles.tagInputContainer}>
+            <div className={styles.tagInputWrapper}>
+              <Hash size={16} className={styles.tagIcon} />
+              <input
+                type="text"
+                value={currentTag}
+                onChange={(e) => handleTagInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                ref={tagInputRef}
+                placeholder="新しいタグを追加"
+                className={styles.textInput}
+              />
                 <button
                   onClick={() => currentTag && handleAddTag(currentTag)}
                   disabled={!currentTag}
