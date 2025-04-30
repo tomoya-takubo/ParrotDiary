@@ -1,26 +1,39 @@
+/* #region 基本設定 - 通知コンポーネントの基本的な配置と見た目 */
 .rewardNotification {
   position: fixed;
   top: 2rem;
   right: 2rem;
+  z-index: 9999;
+  min-width: 260px;
+  max-width: 90%;
+  
+  /* デザイン */
   background: linear-gradient(135deg, #4ade80, #22c55e); /* 明るい緑のグラデーション */
   color: white;
   padding: 1rem 1.5rem;
   border-radius: 16px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
-  z-index: 9999;
-  animation: slideInRight 0.4s ease-out;
+  
+  /* レイアウト */
   display: flex;
   align-items: center;
   gap: 1rem;
-  min-width: 260px;
-  max-width: 90%;
+  
+  /* フォント */
   font-family: 'sans-serif';
+  
+  /* アニメーション */
+  animation: slideInRight 0.4s ease-out;
 }
+/* #endregion */
 
+/* #region アイコン - 通知のアイコン部分のスタイル */
 .rewardIcon {
   font-size: 2rem;
 }
+/* #endregion */
 
+/* #region コンテンツ - 通知のテキスト部分のスタイル */
 .rewardContent h3 {
   margin: 0;
   font-size: 1.1rem;
@@ -31,13 +44,16 @@
   margin: 0.3rem 0;
   font-size: 0.95rem;
 }
+/* #endregion */
 
+/* #region 特殊テキスト - レベルアップ表示などの強調テキスト */
 .levelUpText {
   font-weight: bold;
-  color: #ffe27a;
+  color: #ffe27a; /* 明るい黄色 - レベルアップの強調色 */
 }
+/* #endregion */
 
-/* アニメーション：右からふわっと */
+/* #region アニメーション - 通知表示時のアニメーション定義 */
 @keyframes slideInRight {
   from {
     opacity: 0;
@@ -48,3 +64,4 @@
     transform: translateX(0);
   }
 }
+/* #endregion */
