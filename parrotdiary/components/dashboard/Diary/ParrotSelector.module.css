@@ -1,83 +1,59 @@
-/* ParrotSelector.module.css (拡張版) */
-
-/* 選択されたパロットのプレビュー */
-.selectedParrotsPreview {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 12px;
+/* #region 変数定義 */
+:root {
+  /* カラーパレット */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --bg-quaternary: #e2e8f0;
+  
+  /* ボーダーカラー */
+  --border-primary: #e2e8f0;
+  --border-secondary: #cbd5e1;
+  
+  /* テキストカラー */
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  
+  /* アクセントカラー */
+  --accent-primary: #3b82f6;
+  --accent-secondary: #2563eb;
+  --accent-tertiary: #1e40af;
+  
+  /* アクセント背景 */
+  --accent-bg-primary: #eff6ff;
+  --accent-bg-secondary: #dbeafe;
+  --accent-bg-tertiary: #93c5fd;
+  
+  /* 警告色 */
+  --error: #ef4444;
+  
+  /* スペーシング */
+  --spacing-xs: 2px;
+  --spacing-sm: 4px;
+  --spacing-md: 8px;
+  --spacing-lg: 12px;
+  
+  /* サイズ */
+  --icon-xs: 14px;
+  --icon-sm: 16px;
+  --icon-md: 24px;
+  --icon-lg: 30px;
+  --icon-xl: 40px;
+  
+  /* フォントサイズ */
+  --font-xs: 9px;
+  --font-sm: 10px;
+  --font-md: 12px;
+  --font-lg: 14px;
+  
+  /* ブレイクポイント */
+  --mobile-sm: 480px;
+  --mobile-lg: 640px;
+  --tablet: 768px;
 }
+/* #endregion 変数定義 */
 
-.selectedParrotItem {
-  position: relative;
-  width: 30px;
-  height: 30px;
-  border-radius: 4px;
-  background-color: #f1f5f9;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.selectedParrotItem img {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-}
-
-.removeParrotButton {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background-color: #ef4444;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  border: none;
-  cursor: pointer;
-}
-
-.addParrotButton {
-  width: 30px;
-  height: 30px;
-  border-radius: 4px;
-  background-color: #f1f5f9;
-  color: #64748b;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  border: 1px dashed #cbd5e1;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.addParrotButton:hover {
-  background-color: #e2e8f0;
-  color: #3b82f6;
-}
-
-/* パロット選択コンポーネント全体 */
-.parrotSelectorContainer {
-  width: 100%;
-  position: relative;
-}
-
-/* パロット選択モーダル */
-.parrotSelectorModal {
-  margin-top: 12px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  background-color: #ffffff;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  animation: slideDown 0.2s ease-out;
-}
-
+/* #region アニメーション */
 @keyframes slideDown {
   from {
     opacity: 0;
@@ -88,308 +64,76 @@
     transform: translateY(0);
   }
 }
+/* #endregion アニメーション */
 
-.parrotSelectorHeader {
-  padding: 12px;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.parrotSelectorTitle {
-  font-size: 14px;
-  color: #1e293b;
-  margin-bottom: 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.toggleSelectorButton {
-  background: none;
-  border: none;
-  color: #64748b;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;
-  border-radius: 4px;
-}
-
-.toggleSelectorButton:hover {
-  background-color: #f1f5f9;
-  color: #3b82f6;
-}
-
-/* 検索入力 */
-.searchContainer {
-  position: relative;
-  margin-bottom: 12px;
-}
-
-.searchInput {
+/* #region パロットセレクター全体のコンテナ */
+.parrotSelectorContainer {
   width: 100%;
-  padding: 8px 12px 8px 32px;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  font-size: 14px;
-}
-
-.searchInput:focus {
-  outline: none;
-  border-color: #93c5fd;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-}
-
-.searchIcon {
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #94a3b8;
-}
-
-/* カテゴリー選択 */
-.parrotTypeSelector {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.parrotTypeButton {
-  padding: 4px 10px;
-  border-radius: 9999px;
-  border: none;
-  background-color: #f1f5f9;
-  color: #64748b;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.parrotTypeButton:hover {
-  background-color: #e2e8f0;
-}
-
-.parrotTypeButtonActive {
-  background-color: #3b82f6;
-  color: white;
-}
-
-/* よく使うタグセクションのスタイル修正 */
-.popularTagsSection {
-  margin-bottom: 8px;
-}
-
-/* よく使うタグリストのスタイル修正 */
-.popularTagsList {
-  display: flex;
-  flex-wrap: wrap; /* タグを折り返し表示 */
-  gap: 6px;
-  max-height: 80px; /* 高さ制限 */
-  overflow-y: auto; /* 必要に応じて縦スクロール */
-}
-
-.popularTagsList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-/* タグボタンのスタイル修正 */
-.tagButton {
-  display: inline-block;
-  text-align: center;
-  padding: 4px 8px;
-  border-radius: 6px;
-  border: 1px solid #e2e8f0;
-  background-color: #f8fafc;
-  color: #64748b;
-  font-size: 11px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap; /* テキストを1行に */
-  max-width: 100px; /* タグの最大幅 */
-  overflow: hidden;
-  text-overflow: ellipsis; /* 長いテキストは省略 */
-}
-
-/* タグボタンのホバー状態 */
-.tagButton:hover {
-  background-color: #e2e8f0;
-}
-
-/* アクティブなタグ */
-.tagButtonActive {
-  background-color: #dbeafe;
-  color: #2563eb;
-  border-color: #93c5fd;
-}
-
-/* モバイル向けスタイル調整 */
-@media (max-width: 640px) {
-  .popularTagsList {
-    flex-wrap: wrap; /* モバイルでも折り返し */
-    white-space: normal; /* 通常の折り返し */
-    max-height: 100px; /* やや高さを増やす */
-  }
-  
-  .tagButton {
-    max-width: 85px; /* モバイルではさらに幅を制限 */
-    font-size: 10px; /* フォントを小さく */
-    padding: 3px 6px; /* パディングを減らす */
-  }
-}
-
-@media (max-width: 480px) {
-  .popularTagsList {
-    gap: 4px; /* さらに間隔を縮める */
-  }
-  
-  .tagButton {
-    max-width: 75px; /* さらに幅を制限 */
-    font-size: 9px; /* フォントをさらに小さく */
-    padding: 2px 4px; /* パディングをさらに減らす */
-  }
-}
-
-/* アクティブなタグのスタイル */
-.tagButtonActive .tagCount {
-  background-color: #93c5fd;
-  color: #1e40af;
-}
-
-.tagButton:hover {
-  background-color: #e2e8f0;
-}
-
-.tagButtonActive {
-  background-color: #dbeafe;
-  color: #2563eb;
-  border-color: #93c5fd;
-}
-
-.tagCount {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 4px;
-  min-width: 16px;
-  height: 16px;
-  border-radius: 8px;
-  background-color: #e2e8f0;
-  color: #64748b;
-  font-size: 10px;
-  padding: 0 4px;
-}
-
-.tagButtonActive .tagCount {
-  background-color: #93c5fd;
-  color: #1e40af;
-}
-
-/* パロットグリッド */
-.parrotGrid {
-  display: grid;
-  /* PCで標準的な幅の場合に9列程度に収まるよう調整 */
-  grid-template-columns: repeat(auto-fill, minmax(calc(11%), 1fr));
-  gap: 10px;
-  max-height: 165px;
-  overflow-y: auto;
-  padding: 12px;
-  border-radius: 0 0 8px 8px;
-}
-
-/* パロットグリッドアイテム */
-.parrotGridItem {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background-color: #f8fafc;
-  border-radius: 8px;
-  padding: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: 2px solid transparent;
-}
-
-.parrotGridItem:hover {
-  background-color: #f1f5f9;
-  transform: translateY(-2px);
-}
-
-/* 選択されたパロット */
-.selectedParrot {
-  border-color: #3b82f6;
-  background-color: #eff6ff;
-}
-
-/* パロット画像のコンテナ */
-.parrotImageContainer {
   position: relative;
-  width: 40px;
-  height: 40px;
-  margin-bottom: 4px;
+}
+
+/* コンパクトモード */
+.compactSelector .selectedParrotItem,
+.compactSelector .addParrotButton {
+  width: var(--icon-md);
+  height: var(--icon-md);
+}
+/* #endregion パロットセレクター全体のコンテナ */
+
+/* #region 選択済みパロットプレビュー */
+.selectedParrotsPreview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.selectedParrotItem {
+  position: relative;
+  width: var(--icon-lg);
+  height: var(--icon-lg);
+  border-radius: 4px;
+  background-color: var(--bg-tertiary);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* パロット画像 */
-.parrotGridImage {
-  max-width: 100%;
-  max-height: 100%;
+.selectedParrotItem img {
+  width: var(--icon-md);
+  height: var(--icon-md);
   object-fit: contain;
 }
 
-/* 選択済みを示すインジケーター */
-.selectedParrotIndicator {
+.removeParrotButton {
   position: absolute;
-  top: -6px;
-  right: -6px;
-  width: 16px;
-  height: 16px;
-  background-color: #3b82f6;
-  color: white;
+  top: -5px;
+  right: -5px;
+  width: var(--icon-sm);
+  height: var(--icon-sm);
   border-radius: 50%;
+  background-color: var(--error);
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
-  border: 1px solid white;
+  font-size: var(--font-sm);
+  border: none;
+  cursor: pointer;
 }
 
-/* パロット名 */
-.parrotName {
-  font-size: 12px;
-  color: #64748b;
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+/* 空のパロットスロット */
+.emptyParrotSlot {
   width: 100%;
-  margin-top: 4px;
+  height: 100%;
+  background-color: var(--bg-secondary);
+  border: 1px dashed var(--border-secondary);
+  border-radius: 4px;
+  cursor: pointer;
 }
 
-/* ローディング表示 */
-.parrotSelectorLoading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100px;
-  color: #64748b;
-  font-size: 14px;
-  background-color: #f8fafc;
-  border-radius: 8px;
-}
-
-/* パロットがない場合のメッセージ */
-.noParrotsMessage {
-  padding: 24px;
-  text-align: center;
-  color: #64748b;
-  font-size: 14px;
-  grid-column: 1 / -1;
+.emptyParrotSlot:hover {
+  background-color: var(--bg-quaternary);
 }
 
 /* パロットGIF */
@@ -398,27 +142,282 @@
   max-height: 100%;
   object-fit: contain;
 }
+/* #endregion 選択済みパロットプレビュー */
 
-.dropdownTitle {
-  font-size: 14px;
-  color: #1e293b;
+/* #region パロット選択モーダル */
+.parrotSelectorModal {
+  margin-top: var(--spacing-lg);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  background-color: var(--bg-primary);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  animation: slideDown 0.2s ease-out;
+}
+
+.parrotSelectorHeader {
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.parrotSelectorTitle {
+  font-size: var(--font-lg);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-lg);
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-/* コンパクトモード用のスタイル */
-.compactSelector .selectedParrotItem {
-  width: 24px;
-  height: 24px;
+.toggleSelectorButton {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-sm);
+  border-radius: 4px;
 }
 
-.compactSelector .addParrotButton {
-  width: 24px;
-  height: 24px;
+.toggleSelectorButton:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--accent-primary);
 }
 
-/* モバイル向けスタイル調整 */
+.dropdownTitle {
+  font-size: var(--font-lg);
+  color: var(--text-primary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+/* #endregion パロット選択モーダル */
+
+/* #region 人気タグセクション */
+.popularTagsSection {
+  margin-bottom: var(--spacing-md);
+}
+
+.popularTagsTitle {
+  margin-bottom: var(--spacing-sm);
+  font-size: var(--font-md);
+}
+
+.popularTagsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  max-height: 80px;
+  overflow-y: auto;
+}
+
+.tagButton {
+  display: inline-block;
+  text-align: center;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border-primary);
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: var(--font-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tagButton:hover {
+  background-color: var(--bg-quaternary);
+}
+
+.tagButtonActive {
+  background-color: var(--accent-bg-secondary);
+  color: var(--accent-secondary);
+  border-color: var(--accent-bg-tertiary);
+}
+
+.tagCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: var(--spacing-sm);
+  min-width: var(--icon-sm);
+  height: var(--icon-sm);
+  border-radius: 8px;
+  background-color: var(--bg-quaternary);
+  color: var(--text-secondary);
+  font-size: var(--font-sm);
+  padding: 0 var(--spacing-sm);
+}
+
+.tagButtonActive .tagCount {
+  background-color: var(--accent-bg-tertiary);
+  color: var(--accent-tertiary);
+}
+/* #endregion 人気タグセクション */
+
+/* #region パロットタイプセレクター */
+.parrotTypeSelector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.parrotTypeButton {
+  padding: var(--spacing-sm) 10px;
+  border-radius: 9999px;
+  border: none;
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-size: var(--font-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.parrotTypeButton:hover {
+  background-color: var(--bg-quaternary);
+}
+
+.parrotTypeButtonActive {
+  background-color: var(--accent-primary);
+  color: white;
+}
+/* #endregion パロットタイプセレクター */
+
+/* #region パロットグリッド */
+.parrotGrid {
+  display: grid;
+  /* PCで標準的な幅の場合に9列程度に収まるよう調整 */
+  grid-template-columns: repeat(auto-fill, minmax(calc(11%), 1fr));
+  gap: 10px;
+  max-height: 165px;
+  overflow-y: auto;
+  padding: var(--spacing-lg);
+  border-radius: 0 0 8px 8px;
+}
+
+.parrotGridItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: var(--bg-secondary);
+  border-radius: 8px;
+  padding: var(--spacing-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.parrotGridItem:hover {
+  background-color: var(--bg-tertiary);
+  transform: translateY(-2px);
+}
+
+.selectedParrot {
+  border-color: var(--accent-primary);
+  background-color: var(--accent-bg-primary);
+}
+
+.parrotImageContainer {
+  position: relative;
+  width: var(--icon-xl);
+  height: var(--icon-xl);
+  margin-bottom: var(--spacing-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.parrotGridImage {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.selectedParrotIndicator {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: var(--icon-sm);
+  height: var(--icon-sm);
+  background-color: var(--accent-primary);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-sm);
+  border: 1px solid white;
+}
+
+.parrotName {
+  font-size: var(--font-md);
+  color: var(--text-secondary);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  margin-top: var(--spacing-sm);
+}
+
+.noParrotsMessage {
+  padding: 24px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: var(--font-lg);
+  grid-column: 1 / -1;
+}
+/* #endregion パロットグリッド */
+
+/* #region ローディング・エラー表示 */
+.parrotSelectorLoading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+  color: var(--text-secondary);
+  font-size: var(--font-lg);
+  background-color: var(--bg-secondary);
+  border-radius: 8px;
+}
+/* #endregion ローディング・エラー表示 */
+
+/* #region レスポンシブ対応 */
+/* タブレット */
+@media (max-width: 768px) {
+  /* 人気タグセクション */
+  .popularTagsSection {
+    margin-bottom: 0;
+  }
+  
+  .popularTagsTitle {
+    margin-bottom: var(--spacing-sm);
+    font-size: var(--font-sm);
+  }
+  
+  .popularTagsList {
+    gap: var(--spacing-sm);
+  }
+  
+  .tagButton {
+    padding: 2px 6px;
+    font-size: var(--font-sm);
+    line-height: 1.2;
+  }
+  
+  .tagCount {
+    min-width: 14px;
+    height: 14px;
+    font-size: var(--font-xs);
+  }
+}
+
+/* モバイル大 */
 @media (max-width: 640px) {
   .parrotGrid {
     grid-template-columns: repeat(3, 1fr);
@@ -426,37 +425,35 @@
   
   .popularTagsList {
     overflow-x: auto;
-    padding-bottom: 4px;
+    padding-bottom: var(--spacing-sm);
     white-space: nowrap;
     display: flex;
     flex-wrap: nowrap;
   }
 }
 
+/* モバイル小 */
 @media (max-width: 480px) {
   .parrotGrid {
     grid-template-columns: repeat(3, 1fr); /* 小さい画面では3列固定 */
     gap: 6px;
-    padding: 8px;
+    padding: var(--spacing-md);
   }
   
   .parrotTypeSelector {
     overflow-x: auto;
-    padding-bottom: 4px;
-    margin-bottom: 8px;
-  }
-
-  .parrotName {
-    font-size: 10px;
-  }
-  
-  .parrotTypeSelector {
+    padding-bottom: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
     white-space: nowrap;
     overflow-x: auto;
-    padding-bottom: 8px;
+    padding-bottom: var(--spacing-md);
     justify-content: flex-start;
     display: flex;
     flex-wrap: nowrap;
+  }
+
+  .parrotName {
+    font-size: var(--font-xs);
   }
   
   .parrotTypeButton {
@@ -469,14 +466,8 @@
     height: 18px;
   }
   
-  .parrotGrid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-    padding: 8px;
-  }
-  
   .parrotGridItem {
-    padding: 4px;
+    padding: var(--spacing-sm);
   }
   
   .parrotImageContainer {
@@ -486,7 +477,7 @@
   }
   
   .parrotName {
-    font-size: 9px;
+    font-size: var(--font-xs);
     margin-top: 2px;
   }
   
@@ -506,20 +497,6 @@
   }
 }
 
-/* 空のパロットスロット */
-.emptyParrotSlot {
-  width: 100%;
-  height: 100%;
-  background-color: #f8fafc;
-  border: 1px dashed #cbd5e1;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.emptyParrotSlot:hover {
-  background-color: #e2e8f0;
-}
-
 /* タッチデバイス用の調整 */
 @media (hover: none) {
   .parrotGridItem:hover {
@@ -527,36 +504,7 @@
   }
   
   .parrotGridItem:active {
-    background-color: #e2e8f0;
+    background-color: var(--bg-quaternary);
   }
 }
-
-/* よく使うタグの縦幅を小さく */
-@media (max-width: 768px) {
-  /* 人気タグセクション */
-  .popularTagsSection {
-    margin-bottom: 0;
-  }
-  
-  .popularTagsTitle {
-    margin-bottom: 4px;
-    font-size: 11px;
-  }
-  
-  .popularTagsList {
-    gap: 4px;
-  }
-  
-  .tagButton {
-    padding: 2px 6px;
-    font-size: 11px;
-    line-height: 1.2;
-  }
-  
-  .tagCount {
-    min-width: 14px;
-    height: 14px;
-    font-size: 9px;
-  }
-}
-
+/* #endregion レスポンシブ対応 */

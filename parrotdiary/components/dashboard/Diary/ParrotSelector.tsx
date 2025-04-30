@@ -4,7 +4,10 @@ import { X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './ParrotSelector.module.css';
 
-// パロットの型定義
+// #region 型定義
+/**
+ * パロットの型定義
+ */
 type ParrotType = {
   parrot_id: string;
   name?: string;
@@ -12,9 +15,12 @@ type ParrotType = {
   description?: string;
   rarity_id?: string;
   display_order?: number;
-  tags?: ParrotTagInfo[]; // タグ情報を追加
+  tags?: ParrotTagInfo[]; // タグ情報
 };
 
+/**
+ * データベースから取得した生のパロットデータの型定義
+ */
 type RawParrot = {
   parrot_id: string | number;
   name?: string;
@@ -24,7 +30,9 @@ type RawParrot = {
   display_order?: number;
 };
 
-// パロットタグの型定義
+/**
+ * パロットタグの型定義
+ */
 type ParrotTagInfo = {
   entry_id: string;
   user_id: string;
@@ -33,33 +41,59 @@ type ParrotTagInfo = {
   executed_at: string;
 };
 
-// 人気タグ用の型定義
+/**
+ * 人気タグ用の型定義
+ */
 type ParrotTag = {
   tag_name: string;
   count: number;
 };
 
+/**
+ * ParrotSelectorコンポーネントのProps
+ */
 interface ParrotSelectorProps {
-  userId: string;
-  selectedParrots: string[];
-  onParrotsChange: (parrots: string[]) => void;
-  maxParrots?: number;
-  compact?: boolean; // コンパクト表示モード
-  forceOpen?: boolean; // ← 追加
+  userId: string;                             // ユーザーID
+  selectedParrots: string[];                  // 選択されたパロット
+  onParrotsChange: (parrots: string[]) => void; // パロット変更時のコールバック
+  maxParrots?: number;                        // 最大選択可能数
+  compact?: boolean;                          // コンパクト表示モード
+  forceOpen?: boolean;                        // 強制的に開く
 }
 
-// キャッシュするパロットデータの型
+/**
+ * キャッシュするパロットデータの型
+ */
 interface ParrotCache {
   [userId: string]: {
     timestamp: number;
     parrots: ParrotType[];
   }
 }
+// #endregion 型定義
 
+// #region 定数・ユーティリティ
 // パロットデータをメモリにキャッシュ（セッション中のみ）
 const parrotCache: ParrotCache = {};
 const CACHE_DURATION = 5 * 60 * 1000; // 5分間キャッシュを保持
 
+/**
+ * URLからファイル名を抽出するヘルパー関数
+ */
+function getFileNameFromUrl(url: string): string {
+  if (!url) return '';
+
+  // 最後のスラッシュ以降をファイル名として取得
+  const parts = url.split('/');
+  return parts[parts.length - 1];
+}
+// #endregion 定数・ユーティリティ
+
+// #region メインコンポーネント
+/**
+ * パロット選択コンポーネント
+ * ユーザーが所有するパロットを表示し、選択できるようにする
+ */
 export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
   userId,
   selectedParrots,
@@ -68,6 +102,7 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
   compact = false,
   forceOpen = false,
 }) => {
+  // #region state定義
   const [availableParrots, setAvailableParrots] = useState<ParrotType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -75,11 +110,16 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
   const [selectedCategory] = useState<string | null>(null);
   const [pageSize] = useState(8); // 一度に表示するパロットの数
   const [currentPage, setCurrentPage] = useState(0);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const [popularTags, setPopularTags] = useState<ParrotTag[]>([]);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  // #endregion state定義
 
-  // パロットデータをキャッシュするか確認する関数
+  // #region データ取得関連
+  /**
+   * パロットデータをキャッシュから取得する関数
+   */
   const getCachedParrots = (userId: string): ParrotType[] | null => {
     const cachedData = parrotCache[userId];
     if (cachedData && Date.now() - cachedData.timestamp < CACHE_DURATION) {
@@ -88,7 +128,9 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
     return null;
   };
 
-  // 人気タグデータを取得する関数
+  /**
+   * 人気タグデータを取得する関数
+   */
   const fetchPopularTags = useCallback(async () => {
     if (!userId) return;
     
@@ -126,7 +168,9 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
     }
   }, [userId]);
 
-  // ユーザーが獲得済みのパロットを取得（メモ化して再レンダリングを防止）
+  /**
+   * ユーザーが獲得済みのパロットを取得
+   */
   const fetchUserParrots = useCallback(async () => {
     if (!userId) return;
     
@@ -274,7 +318,79 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
       setIsLoading(false);
     }
   }, [userId, isLoading]);
+  // #endregion データ取得関連
 
+  // #region イベントハンドラ
+  /**
+   * パロットの選択/解除を処理する関数
+   */
+  const toggleParrot = (parrot: ParrotType) => {
+    if (!parrot.image_url) return; // image_url がない場合は処理しない
+    
+    const parrotImageUrl = parrot.image_url;
+    
+    if (selectedParrots.includes(parrotImageUrl)) {
+      // 選択済みなら解除
+      onParrotsChange(selectedParrots.filter(p => p !== parrotImageUrl));
+    } else {
+      // 未選択なら追加（最大数を超えない場合）
+      if (selectedParrots.length < maxParrots) {
+        onParrotsChange([...selectedParrots, parrotImageUrl]);
+      }
+    }
+  };
+
+  /**
+   * +ボタンがクリックされたときに呼ばれる関数
+   */
+  const handleAddButtonClick = () => {
+    setShowParrotDropdown(!showParrotDropdown);
+  };
+
+  /**
+   * 選択されたパロットを削除する関数
+   */
+  const removeParrot = (parrotImageUrl: string) => {
+    onParrotsChange(selectedParrots.filter(p => p !== parrotImageUrl));
+  };
+
+  /**
+   * タグをクリックした時の処理
+   */
+  const handleTagClick = (tagName: string) => {
+    setSelectedTag(selectedTag === tagName ? null : tagName);
+    setCurrentPage(0); // ページをリセット
+  };
+  // #endregion イベントハンドラ
+
+  // #region フィルタリングとページング
+  /**
+   * パロットをフィルタリングする処理
+   */
+  const filteredParrots = availableParrots.filter(parrot => {
+    // 検索条件を削除し、カテゴリーとタグのみでフィルタリング
+    const matchesCategory = !selectedCategory || 
+      selectedCategory === 'all';
+    // 選択されたタグでフィルタリング
+    const matchesTag = !selectedTag || 
+      (parrot.tags && parrot.tags.some(tag => tag.parrot_tag_name === selectedTag));
+      
+    return matchesCategory && matchesTag;
+  });
+
+  // ページング用のパロット (現在のページに表示するパロットのみ)
+  const pagedParrots = filteredParrots.slice(
+    currentPage * pageSize, 
+    (currentPage + 1) * pageSize
+  );
+
+  // 次のページがあるかどうか
+  const hasNextPage = filteredParrots.length > (currentPage + 1) * pageSize;
+  // 前のページがあるかどうか
+  const hasPrevPage = currentPage > 0;
+  // #endregion フィルタリングとページング
+
+  // #region useEffect
   // ユーザーIDが変更されたときに再取得
   useEffect(() => {
     if (userId) {
@@ -297,69 +413,18 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
     };
   }, [forceOpen]);
   
+  // forceOpenが変更されたときの処理
   useEffect(() => {
     if (forceOpen) {
       setShowParrotDropdown(true); // モーダル表示時に展開
     }
   }, [forceOpen]);
+  // #endregion useEffect
 
-  // パロットの選択/解除
-  const toggleParrot = (parrot: ParrotType) => {
-    if (!parrot.image_url) return; // image_url がない場合は処理しない
-    
-    const parrotImageUrl = parrot.image_url;
-    
-    if (selectedParrots.includes(parrotImageUrl)) {
-      // 選択済みなら解除
-      onParrotsChange(selectedParrots.filter(p => p !== parrotImageUrl));
-    } else {
-      // 未選択なら追加（最大数を超えない場合）
-      if (selectedParrots.length < maxParrots) {
-        onParrotsChange([...selectedParrots, parrotImageUrl]);
-      }
-    }
-  };
-
-  // +ボタンがクリックされたときに呼ばれる関数
-  const handleAddButtonClick = () => {
-    setShowParrotDropdown(!showParrotDropdown);
-  };
-
-  // 選択されたパロットを削除する関数
-  const removeParrot = (parrotImageUrl: string) => {
-    onParrotsChange(selectedParrots.filter(p => p !== parrotImageUrl));
-  };
-
-  // タグをクリックした時の処理
-  const handleTagClick = (tagName: string) => {
-    setSelectedTag(selectedTag === tagName ? null : tagName);
-    setCurrentPage(0); // ページをリセット
-  };
-
-  // パロットをフィルタリングする関数
-  const filteredParrots = availableParrots.filter(parrot => {
-    // 検索条件を削除し、カテゴリーとタグのみでフィルタリング
-    const matchesCategory = !selectedCategory || 
-      selectedCategory === 'all'
-    // 選択されたタグでフィルタリング
-    const matchesTag = !selectedTag || 
-      (parrot.tags && parrot.tags.some(tag => tag.parrot_tag_name === selectedTag));
-      
-    return matchesCategory && matchesTag;
-  });
-
-  // ページング用のパロット (現在のページに表示するパロットのみ)
-  const pagedParrots = filteredParrots.slice(
-    currentPage * pageSize, 
-    (currentPage + 1) * pageSize
-  );
-
-  // 次のページがあるかどうか
-  const hasNextPage = filteredParrots.length > (currentPage + 1) * pageSize;
-  // 前のページがあるかどうか
-  const hasPrevPage = currentPage > 0;
-
-  // 人気タグ表示コンポーネント
+  // #region サブコンポーネント
+  /**
+   * 人気タグ表示コンポーネント
+   */
   const PopularTagsSection = () => {
     if (popularTags.length === 0) return null;
     
@@ -383,7 +448,9 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
       </div>
     );
   };
-  
+  // #endregion サブコンポーネント
+
+  // #region レンダリング
   // エラー表示
   if (loadError) {
     return (
@@ -438,7 +505,7 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
               <div className={styles.emptyParrotSlot} onClick={handleAddButtonClick} />
             )}
           </div>
-          ))}
+        ))}
       </div>
 
       {/* パロット選択ドロップダウン - 追加ボタンをクリックすると表示/非表示が切り替わる */}
@@ -491,7 +558,7 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
               ))
             ) : (
               <div className={styles.noParrotsMessage}>
-                  &apos;パロットがありません&apos;
+                &apos;パロットがありません&apos;
               </div>
             )}
             
@@ -529,9 +596,18 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
       )}
     </div>
   );
+  // #endregion レンダリング
 };
+// #endregion メインコンポーネント
 
-// 日記エントリー保存時にパロット情報を保存する関数（修正版）
+// #region ユーティリティ関数
+/**
+ * 日記エントリー保存時にパロット情報を保存する関数
+ * @param entryId エントリーID
+ * @param userId ユーザーID
+ * @param parrotImageUrls パロット画像URL配列
+ * @returns 保存成功したかどうか
+ */
 export const saveEntryParrots = async (
   entryId: string | number,
   userId: string,
@@ -564,9 +640,8 @@ export const saveEntryParrots = async (
     
     console.log('既存パロット削除成功');
 
-    // URL正規化の修正 - HTTPSなどで始まるURLは変更しない
+    // URL正規化 - HTTPSなどで始まるURLは変更しない
     const normalizedUrls = parrotImageUrls.map(url => {
-      // URL正規化を改善 - すでにHTTPS/HTTPで始まる場合は変更しない
       if (url.startsWith('http://') || url.startsWith('https://')) {
         return url;
       }
@@ -659,7 +734,11 @@ export const saveEntryParrots = async (
   }
 };
 
-// 日記エントリー読み込み時にパロット情報も取得する関数
+/**
+ * 日記エントリー読み込み時にパロット情報も取得する関数
+ * @param entryId エントリーID
+ * @returns パロット画像URLの配列
+ */
 export const getEntryParrots = async (entryId: string | number): Promise<string[]> => {
   if (!entryId) return [];
   
@@ -681,7 +760,7 @@ export const getEntryParrots = async (entryId: string | number): Promise<string[
     console.log(`パロットアイコン取得成功: ${iconData?.length || 0}件`);
     
     if (iconData && iconData.length > 0) {
-    // パロットIDからパロット情報を取得
+      // パロットIDからパロット情報を取得
       const parrotIds = iconData.map(icon => String(icon.parrot_id));
             
       const { data: parrotData, error: parrotError } = await supabase
@@ -710,17 +789,9 @@ export const getEntryParrots = async (entryId: string | number): Promise<string[
     }
 
     return [];
-    } catch (error) {
+  } catch (error) {
     console.error('日記パロット取得エラー:', error);
     return [];
-    }
-  };
-
-  // 追加: ファイル名を取得するヘルパー関数
-  function getFileNameFromUrl(url: string): string {
-  if (!url) return '';
-
-  // 最後のスラッシュ以降をファイル名として取得
-  const parts = url.split('/');
-  return parts[parts.length - 1];
-}
+  }
+};
+// #endregion ユーティリティ関数
