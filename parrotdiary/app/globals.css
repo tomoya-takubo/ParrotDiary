@@ -5,6 +5,58 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* カラーパレット */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --bg-quaternary: #e2e8f0;
+  
+  /* ボーダーカラー */
+  --border-primary: #e2e8f0;
+  --border-secondary: #cbd5e1;
+  
+  /* テキストカラー */
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  
+  /* アクセントカラー */
+  --accent-primary: #3b82f6;
+  --accent-secondary: #2563eb;
+  --accent-tertiary: #1e40af;
+  
+  /* アクセント背景 */
+  --accent-bg-primary: #eff6ff;
+  --accent-bg-secondary: #dbeafe;
+  --accent-bg-tertiary: #93c5fd;
+  
+  /* 警告色 */
+  --error: #ef4444;
+  
+  /* スペーシング */
+  --spacing-xs: 2px;
+  --spacing-sm: 4px;
+  --spacing-md: 8px;
+  --spacing-lg: 12px;
+  
+  /* サイズ */
+  --icon-xs: 14px;
+  --icon-sm: 16px;
+  --icon-md: 24px;
+  --icon-lg: 30px;
+  --icon-xl: 40px;
+  
+  /* フォントサイズ */
+  --font-xs: 9px;
+  --font-sm: 10px;
+  --font-md: 12px;
+  --font-lg: 14px;
+  
+  /* ブレイクポイント */
+  --mobile-sm: 480px;
+  --mobile-lg: 640px;
+  --tablet: 768px;
+  
 }
 
 @media (prefers-color-scheme: dark) {
