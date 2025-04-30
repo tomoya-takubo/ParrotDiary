@@ -1,13 +1,15 @@
 'use client';
 
+//#region インポート
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import Image from 'next/image';
 import { useAuth } from '@/lib/AuthContext'; // 認証コンテキストをインポート
+// #endregion
 
-//#region Supabase設定
+//#region 基本設定と初期化
 /**
  * Supabaseクライアントの初期化
  * 環境変数からURLとAPIキーを取得
@@ -15,6 +17,15 @@ import { useAuth } from '@/lib/AuthContext'; // 認証コンテキストをイ�
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+/**
+ * 現在の日本時間をISO形式で取得する関数
+ */
+const getJSTISOString = () => {
+  const now = new Date();
+  // 日本時間 = UTC + 9時間
+  return new Date(now.getTime() + (9 * 60 * 60 * 1000)).toISOString();
+};
 //#endregion
 
 //#region 型定義
@@ -26,12 +37,15 @@ interface Parrot {
   parrot_id: string; // UUID型
   name: string;
   category_id: number | null; // nullも許容
-  rarity_id: string; // 数値ではなく文字列型(UUID)に変更
+  rarity_id: string; // UUID型
   description: string | null;
   image_url: string | null;
 }
 
-// ユーザーパロットの型定義を追加
+/**
+ * ユーザーパロットの型定義
+ * user_parrots テーブルの構造に合わせています
+ */
 interface UserParrot {
   id?: string; // 更新時に必要な主キー（オプション）
   user_id: string;
@@ -79,8 +93,10 @@ interface GachaResult {
 //#endregion
 
 //#region レアリティ設定
-// 数値レアリティとレアリティタイプのマッピング
-// 従来通り1,2,3,4を使用
+/**
+ * UUIDとレアリティタイプのマッピング
+ * データベースのrarity_idとフロントエンドの表示を紐づけます
+ */
 const rarityUUIDToType: Record<string, RarityType> = {
   '88b7a9a1-c650-49f1-89cf-f18ee48c120f': 'normal',
   'b9e8a015-e81b-4cf8-98ad-deaec2007c83': 'ultra_rare',
@@ -88,7 +104,10 @@ const rarityUUIDToType: Record<string, RarityType> = {
   'fdbfbbe1-42dc-4f98-acf4-8f70aa7d4f8c': 'rare',
 };
 
-// より堅牢なマッピング関数
+/**
+ * より堅牢なマッピング関数
+ * UUIDからレアリティタイプを取得します
+ */
 const getRarityType = (rarityId: string): RarityType => {
   // 念のためtrimを行い、小文字に統一
   const cleanedId = rarityId.trim().toLowerCase();
@@ -152,15 +171,6 @@ const rarityConfigs: Record<RarityType, RarityConfig> = {
 } as const;
 //#endregion
 
-// 現在の日本時間をISO形式で取得する関数
-const getJSTISOString = () => {
-  const now = new Date();
-  // 日本時間 = UTC + 9時間
-  return new Date(now.getTime() + (9 * 60 * 60 * 1000)).toISOString();
-};
-
-
-
 /**
  * ガチャアニメーションコンポーネント
  * Supabaseと連携してパロットを抽選し、ユーザーのコレクションに追加します
@@ -174,6 +184,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
   const { user } = useAuth();
 
   //#region 状態管理
+  // 基本状態
   const [showResult, setShowResult] = useState(false);        // 結果表示モード
   const [processing, setProcessing] = useState(false);        // 処理中フラグ
   const [gifUrl, setGifUrl] = useState<string | null>(null);  // ガチャアニメーションのGIF URL
@@ -192,11 +203,11 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
   const [currentSingleParrot, setCurrentSingleParrot] = useState<GachaResult | null>(null); // 単一ガチャのパロット
   //#endregion
 
-  // #region 定数
+  //#region 定数
   const maxGacha = 50; // ガチャ最大連数
   // #endregion
 
-  //#region ライフサイクル管理
+  //#region ライフサイクル管理と初期化
   // isOpenが変更された時の処理
   useEffect(() => {
     if (isOpen) {
@@ -255,6 +266,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
     }
   }, [isOpen, user]);
 
+  // GIF URLを初期化
   useEffect(() => {
     const url = getSingleGifUrl('parrots', 'confusedparrot.gif');
     setGifUrl(url);
@@ -267,7 +279,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
     }
   }, [gachaResults]);
 
-  // 2. ガチャ結果が変更されたときに状態を保存するuseEffect追加（既存のuseEffectの近くに）
+  // ガチャ結果状態の永続化
   useEffect(() => {
     // ガチャ結果が表示されている場合のみ保存
     if (showResult && gachaResults.length > 0) {
@@ -280,8 +292,19 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
       sessionStorage.setItem('gachaState', JSON.stringify(stateToSave));
     }
   }, [showResult, gachaResults, allRevealed]);
+  //#endregion
 
-  // ユーザーのチケット情報を取得
+  //#region データ取得・操作関数
+  /**
+   * 一匹のparrotのgifのURLを取得
+   */
+  const getSingleGifUrl = (folder: string, fileName: string) => {
+    return supabase.storage.from('Parrots').getPublicUrl(`${folder}/${fileName}`).data.publicUrl;
+  };
+
+  /**
+   * ユーザーのチケット情報を取得
+   */
   const fetchTickets = async () => {
     if (!user) {
       console.error('ユーザーがログインしていません');
@@ -324,7 +347,9 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
     }
   };
   
-  // 初期チケットレコードを作成
+  /**
+   * 初期チケットレコードを作成
+   */
   const createInitialTicketRecord = async () => {
     if (!user) return;
   
@@ -352,15 +377,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
       setError(`予期せぬエラーが発生しました: ${(err as Error).message}`);
     }
   };
-  //#endregion
-
-  //#region 一匹のparrotのgifのURLを取得
-  const getSingleGifUrl = (folder: string, fileName: string) => {
-    return supabase.storage.from('Parrots').getPublicUrl(`${folder}/${fileName}`).data.publicUrl;
-  };
-  //#endregion
-
-  //#region ガチャ処理関数
+  
   /**
    * チケットを消費する関数
    * @param amount 消費するチケット数
@@ -413,7 +430,9 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
       return false;
     }
   };
+  //#endregion
 
+  //#region ガチャ実行処理
   /**
    * 複数回のガチャを一括で実行する関数 (最適化版)
    */
@@ -512,6 +531,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
           }
         });
 
+        // 3.3. データベース操作を実行する関数
         const executePromises = async () => {
           const results = [];
           
@@ -619,35 +639,62 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
       setProcessing(false);
     }
   };
+  //#endregion
 
-  //#region UI操作関数
-  // ガチャ回数を増やす
+  //#region UIイベントハンドラ
+  /**
+   * ガチャ回数を増やす
+   */
   const increaseGachaCount = () => {
     // 最大10回まで、かつ持っているチケット数を超えない
     setGachaCount(prev => Math.min(prev + 1, Math.min(maxGacha, tickets)));
   };
   
-  // ガチャ回数を減らす
+  /**
+   * ガチャ回数を減らす
+   */
   const decreaseGachaCount = () => {
     setGachaCount(prev => Math.max(prev - 1, 1));
   };
   
-  // 詳細表示
+  /**
+   * パロット詳細表示
+   */
   const showParrotDetail = (result: GachaResult) => {
     setDetailParrot(result);
     setShowDetail(true);
   };
   
-  // 詳細を閉じる
+  /**
+   * 詳細を閉じる
+   */
   const closeDetail = () => {
     setShowDetail(false);
     setDetailParrot(null);
   };
   
-  // 単一ガチャ結果を閉じる
+  /**
+   * 単一ガチャ結果を閉じる
+   */
   const closeSingleResult = () => {
     setShowingSingleResult(false);
     setCurrentSingleParrot(null);
+  };
+  
+  /**
+   * ガチャを閉じる処理
+   * 状態をリセットして閉じる
+   */
+  const handleCloseGacha = () => {
+    sessionStorage.removeItem('gachaState'); // セッションストレージをクリア
+    setShowResult(false);
+    setGachaResults([]);
+    setShowDetail(false);
+    setDetailParrot(null);
+    setAllRevealed(false);
+    setShowingSingleResult(false);
+    setCurrentSingleParrot(null);
+    onClose();
   };
   //#endregion
 
@@ -698,6 +745,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
 
   /**
    * ガチャ結果カードのコンポーネント
+   * 個々のパロットカードを表示します
    */
   const ResultCard: React.FC<{ 
     result: GachaResult, 
@@ -706,12 +754,11 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
   }> = ({ result, onClick }) => {
     return (
       <motion.div
-        key={result.parrot.parrot_id} // ← indexではなくparrot_idに
+        key={result.parrot.parrot_id} // IDをユニークキーとして使用
         initial={{ scale: 0.8, opacity: 0 }}
         animate={result.revealed ? { 
           scale: 1, 
           opacity: 1
-          // 回転アニメーションを削除してちかちかしないようにする
         } : { scale: 0.8, opacity: 0.5 }}
         transition={{
           type: "spring",
@@ -774,24 +821,6 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
   };
   //#endregion
 
-  //#region イベントハンドラ
-  /**
-   * ガチャを閉じる処理
-   * 状態をリセットして閉じる
-   */
-  const handleCloseGacha = () => {
-    sessionStorage.removeItem('gachaState'); // セッションストレージをクリア
-    setShowResult(false);
-    setGachaResults([]);
-    setShowDetail(false);
-    setDetailParrot(null);
-    setAllRevealed(false);
-    setShowingSingleResult(false);
-    setCurrentSingleParrot(null);
-    onClose();
-  };
-  //#endregion
-
   // モーダルが閉じている場合は何も表示しない
   if (!isOpen) return null;
 
@@ -819,8 +848,8 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                 background: "linear-gradient(135deg, #e0f2fe, #f0f9ff)", // 淡い青系の背景
               }}
             >
+              {/* エラー表示 */}
               {error ? (
-                // エラー表示
                 <div className="py-8 text-center">
                   <div className="text-red-500 text-xl mb-4">⚠️ {error}</div>
                   <button
@@ -830,9 +859,8 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                     閉じる
                   </button>
                 </div>
-              // ガチャを回すモーダル - 淡い色合いの背景でスタイリング
+              // ガチャを回すモーダル - チケットがある場合の通常表示
               ) : !showResult && !showingSingleResult && !processing && tickets > 0 ? (
-                // ガチャ回数選択UI
                 <div className="py-8 text-center relative">
                   <div className="absolute inset-0 rounded-xl" style={{
                     background: "linear-gradient(135deg, #dbeafe, #ede9fe, #fce7f3)", // 淡い青紫ピンクのグラデーション
@@ -867,6 +895,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                         </button>
                       ))}
                     </div>
+                    
                     {/* カスタム回数セレクター */}
                     <div className="mb-5">
                       <p className="text-gray-700 mb-2">カスタム回数</p>
@@ -912,10 +941,10 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                     </div>
                   </div>
                 </div>
+              // ガチャ処理中のアニメーション表示
               ) : processing ? (
-                // ガチャ処理中のアニメーション - 白枠なし
                 <div className="py-12 text-center relative">
-                  {/* 背景アニメーション - 完全着色 */}
+                  {/* 背景アニメーション */}
                   <motion.div
                     animate={{
                       backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
@@ -960,10 +989,10 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                     </motion.p>
                   </div>
                 </div>
+              // 単一ガチャの結果表示
               ) : showingSingleResult && currentSingleParrot ? (
-                // 単一ガチャの結果表示 - 白枠なし、淡い背景
                 <div className="relative py-6">
-                  {/* 背景のグラデーション - 透明度を25%に戻して淡い色に */}
+                  {/* 背景のグラデーション */}
                   <motion.div
                     animate={{
                       backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
@@ -1102,8 +1131,8 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                     </div>
                   </div>
                 </div>
+              // パロット詳細表示
               ) : showDetail && detailParrot ? (
-                // パロット詳細表示 - 白枠なし、淡い背景
                 <div className="relative py-6">
                   {/* 閉じるボタン */}
                   <button 
@@ -1114,7 +1143,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                   </button>
                   
                   <div className="flex flex-col items-center text-center">
-                    {/* 背景のグラデーション - 透明度を25%に戻して淡い色に */}
+                    {/* 背景のグラデーション */}
                     <motion.div
                       animate={{
                         backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
@@ -1217,10 +1246,10 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                     </div>
                   </div>
                 </div>
+              // グリッド表示のガチャ結果
               ) : showResult ? (
-                // グリッド表示のガチャ結果 - 白枠なし、淡い背景
                 <div className="py-6 relative">
-                  {/* 背景グラデーション - 完全着色 */}
+                  {/* 背景グラデーション */}
                   <div 
                     className="absolute inset-0 rounded-xl"
                     style={{
@@ -1265,8 +1294,8 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
                     )}
                   </div>
                 </div>
+              // ロード中表示
               ) : (
-                // ロード中表示
                 <div className="py-8 text-center">
                   <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
                   <p className="text-gray-600">ガチャを準備中...</p>
@@ -1281,4 +1310,3 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
 };
 
 export default GachaAnimation;
-
