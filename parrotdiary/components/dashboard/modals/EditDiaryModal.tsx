@@ -1,3 +1,4 @@
+// #region インポートと依存関係
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Edit3, Hash, Plus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
@@ -5,6 +6,7 @@ import { useAuth } from '@/lib/AuthContext';
 import styles from './EditDiaryModal.module.css';
 import { ParrotSelector, saveEntryParrots, getEntryParrots } from '@/components/dashboard/Diary/ParrotSelector';
 import { useReward } from '@/lib/RewardContext';
+// #endregion
 
 // #region 型定義
 /**
@@ -51,10 +53,10 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
   date,
   onSave,
 }) => {
+  // #region 状態管理
   const { user } = useAuth();
   const { showReward } = useReward();
   
-  // #region 状態管理
   // 行の入力状態
   const [line1, setLine1] = useState(entry.activities[0] || '');
   const [line2, setLine2] = useState(entry.activities.length > 1 ? entry.activities[1] : '');
@@ -99,7 +101,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
   // よく使うタグ
   const frequentTags = allTags.slice(0, 5);
 
-  // #region 報酬計算関連の関数
+  // #region ユーティリティ関数
   /**
    * 文字数に応じたXP報酬を計算する
    * @param totalChars 合計文字数
@@ -171,7 +173,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
   };
   // #endregion
 
-  // #region useEffect フック
+  // #region 副作用処理
   /**
    * パロット情報をロード（初期表示時）
    */
@@ -352,7 +354,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
   };
   // #endregion
 
-  // #region 入力検証・保存処理
+  // #region フォーム検証・保存処理
   /**
    * フォーム入力の検証
    * @returns 入力が有効かどうか
@@ -684,7 +686,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
   // モーダルが開いていない場合は何も表示しない
   if (!isOpen) return null;
 
-  // #region モーダルのレンダリング
+  // #region レンダリング
   return (
     <div 
       className={styles.modalOverlay}
@@ -809,19 +811,19 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
           <div className={styles.tagSection}>
             <label className={styles.inputLabel}>タグ</label>
             
-          {/* タグ入力フィールド */}
-          <div className={styles.tagInputContainer}>
-            <div className={styles.tagInputWrapper}>
-              <Hash size={16} className={styles.tagIcon} />
-              <input
-                type="text"
-                value={currentTag}
-                onChange={(e) => handleTagInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                ref={tagInputRef}
-                placeholder="新しいタグを追加"
-                className={styles.textInput}
-              />
+            {/* タグ入力フィールド */}
+            <div className={styles.tagInputContainer}>
+              <div className={styles.tagInputWrapper}>
+                <Hash size={16} className={styles.tagIcon} />
+                <input
+                  type="text"
+                  value={currentTag}
+                  onChange={(e) => handleTagInput(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  ref={tagInputRef}
+                  placeholder="新しいタグを追加"
+                  className={styles.textInput}
+                />
                 <button
                   onClick={() => currentTag && handleAddTag(currentTag)}
                   disabled={!currentTag}
