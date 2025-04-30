@@ -119,8 +119,8 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
    * @returns 獲得チケット数 (最大5)
    */
   const calculateTicketReward = (totalChars: number): number => {
-    // 100文字ごとに1枚、最大5枚
-    return Math.min(Math.floor(totalChars / 100), 5);
+    // 10文字ごとに1枚、最大10枚
+    return Math.min(Math.floor(totalChars / 10), 10);
   };
   
   /**
