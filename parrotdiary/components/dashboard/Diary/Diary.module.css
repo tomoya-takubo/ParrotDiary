@@ -1,4 +1,4 @@
-/* 3行日記コンテナ */
+/* #region 基本レイアウト - メインコンテナと共通要素 */
 .diaryContainer {
   background-color: white;
   padding: 24px;
@@ -6,7 +6,6 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
-/* ヘッダー部分 */
 .diaryHeader {
   display: flex;
   justify-content: space-between;
@@ -20,6 +19,23 @@
   color: #1a202c;
 }
 
+.diarySubtitle {
+  font-size: 14px;
+  color: #718096;
+  margin-bottom: 24px;
+}
+
+/* 空のエントリ表示用スタイル */
+.emptyEntry {
+  font-size: 14px;
+  color: #94a3b8;
+  font-style: italic;
+  text-align: center;
+  padding: 16px 0;
+}
+/* #endregion */
+
+/* #region ヘッダーツール - 編集・検索アイコン */
 .diaryTools {
   display: flex;
   gap: 12px;
@@ -33,14 +49,9 @@
 .diaryTool:hover {
   color: #4a5568;
 }
+/* #endregion */
 
-.diarySubtitle {
-  font-size: 14px;
-  color: #718096;
-  margin-bottom: 24px;
-}
-
-/* タブ関連スタイル */
+/* #region タブ関連 - 表示切替 */
 .tabsList {
   display: flex;
   border-bottom: 1px solid #e2e8f0;
@@ -65,15 +76,15 @@
   color: #3b82f6;
   border-bottom-color: #3b82f6;
 }
+/* #endregion */
 
-/* 日記エントリーリスト */
+/* #region 日記エントリ - 一覧とカード */
 .diaryEntries {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-/* 個別の日記エントリー */
 .diaryEntry {
   background-color: #f8fafc;
   border-radius: 12px;
@@ -93,6 +104,29 @@
   color: #718096;
 }
 
+.entryContent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+}
+
+.entryLine {
+  font-size: 16px;
+  color: #1e293b;
+}
+
+/* 曜日の色分け */
+.sundayText {
+  color: #e53e3e; /* 赤色 */
+}
+
+.saturdayText {
+  color: #3182ce; /* 青色 */
+}
+/* #endregion */
+
+/* #region タグ関連 - エントリタグとタグ入力 */
 .entryTags {
   display: flex;
   align-items: center;
@@ -123,9 +157,9 @@
   color: #7e22ce;
 }
 
-/* 編集ボタンのスタイル - タグと同じサイズに */
+/* 編集ボタン - タグと同様のスタイル */
 .editButton {
-  font-size: 10px; /* 12pxから10pxに変更してタグと合わせる */
+  font-size: 10px;
   padding: 4px 8px;
   border-radius: 9999px;
   background-color: #f1f5f9;
@@ -138,7 +172,6 @@
   line-height: 1;
   height: 24px;
   box-sizing: border-box;
-  /* 縦位置の調整 */
   vertical-align: middle;
 }
 
@@ -146,160 +179,7 @@
   background-color: #e2e8f0;
 }
 
-.entryContent {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  position: relative;
-}
-
-.entryLine {
-  font-size: 16px;
-  color: #1e293b;
-}
-
-.emptyEntry {
-  font-size: 14px;
-  color: #94a3b8;
-  font-style: italic;
-  text-align: center;
-  padding: 16px 0;
-}
-
-/* モーダルスタイル */
-.modalOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 50;
-}
-
-.modalContainer {
-  position: relative;
-  background-color: white;
-  border-radius: 16px;
-  padding: 24px;
-  max-width: 800px; /* 500pxから800pxに増やす */
-  width: 100%;
-  margin: 0 16px;
-}
-
-.modalHeader {
-  margin-bottom: 24px;
-}
-
-.modalTitle {
-  font-size: 20px;
-  font-weight: bold;
-  color: #1a202c;
-}
-
-.modalContent {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.inputGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.inputLabel {
-  font-size: 14px;
-  color: #64748b;
-}
-
-.textInput {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 16px;
-}
-
-.textInput:focus {
-  outline: none;
-  border-color: #93c5fd;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-}
-
-.textInput:disabled {
-  background-color: #f1f5f9;
-  cursor: not-allowed;
-}
-
-.modalActions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 24px;
-}
-
-.cancelButton {
-  padding: 8px 16px;
-  border-radius: 8px;
-  background-color: #f1f5f9;
-  color: #64748b;
-  border: none;
-  cursor: pointer;
-}
-
-.cancelButton:hover {
-  background-color: #e2e8f0;
-}
-
-.saveButton {
-  padding: 8px 16px;
-  border-radius: 8px;
-  background-color: #3b82f6;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-
-.saveButton:hover {
-  background-color: #2563eb;
-}
-
-/* エラーテキスト */
-.errorText {
-  color: #e53e3e;
-  font-size: 14px;
-  margin-bottom: 12px;
-}
-
-/* フォームコンテナ */
-.formContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* 入力ラッパー (文字数カウンタ用) */
-.inputWrapper {
-  position: relative;
-  width: 100%;
-}
-
-/* 文字数カウンタ */
-.charCount {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 12px;
-  color: #94a3b8;
-}
-
-/* タグセクション */
+/* タグセクション - モーダル内 */
 .tagSection {
   margin-top: 8px;
   display: flex;
@@ -464,6 +344,48 @@
 .removeTagButton:hover {
   color: #0369a1;
 }
+/* #endregion */
+
+/* #region モーダル - 共通スタイル */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modalContainer {
+  position: relative;
+  background-color: white;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 800px;
+  width: 100%;
+  margin: 0 16px;
+}
+
+.modalHeader {
+  margin-bottom: 24px;
+  margin-top: 10px;
+}
+
+.modalTitle {
+  font-size: 20px;
+  font-weight: bold;
+  color: #1a202c;
+}
+
+.modalContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
 /* 閉じるボタン */
 .closeButton {
@@ -481,11 +403,103 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
+  z-index: 6; /* パロット選択UIより手前に */
 }
 
 .closeButton:hover {
   background-color: #f1f5f9;
   color: #475569;
+}
+/* #endregion */
+
+/* #region フォーム要素 - 入力フィールドとボタン */
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inputLabel {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.textInput {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.textInput:focus {
+  outline: none;
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.textInput:disabled {
+  background-color: #f1f5f9;
+  cursor: not-allowed;
+}
+
+/* 入力ラッパー (文字数カウンタ用) */
+.inputWrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* 文字数カウンタ */
+.charCount {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* フォームコンテナ */
+.formContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* モーダルアクション */
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+/* キャンセルボタン */
+.cancelButton {
+  padding: 8px 16px;
+  border-radius: 8px;
+  background-color: #f1f5f9;
+  color: #64748b;
+  border: none;
+  cursor: pointer;
+}
+
+.cancelButton:hover {
+  background-color: #e2e8f0;
+}
+
+/* 保存ボタン */
+.saveButton {
+  padding: 8px 16px;
+  border-radius: 8px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.saveButton:hover {
+  background-color: #2563eb;
 }
 
 /* 記録ボタン */
@@ -515,18 +529,43 @@
   cursor: not-allowed;
 }
 
-/* モーダルコンテナを相対位置に */
-.modalContainer {
-  position: relative;
-  background-color: white;
-  border-radius: 16px;
-  padding: 24px;
-  max-width: 800px;
-  width: 100%;
-  margin: 0 16px;
+/* エラーテキスト */
+.errorText {
+  color: #e53e3e;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+/* #endregion */
+
+/* #region パロット関連 - アイコン表示と選択UI */
+/* パロット表示用のスタイル */   
+.parrotBottomRight {
+  position: absolute;
+  bottom: -4px;  /* 位置調整 */
+  right: -4px;   /* 位置調整 */
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  z-index: 2;
+  padding: 6px;
 }
 
-/* 将来的に複数のパロットを選択する際のスタイル */
+.parrotGif {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 4px;
+  cursor: default; /* カーソルを通常のものに変更 */
+  transition: transform 0.2s;
+  transform: scaleX(-1); /* GIFを左右反転 */
+}
+
+.parrotContainer {
+  /* パロットコンテナ用のスタイル */
+}
+
+/* パロットセレクタ */
 .parrotSelector {
   position: relative;
 }
@@ -564,7 +603,20 @@
   border-color: #3b82f6;
 }
 
-/* パロット選択モーダル用スタイル（将来的に使用） */
+/* モーダル内のパロット選択セクション */
+.modalParrotSection {
+  margin-top: 16px;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 16px;
+}
+
+.modalParrotTitle {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+/* パロット選択モーダル用スタイル */
 .parrotSelectorModal {
   max-width: 600px !important;
 }
@@ -614,7 +666,7 @@
   border: 2px solid #3b82f6;
 }
 
-/* 表示が多すぎる場合のオーバーレイ (任意) */
+/* 表示が多すぎる場合のオーバーレイ */
 .parrotOverflow {
   position: relative;
 }
@@ -633,32 +685,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-/* パロット表示用のスタイル修正 */   
-.parrotBottomRight {
-  position: absolute;
-  bottom: -4px;  /* 位置調整 */
-  right: -4px;   /* 位置調整 */
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 10px;
-  z-index: 2;
-  padding: 6px;
-}
-
-/* モーダル内のパロット選択セクション */
-.modalParrotSection {
-  margin-top: 16px;
-  border-top: 1px solid #e2e8f0;
-  padding-top: 16px;
-}
-
-.modalParrotTitle {
-  font-size: 14px;
-  color: #64748b;
-  margin-bottom: 8px;
 }
 
 /* 選択されたパロットのプレビュー */
@@ -715,9 +741,7 @@
   background-color: #e2e8f0;
 }
 
-/* Diary.module.cssに追加するスタイル */
-
-/* モーダル内のパロット選択UI用コンテナ */
+/* モーダル内のパロット選択UI */
 .modalParrotSelector {
   position: absolute;
   top: 16px;
@@ -725,14 +749,6 @@
   z-index: 5;
   display: flex;
   align-items: center;
-}
-
-/* モーダルのクローズボタンの調整（パロット選択UIと被らないように） */
-.closeButton {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  z-index: 6; /* パロット選択UIより手前に */
 }
 
 /* モーダル内のパロット選択UI用スタイル - 小さめのサイズに調整 */
@@ -760,22 +776,9 @@
   width: 300px;
   margin-top: 5px;
 }
+/* #endregion */
 
-/* パロット選択UIがモーダルの内容と重ならないようにするための余白調整 */
-.modalHeader {
-  margin-top: 10px;
-}
-
-.parrotGif {
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
-  border-radius: 4px;
-  cursor: default; /* カーソルを通常のものに変更 */
-  transition: transform 0.2s;
-  transform: scaleX(-1); /* GIFを左右反転 */
-}
-
+/* #region レスポンシブ対応 - メディアクエリ */
 @media (max-width: 768px) {
   .diaryEntry {
     padding: 12px;
@@ -892,13 +895,4 @@
     height: 32px;
   }
 }
-
-/* 日曜日の色 */
-.sundayText {
-  color: #e53e3e; /* 赤色 */
-}
-
-/* 土曜日の色 */
-.saturdayText {
-  color: #3182ce; /* 青色 */
-}
+/* #endregion */
