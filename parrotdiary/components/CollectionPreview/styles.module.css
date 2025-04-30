@@ -1,16 +1,14 @@
-/* components/CollectionPreview/styles.module.css */
-/* 既存のスタイルと新しいスタイルを統合したもの */
-
+/* #region 基本レイアウトとコンテナ */
 .container {
   padding: 1.5rem;
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  background: linear-gradient(to bottom, #EFF6FF, #F5F3FF); /* 背景グラデーションをコンテナに */
-  min-height: 100vh; /* 最低でも画面の高さ分は確保 */
+  background: linear-gradient(to bottom, #EFF6FF, #F5F3FF);
+  min-height: 100vh;
 }
 
-/* タイトルセクション - ダッシュボードボタン用に変更 */
+/* タイトルセクション - ダッシュボードボタン用 */
 .titleSection {
   display: flex;
   justify-content: space-between;
@@ -45,37 +43,7 @@
   transform: translateY(-1px);
 }
 
-.categories {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.filterIcon {
-  color: #6B7280;
-}
-
-.categoryButton {
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  background: white;
-  border: none;
-  cursor: pointer;
-  font-size: 0.875rem;
-  color: #4B5563;
-  white-space: nowrap;
-}
-
-.categoryButton:hover {
-  background: #F3F4F6;
-}
-
-.categoryButton.active {
-  background: #8B5CF6;
-  color: white;
-}
-
-/* グリッドコンテナの高さを固定 */
+/* グリッドコンテナの基本レイアウト */
 .grid {
   display: grid;
   gap: 1rem;
@@ -85,21 +53,6 @@
   padding: 0;
   grid-template-columns: repeat(auto-fit, 180px);
   min-height: 480px; /* 例: 2行分の高さ (カードの高さ + gap) x 2 */
-}
-
-/* スクロール位置固定のためのヘルパークラス */
-.fixedContent {
-  position: relative;
-}
-
-/* ページネーションの上部マージンを固定 */
-.paginationContainer {
-  margin-top: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-/* ページ遷移アニメーション */
-.grid {
   transition: opacity 0.2s ease;
 }
 
@@ -107,15 +60,22 @@
   opacity: 0.6;
 }
 
+/* スクロール位置固定のためのヘルパークラス */
+.fixedContent {
+  position: relative;
+}
+/* #endregion */
+
+/* #region パロットカード スタイル */
 .parrotCard {
   background: white;
   border-radius: 0.75rem;
   padding: 1rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  width: 180px;  /* カードの幅を180pxに拡大 */
-  position: relative; /* .lockOverlay 用 */
+  width: 180px;
+  position: relative;
   transition: transform 0.2s ease, opacity 0.2s ease;
-  height: 320px
+  height: 320px;
 }
 
 .parrotCard:hover {
@@ -128,8 +88,8 @@
   aspect-ratio: 1;
   background: #f3f4f6;
   border-radius: 0.5rem;
-  padding: 0.5rem;  /* パディングを小さく */
-  margin-bottom: 0.5rem;  /* マージンも調整 */
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .parrotName {
@@ -140,13 +100,13 @@
   gap: 0.5rem;
   align-items: center;
   font-size: 0.875rem;
-  word-break: break-word;      /* 任意の位置で改行可能に */
-  overflow-wrap: break-word;   /* 長い単語を折り返す */
-  max-width: 100%;            /* 親要素の幅を超えないように */
-  padding: 0 0.25rem;         /* 左右に少しパディングを追加 */
+  word-break: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+  padding: 0 0.25rem;
 }
 
-/* パロットの名前用のスタイルを追加 */
+/* パロットの名前用のスタイル */
 .parrotNameText {
   display: inline-block;
   white-space: normal;
@@ -159,109 +119,6 @@
   width: 0;
   height: 0;
   overflow: hidden;
-}
-
-.rarityBadge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  color: white;
-}
-
-.modalOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 50;
-}
-
-/* モーダルコンテナのスタイルを修正 */
-.modalContent {
-  position: relative;
-  width: 100%;
-  max-width: 600px;
-  max-height: 80vh;
-  overflow-y: auto;
-  background-color: #ffffff;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-}
-
-
-
-.closeButton {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  font-size: 1.5rem;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #666;
-}
-
-.modalHeader {
-  display: flex;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.modalIconWrapper {
-  width: 100px;
-  height: 100px;
-}
-
-.modalInfo {
-  flex: 1;
-}
-
-.modalTitle {
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin-bottom: 0.5rem;
-}
-
-.description {
-  color: #374151;  /* テキストの色を濃く */
-  margin-bottom: 1.5rem;
-  line-height: 1.6;  /* 行間を広げて読みやすく */
-  font-size: 0.95rem;
-}
-
-.detailsSection {
-  background: #f8f9fa;  /* 完全な不透明な背景に */
-  border: 1px solid #e5e7eb;  /* 境界線を追加 */
-  padding: 1rem;
-  border-radius: 0.5rem;
-}
-
-.detailsSection h3 {
-  margin-bottom: 1rem;
-  font-size: 1.1rem;
-  font-weight: bold;
-}
-
-.detailRow {
-  display: flex;
-  justify-content: space-between;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid #eee;
-}
-
-.detailRow:last-child {
-  border-bottom: none;
-}
-
-.notObtained {
-  color: #666;
-  font-style: italic;
 }
 
 /* 獲得済みパロットの場合のみホバー効果とポインターカーソルを適用 */
@@ -277,6 +134,152 @@
   cursor: not-allowed;
   opacity: 0.7;
   transition: opacity 0.2s;
+}
+
+/* 未ログイン状態のパロットカード */
+.parrotCard.notLoggedIn {
+  position: relative;
+  cursor: pointer; /* 未ログイン時でもクリック可能に（ログイン促す） */
+  opacity: 0.7;
+}
+
+.lockOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 0.75rem;
+}
+
+.lockIcon {
+  color: rgba(255, 255, 255, 0.8);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+/* パロットカード内のタグ表示 */
+.cardTagsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+  justify-content: center;
+}
+
+.cardTagItem {
+  background-color: rgba(139, 92, 246, 0.1);
+  color: #8B5CF6;
+  padding: 0.125rem 0.375rem;
+  border-radius: 9999px;
+  font-size: 0.625rem;
+  max-width: 70px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.moreTagsBadge {
+  background-color: rgba(107, 114, 128, 0.1);
+  color: #6B7280;
+  padding: 0.125rem 0.375rem;
+  border-radius: 9999px;
+  font-size: 0.625rem;
+}
+/* #endregion */
+
+/* #region レアリティ関連スタイル */
+/* レアリティバッジの基本スタイル */
+.rarityBadge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  color: white;
+}
+
+/* レア度に応じたカードスタイル */
+.rarityUR {
+  background: linear-gradient(to right, rgba(255, 0, 0, 0.3), rgba(255, 128, 0, 0.3), rgba(255, 255, 0, 0.3), rgba(0, 255, 0, 0.3), rgba(0, 0, 255, 0.3), rgba(128, 0, 255, 0.3));
+  border: 1px solid rgba(128, 0, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.raritySR {
+  background: linear-gradient(to right, rgba(147, 51, 234, 0.3), rgba(236, 72, 153, 0.3), rgba(147, 51, 234, 0.3));
+  border: 1px solid rgba(147, 51, 234, 0.3);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.rarityR {
+  background: linear-gradient(to right, rgba(59, 130, 246, 0.3), rgba(6, 182, 212, 0.3), rgba(59, 130, 246, 0.3));
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.rarityN {
+  background: linear-gradient(135deg, #f5f5f5, #e8e8e8, #f5f5f5);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.unobtained {
+  background: #d1d5db;
+  opacity: 0.8;
+}
+
+/* バッジのスタイル */
+.rarityBadgeUR {
+  background-color: #FF6B00;
+  color: white;
+}
+
+.rarityBadgeSR {
+  background-color: #CC33FF;
+  color: white;
+}
+
+.rarityBadgeR {
+  background-color: #3399FF;
+  color: white;
+}
+
+.rarityBadgeN {
+  background-color: #808080;
+  color: white;
+}
+
+/* レア度に合わせてタグの色を変更 */
+.rarityUR .cardTagItem {
+  background-color: rgba(255, 107, 0, 0.1);
+  color: #ff6b00;
+}
+
+.raritySR .cardTagItem {
+  background-color: rgba(204, 51, 255, 0.1);
+  color: #cc33ff;
+}
+
+.rarityR .cardTagItem {
+  background-color: rgba(51, 153, 255, 0.1);
+  color: #3399ff;
+}
+
+.rarityN .cardTagItem {
+  background-color: rgba(128, 128, 128, 0.1);
+  color: #808080;
+}
+/* #endregion */
+
+/* #region 進捗バー */
+.progressSection {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-top: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  width: 100%;
 }
 
 .progressInfo {
@@ -320,10 +323,26 @@
   border-radius: 9999px;
   transition: width 0.3s ease;
 }
+/* #endregion */
+
+/* #region 検索・フィルター */
+.filterSection {
+  margin: 1.5rem 0;
+}
+
+.filterHeader {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
 
 .searchBox {
   position: relative;
   width: 300px;
+  flex: 1;
+  max-width: 300px;
 }
 
 .searchIcon {
@@ -349,71 +368,11 @@
   box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.1);
 }
 
-/* CollectionPreview.module.css のスタイルを修正 */
-.filterSection {
-  margin: 1.5rem 0;
-}
-
-.filterHeader {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-}
-
-.searchBox {
-  flex: 1;  /* 検索ボックスを可能な限り広げる */
-  max-width: 300px;
-}
-
-.categories {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-left: auto;  /* 右寄せにする */
-}
-
-.progressSection {
-  background: white;
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  margin-top: 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  width: 100%;
-}
-
-.rarityFilter {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.rarityButton {
-  padding: 0.25rem 0.75rem;
-  border-radius: 0.375rem;
-  border: 1px solid #e5e7eb;
-  background: white;
-  font-size: 0.875rem;
-  color: #4b5563;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.rarityButton:hover {
-  background: #f3f4f6;
-}
-
-.rarityButton.active {
-  background: #8b5cf6;
-  color: white;
-  border-color: #8b5cf6;
-}
-
+/* ソート・フィルターボタン共通スタイル */
 .sortButtons {
   display: flex;
   gap: 0.5rem;
-  margin-left: auto;  /* 右寄せ */
+  margin-left: auto;
 }
 
 .sortButton {
@@ -440,57 +399,383 @@
   border-color: #8b5cf6;
 }
 
-/* レア度に応じたスタイル - ！重要！ このスタイルが適用されないと色分けされません */
-.rarityUR {
-  background: linear-gradient(to right, rgba(255, 0, 0, 0.3), rgba(255, 128, 0, 0.3), rgba(255, 255, 0, 0.3), rgba(0, 255, 0, 0.3), rgba(0, 0, 255, 0.3), rgba(128, 0, 255, 0.3));
-  border: 1px solid rgba(128, 0, 255, 0.3);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+/* 獲得済みフィルター */
+.obtainedFilter {
+  display: flex;
+  align-items: center;
 }
 
-.raritySR {
-  background: linear-gradient(to right, rgba(147, 51, 234, 0.3), rgba(236, 72, 153, 0.3), rgba(147, 51, 234, 0.3));
-  border: 1px solid rgba(147, 51, 234, 0.3);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+.obtainedButton {
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  border: 1px solid #e5e7eb;
+  background: white;
+  font-size: 0.875rem;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
 }
 
-.rarityR {
-  background: linear-gradient(to right, rgba(59, 130, 246, 0.3), rgba(6, 182, 212, 0.3), rgba(59, 130, 246, 0.3));
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+.obtainedButton:hover {
+  background: #f3f4f6;
 }
 
-.rarityN {
-  background: linear-gradient(135deg, #f5f5f5, #e8e8e8, #f5f5f5);  /* より柔らかいグレー */
-  border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.unobtained {
-  background: #d1d5db;  /* 未解放用のやや暗いグレー */
-  opacity: 0.8;
-}
-
-/* バッジのスタイル - ！重要！ このスタイルが適用されないとバッジの色が変わりません */
-.rarityBadgeUR {
-  background-color: #FF6B00;  /* 鮮やかなオレンジ */
+.obtainedButton.active {
+  background: #10B981; /* 緑色を使用して「獲得済み」であることを視覚的に示す */
   color: white;
+  border-color: #10B981;
 }
 
-.rarityBadgeSR {
-  background-color: #CC33FF;  /* 明るい紫 */
+/* レアリティフィルター */
+.rarityFilter {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rarityButton {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  background: white;
+  font-size: 0.875rem;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+}
+
+.rarityButton:hover {
+  background: #f3f4f6;
+}
+
+.rarityButton.active {
+  background: #8b5cf6;
   color: white;
+  border-color: #8b5cf6;
 }
 
-.rarityBadgeR {
-  background-color: #3399FF;  /* 明るい青 */
+/* レアリティ固有のボタンスタイル */
+.rarityButton[data-rarity="N"],
+.rarityButton[data-rarity="N"]:hover {
+  border-color: #808080;
+}
+.rarityButton[data-rarity="N"].active {
+  background: #808080;
   color: white;
+  border-color: #808080;
 }
 
-.rarityBadgeN {
-  background-color: #808080;  /* 標準的なグレー */
+.rarityButton[data-rarity="R"],
+.rarityButton[data-rarity="R"]:hover {
+  border-color: #3399FF;
+}
+.rarityButton[data-rarity="R"].active {
+  background: #3399FF;
   color: white;
+  border-color: #3399FF;
 }
 
-/* モーダルの背景色スタイル - ！重要！ このスタイルが適用されないとモーダルの色分けができません */
+.rarityButton[data-rarity="SR"],
+.rarityButton[data-rarity="SR"]:hover {
+  border-color: #CC33FF;
+}
+.rarityButton[data-rarity="SR"].active {
+  background: #CC33FF;
+  color: white;
+  border-color: #CC33FF;
+}
+
+.rarityButton[data-rarity="UR"],
+.rarityButton[data-rarity="UR"]:hover {
+  border-color: #FF6B00;
+}
+.rarityButton[data-rarity="UR"].active {
+  background: #FF6B00;
+  color: white;
+  border-color: #FF6B00;
+}
+
+/* タグフィルター */
+.tagFilter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: 0.5rem;
+}
+
+.tagFilterLabel {
+  font-size: 0.875rem;
+  color: #4B5563;
+}
+
+.tagFilterSelect {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #E5E7EB;
+  border-radius: 0.375rem;
+  background: white;
+  font-size: 0.875rem;
+  color: #4B5563;
+  max-width: 180px;
+}
+
+.clearTagFilterButton {
+  padding: 0.25rem 0.5rem;
+  background-color: #EEE;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  color: #4B5563;
+  cursor: pointer;
+}
+
+.clearTagFilterButton:hover {
+  background-color: #E5E7EB;
+}
+
+/* モバイル用のフィルターメニュー */
+.mobileFilterToggle {
+  display: none;
+}
+
+.filterToggleButton {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #8B5CF6;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+}
+/* #endregion */
+
+/* #region ページネーション */
+.paginationContainer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1.5rem 0;
+  padding: 0.75rem 1rem;
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  gap: 1rem;
+}
+
+.paginationInfo {
+  color: #6B7280;
+  font-size: 0.875rem;
+}
+
+.paginationControls {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.paginationButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 0.5rem;
+  background: white;
+  border: 1px solid #E5E7EB;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  color: #4B5563;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.paginationButton:hover:not(.disabled) {
+  background: #F3F4F6;
+  border-color: #D1D5DB;
+}
+
+.paginationButton.active {
+  background: #8B5CF6;
+  color: white;
+  border-color: #8B5CF6;
+}
+
+.paginationButton.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.itemsPerPageSelector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6B7280;
+  font-size: 0.875rem;
+}
+
+.itemsPerPageSelect {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #E5E7EB;
+  border-radius: 0.25rem;
+  background: white;
+  font-size: 0.875rem;
+  color: #4B5563;
+}
+/* #endregion */
+
+/* #region モーダル */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* モーダルナビゲーションラッパー */
+.modalNavigationWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 700px;
+}
+
+/* ナビゲーションボタン */
+.modalNavButton {
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid #ddd;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 51; /* モーダルより前面に */
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #4a5568;
+}
+
+.modalNavButtonLeft {
+  left: -20px;
+}
+
+.modalNavButtonRight {
+  right: -20px;
+}
+
+.modalNavButton:hover:not(:disabled) {
+  background-color: white;
+  transform: translateY(-50%) scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.modalNavButton:active:not(:disabled) {
+  transform: translateY(-50%) scale(0.98);
+}
+
+.modalNavButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: rgba(229, 231, 235, 0.8);
+}
+
+/* レア度に応じたナビゲーションボタンの色調整 */
+.modalContentUR + .modalNavButton,
+.modalContentUR ~ .modalNavButton {
+  color: #FF6B00;
+}
+
+.modalContentSR + .modalNavButton,
+.modalContentSR ~ .modalNavButton {
+  color: #CC33FF;
+}
+
+.modalContentR + .modalNavButton,
+.modalContentR ~ .modalNavButton {
+  color: #3399FF;
+}
+
+.modalContentN + .modalNavButton,
+.modalContentN ~ .modalNavButton {
+  color: #808080;
+}
+
+/* モーダルコンテンツ */
+.modalContent {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.closeButton {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 1.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+}
+
+.modalHeader {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.modalIconWrapper {
+  width: 100px;
+  height: 100px;
+}
+
+.modalInfo {
+  flex: 1;
+}
+
+.modalTitle {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.description {
+  color: #374151;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+/* モーダルの背景色スタイル */
 .modalContentUR {
   background: linear-gradient(135deg, #fff, #fff),
               linear-gradient(135deg, rgba(255, 0, 0, 0.15), rgba(255, 128, 0, 0.15), rgba(255, 255, 0, 0.15), rgba(0, 255, 0, 0.15), rgba(0, 0, 255, 0.15), rgba(128, 0, 255, 0.15));
@@ -523,63 +808,314 @@
 .modalContent .detailsSection {
   background: rgba(255, 255, 255, 0.9);
 }
- 
-/* 画面サイズに応じた列数の制御 */
-@media (min-width: 640px) {
-  .grid {
-    grid-template-columns: repeat(3, 180px);
-  }
-}
 
-@media (min-width: 768px) {
-  .grid {
-    grid-template-columns: repeat(4, 180px);
-  }
-}
-
-@media (min-width: 1024px) {
-  .grid {
-    grid-template-columns: repeat(5, 180px);
-  }
-}
-
-@media (min-width: 1280px) {
-  .grid {
-    grid-template-columns: repeat(6, 180px);
-  }
-}
-
-/* 獲得済みフィルター用のスタイル */
-.obtainedFilter {
-  display: flex;
-  align-items: center;
-}
-
-.obtainedButton {
-  padding: 0.25rem 0.75rem;
-  border-radius: 0.375rem;
+/* 詳細セクション */
+.detailsSection {
+  background: #f8f9fa;
   border: 1px solid #e5e7eb;
-  background: white;
+  padding: 1rem;
+  border-radius: 0.5rem;
+}
+
+.detailsSection h3 {
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.detailRow:last-child {
+  border-bottom: none;
+}
+
+.notObtained {
+  color: #666;
+  font-style: italic;
+}
+
+/* パロット番号表示 */
+.parrotNumber {
+  color: #6B7280;
   font-size: 0.875rem;
-  color: #4b5563;
+  margin-bottom: 0.25rem;
+}
+/* #endregion */
+
+/* #region タグ関連スタイル */
+/* タグセクション */
+.tagsSection {
+  margin-top: 1.5rem;
+  background: #f8f9fa;
+  border: 1px solid #e5e7eb;
+  padding: 1rem;
+  border-radius: 0.5rem;
+}
+
+.tagsSection h3 {
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+/* タグ入力 */
+.tagInputContainer {
+  display: flex;
+  margin-bottom: 1rem;
+  gap: 0.5rem;
+}
+
+.tagInput {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+}
+
+.tagInput:focus {
+  outline: none;
+  border-color: #8B5CF6;
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.1);
+}
+
+.addTagButton {
+  padding: 0.5rem 1rem;
+  background-color: #8B5CF6;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  font-weight: 500;
+}
+
+.addTagButton:hover:not(:disabled) {
+  background-color: #7C3AED;
+}
+
+.addTagButton:disabled {
+  background-color: #C4B5FD;
+  cursor: not-allowed;
+}
+
+/* タグ表示エリア */
+.tagsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  position: relative;
+  min-height: 2rem;
+  padding: 0.1rem 0;
+}
+
+/* コンテナ内のアニメーション用プレースホルダー */
+.tagsContainer::after {
+  content: "";
+  flex: 999;
+  height: 0;
+}
+
+.tagItem {
+  display: inline-flex;
+  align-items: center;
+  background-color: #EDE9FE;
+  color: #6D28D9;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 0;
+  cursor: pointer; /* タグ全体をクリック可能に */
+  height: 28px; /* 一貫した高さを設定 - 未付与タグと同じ高さに */
+  box-sizing: border-box;
+  transition: background-color 0.2s;
+}
+
+.tagItem:hover {
+  background-color: #DDD6FE; /* ホバー時の背景色変更 */
+}
+
+.tagText {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+  padding: 0.25rem 0.5rem;
+}
+
+/* 削除ボタンのスタイル最適化 */
+.removeTagButton {
   display: flex;
   align-items: center;
+  justify-content: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  min-width: 1.1rem;
+  border: none;
+  background-color: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.7rem;
+  padding: 0;
+  margin: 0;
+  border-top-right-radius: 9999px;
+  border-bottom-right-radius: 9999px;
 }
 
-.obtainedButton:hover {
-  background: #f3f4f6;
+.removeTagButton:hover {
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
-.obtainedButton.active {
-  background: #10B981; /* 緑色を使用して「獲得済み」であることを視覚的に示す */
-  color: white;
-  border-color: #10B981;
+.tagError {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #DC2626;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem;
+  background-color: #FEF2F2;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
 }
 
-/* ローディング関連の改善スタイル */
+.noTags {
+  color: #6B7280;
+  font-style: italic;
+  font-size: 0.875rem;
+}
+
+/* レア度に合わせてタグの色を変更 */
+.modalContentUR .tagItem {
+  background-color: rgba(255, 107, 0, 0.2);
+  color: #ff6b00;
+}
+
+.modalContentSR .tagItem {
+  background-color: rgba(204, 51, 255, 0.2);
+  color: #cc33ff;
+}
+
+.modalContentR .tagItem {
+  background-color: rgba(51, 153, 255, 0.2);
+  color: #3399ff;
+}
+
+.modalContentN .tagItem {
+  background-color: rgba(128, 128, 128, 0.2);
+  color: #808080;
+}
+
+/* レア度に合わせて削除ボタンの色も変更 */
+.modalContentUR .removeTagButton {
+  color: #ff6b00;
+}
+
+.modalContentSR .removeTagButton {
+  color: #cc33ff;
+}
+
+.modalContentR .removeTagButton {
+  color: #3399ff;
+}
+
+.modalContentN .removeTagButton {
+  color: #808080;
+}
+
+/* よく使うタグのコンテナ */
+.frequentTagsContainer {
+  margin-bottom: 1rem;
+}
+
+.frequentTagsLabel {
+  font-size: 0.8rem;
+  color: #6B7280;
+  margin-bottom: 0.5rem;
+}
+
+.frequentTagsItems {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  position: relative;
+  min-height: 2rem;
+}
+
+.frequentTagButton {
+  background-color: #EDE9FE;
+  color: #6D28D9;
+  border: none;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  cursor: pointer;
+  
+  /* アニメーション最適化 */
+  transition-property: opacity, background-color;
+  transition-duration: 120ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* GPU支援レンダリング */
+  transform: translateZ(0);
+  will-change: opacity;
+  
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+  display: flex;
+  align-items: center;
+  height: 28px;
+  box-sizing: border-box;
+}
+
+.frequentTagButton:hover:not(:disabled) {
+  background-color: #DDD6FE;
+}
+
+/* 使用回数表示 */
+.tagUsageCount {
+  margin-left: 0.25rem;
+  font-size: 0.65rem;
+  opacity: 0.8;
+}
+
+/* 選択済みタグのスタイル */
+.tagSelected {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* レア度に合わせたスタイル */
+.modalContentUR .frequentTagButton {
+  background-color: rgba(255, 107, 0, 0.2);
+  color: #ff6b00;
+}
+
+.modalContentSR .frequentTagButton {
+  background-color: rgba(204, 51, 255, 0.2);
+  color: #cc33ff;
+}
+
+.modalContentR .frequentTagButton {
+  background-color: rgba(51, 153, 255, 0.2);
+  color: #3399ff;
+}
+
+.modalContentN .frequentTagButton {
+  background-color: rgba(128, 128, 128, 0.2);
+  color: #808080;
+}
+/* #endregion */
+
+/* #region 状態表示（ローディング・エラー・ログイン） */
+/* ローディング関連スタイル */
 .loadingContainer {
   display: flex;
   flex-direction: column;
@@ -611,6 +1147,10 @@
   left: 0;
 }
 
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .loadingIconContainer {
   position: absolute;
   top: 50%;
@@ -639,10 +1179,6 @@
 .loadingSubtext {
   color: #6B7280;
   font-size: 0.9rem;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
 }
 
 /* エラー表示関連のスタイル */
@@ -734,47 +1270,6 @@
   transform: translateY(-1px);
 }
 
-/* 無効な状態のボタン */
-/* button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-} */
-
-.sortButton:disabled,
-.obtainedButton:disabled,
-.loginButton:disabled,
-.retryButton:disabled,
-.resetButton:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-
-/* 未ログイン状態のパロットカード */
-.parrotCard.notLoggedIn {
-  position: relative;
-  cursor: pointer; /* 未ログイン時でもクリック可能に（ログイン促す） */
-  opacity: 0.7;
-}
-
-.lockOverlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: rgba(0, 0, 0, 0.1);
-  border-radius: 0.75rem;
-}
-
-.lockIcon {
-  color: rgba(255, 255, 255, 0.8);
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
-}
-
 /* 検索結果なしの表示 */
 .noResults {
   display: flex;
@@ -804,84 +1299,95 @@
 .resetButton:hover {
   background-color: #7C3AED;
 }
+/* #endregion */
 
-/* ページネーション用のスタイル */
-.paginationContainer {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  margin: 1.5rem 0;
-  padding: 0.75rem 1rem;
-  background: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  gap: 1rem;
-}
-
-.paginationInfo {
-  color: #6B7280;
-  font-size: 0.875rem;
-}
-
-.paginationControls {
-  display: flex;
-  gap: 0.25rem;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.paginationButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 2rem;
-  height: 2rem;
-  padding: 0 0.5rem;
-  background: white;
-  border: 1px solid #E5E7EB;
-  border-radius: 0.25rem;
-  font-size: 0.875rem;
-  color: #4B5563;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.paginationButton:hover:not(.disabled) {
-  background: #F3F4F6;
-  border-color: #D1D5DB;
-}
-
-.paginationButton.active {
-  background: #8B5CF6;
-  color: white;
-  border-color: #8B5CF6;
-}
-
-.paginationButton.disabled {
-  opacity: 0.5;
+/* #region ユーティリティと状態クラス */
+/* 無効な状態のボタン */
+.sortButton:disabled,
+.obtainedButton:disabled,
+.loginButton:disabled,
+.retryButton:disabled,
+.resetButton:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
 }
+/* #endregion */
 
-.itemsPerPageSelector {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: #6B7280;
-  font-size: 0.875rem;
+/* #region レスポンシブデザイン */
+/* 画面サイズに応じた列数の制御 */
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(3, 180px);
+  }
 }
 
-.itemsPerPageSelect {
-  padding: 0.25rem 0.5rem;
-  border: 1px solid #E5E7EB;
-  border-radius: 0.25rem;
-  background: white;
-  font-size: 0.875rem;
-  color: #4B5563;
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(4, 180px);
+  }
 }
 
-/* モバイル用のレスポンシブ対応 */
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(5, 180px);
+  }
+}
+
+@media (min-width: 1280px) {
+  .grid {
+    grid-template-columns: repeat(6, 180px);
+  }
+}
+
+/* モバイル向けフィルターの表示/非表示 */
 @media (max-width: 768px) {
+  .mobileFilterToggle {
+    display: block;
+    margin-bottom: 1rem;
+  }
+  
+  .filterHeader {
+    display: none;
+  }
+  
+  .filterHeader.show {
+    display: flex;
+  }
+
+  .parrotCard:hover {
+    transform: none; /* ホバー効果を無効化 */
+  }
+  
+  /* タップ時のエフェクト */
+  .parrotCard:active {
+    transform: scale(0.98);
+  }
+  
+  /* アニメーションの最適化 */
+  .loadingSpinner {
+    border-width: 3px;
+  }
+  
+  /* 進捗バー */
+  .progressSection {
+    padding: 1rem;
+  }
+  
+  .progressInfo {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+  }
+  
+  .progressLabel {
+    margin-bottom: 0.1rem;
+  }
+  
+  .progressValue {
+    font-size: 1.1rem;
+  }
+
+  /* ページネーション */
   .paginationContainer {
     flex-direction: column;
     gap: 0.75rem;
@@ -894,429 +1400,164 @@
     justify-content: center;
     text-align: center;
   }
+
+  /* モーダルナビゲーション */
+  .modalNavButton {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .modalNavigationWrapper {
+    max-width: 90%;
+    gap: 0.5rem;
+  }
+  
+  .modalContent {
+    padding: 1.5rem;
+  }
 }
 
-/* styles.module.css に以下のタグ関連のスタイルを追加 */
-
-/* タグセクション */
-.tagsSection {
-  margin-top: 1.5rem;
-  background: #f8f9fa;
-  border: 1px solid #e5e7eb;
-  padding: 1rem;
-  border-radius: 0.5rem;
-}
-
-.tagsSection h3 {
-  margin-bottom: 1rem;
-  font-size: 1.1rem;
-  font-weight: bold;
-}
-
-/* タグ入力 */
-.tagInputContainer {
-  display: flex;
-  margin-bottom: 1rem;
-  gap: 0.5rem;
-}
-
-.tagInput {
-  flex: 1;
-  padding: 0.5rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-}
-
-.tagInput:focus {
-  outline: none;
-  border-color: #8B5CF6;
-  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.1);
-}
-
-.addTagButton {
-  padding: 0.5rem 1rem;
-  background-color: #8B5CF6;
-  color: white;
-  border: none;
-  border-radius: 0.375rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.addTagButton:hover:not(:disabled) {
-  background-color: #7C3AED;
-}
-
-.addTagButton:disabled {
-  background-color: #C4B5FD;
-  cursor: not-allowed;
-}
-
-/* タグ表示エリア */
-.tagsContainer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.removeTagButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1rem;
-  height: 1rem;
-  border-radius: 9999px;
-  border: none;
-  background: none;
-  color: #6D28D9;
-  cursor: pointer;
-  font-size: 0.75rem;
-  font-weight: bold;
-  padding: 0;
-  transition: all 0.2s;
-}
-
-.removeTagButton:hover {
-  background-color: #DDD6FE;
-}
-
-.tagError {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: #DC2626;
-  margin-bottom: 0.75rem;
-  padding: 0.5rem;
-  background-color: #FEF2F2;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-}
-
-.noTags {
-  color: #6B7280;
-  font-style: italic;
-  font-size: 0.875rem;
-}
-
-/* レア度に合わせてタグの色を変更（オプション） */
-.modalContentUR .tagItem {
-  background-color: rgba(255, 107, 0, 0.2);
-  color: #ff6b00;
-}
-
-.modalContentSR .tagItem {
-  background-color: rgba(204, 51, 255, 0.2);
-  color: #cc33ff;
-}
-
-.modalContentR .tagItem {
-  background-color: rgba(51, 153, 255, 0.2);
-  color: #3399ff;
-}
-
-.modalContentN .tagItem {
-  background-color: rgba(128, 128, 128, 0.2);
-  color: #808080;
-}
-
-/* レア度に合わせて削除ボタンの色も変更 */
-.modalContentUR .removeTagButton {
-  color: #ff6b00;
-}
-
-.modalContentSR .removeTagButton {
-  color: #cc33ff;
-}
-
-.modalContentR .removeTagButton {
-  color: #3399ff;
-}
-
-.modalContentN .removeTagButton {
-  color: #808080;
-}
-
-/* タグフィルタリング関連のスタイル */
-.tagFilter {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-left: 0.5rem;
-}
-
-.tagFilterLabel {
-  font-size: 0.875rem;
-  color: #4B5563;
-}
-
-.tagFilterSelect {
-  padding: 0.25rem 0.5rem;
-  border: 1px solid #E5E7EB;
-  border-radius: 0.375rem;
-  background: white;
-  font-size: 0.875rem;
-  color: #4B5563;
-  max-width: 180px;
-}
-
-.clearTagFilterButton {
-  padding: 0.25rem 0.5rem;
-  background-color: #EEE;
-  border: none;
-  border-radius: 0.375rem;
-  font-size: 0.75rem;
-  color: #4B5563;
-  cursor: pointer;
-}
-
-.clearTagFilterButton:hover {
-  background-color: #E5E7EB;
-}
-
-/* パロットカード内のタグ表示 */
-.cardTagsContainer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-  margin-top: 0.25rem;
-  justify-content: center;
-}
-
-.cardTagItem {
-  background-color: rgba(139, 92, 246, 0.1);
-  color: #8B5CF6;
-  padding: 0.125rem 0.375rem;
-  border-radius: 9999px;
-  font-size: 0.625rem;
-  max-width: 70px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.moreTagsBadge {
-  background-color: rgba(107, 114, 128, 0.1);
-  color: #6B7280;
-  padding: 0.125rem 0.375rem;
-  border-radius: 9999px;
-  font-size: 0.625rem;
-}
-
-/* レア度に合わせてタグの色を変更 */
-.rarityUR .cardTagItem {
-  background-color: rgba(255, 107, 0, 0.1);
-  color: #ff6b00;
-}
-
-.raritySR .cardTagItem {
-  background-color: rgba(204, 51, 255, 0.1);
-  color: #cc33ff;
-}
-
-.rarityR .cardTagItem {
-  background-color: rgba(51, 153, 255, 0.1);
-  color: #3399ff;
-}
-
-.rarityN .cardTagItem {
-  background-color: rgba(128, 128, 128, 0.1);
-  color: #808080;
-}
-
-/* レスポンシブ対応 */
+/* タブレット・モバイル向けフィルターの調整 */
 @media (max-width: 768px) {
+  /* フィルターヘッダー全体を縦並びに */
+  .filterHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  /* 検索ボックスを幅いっぱいに */
+  .searchBox {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* 各ボタングループを横いっぱいに */
+  .sortButtons,
+  .obtainedFilter,
+  .rarityFilter {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px; /* スクロールバー用の余白 */
+  }
+
+  /* ソートボタンのサイズと間隔調整 */
+  .sortButton {
+    flex: 1;
+    min-width: auto;
+    font-size: 12px;
+    padding: 8px 6px;
+    white-space: nowrap;
+    text-align: center;
+    margin: 0 2px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* 獲得済みボタンを幅いっぱいに */
+  .obtainedButton {
+    width: 100%;
+    justify-content: center;
+    padding: 8px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+  }
+
+  /* タップエリアを十分な大きさに確保 */
+  .sortButton,
+  .rarityButton,
+  .obtainedButton {
+    min-height: 40px;
+  }
+
+  /* フィルターセクション内の余白調整 */
+  .filterSection {
+    margin: 1rem 0;
+  }
+
+  /* タグフィルターも幅いっぱいに */
   .tagFilter {
     width: 100%;
-    margin-top: 0.5rem;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: stretch;
+    margin-top: 12px;
   }
-  
+
+  .tagFilterLabel {
+    margin-bottom: 6px;
+  }
+
   .tagFilterSelect {
-    flex: 1;
+    width: 100%;
+    max-width: 100%;
+    padding: 8px;
   }
-}
 
-/* モーダルナビゲーションのスタイル */
-.modalNavigationWrapper {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  max-width: 800px; /* モーダルより少し広く */
-  gap: 1rem;
-}
+  .clearTagFilterButton {
+    margin-top: 6px;
+    width: 100%;
+    padding: 8px;
+  }
 
-.modalNavButton {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.9);
-  border: 1px solid #ddd;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  z-index: 1001; /* モーダルより前面に */
-  flex-shrink: 0; /* ボタンサイズを固定 */
-}
-
-.modalNavButton:hover {
-  background-color: white;
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.modalNavButton:active {
-  transform: scale(0.98);
-}
-
-/* モーダルオーバーレイとモーダルコンテンツの修正 */
-.modalOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-
-/* レア度に応じたナビゲーションボタンの色調整 */
-.modalContentUR + .modalNavButton,
-.modalContentUR ~ .modalNavButton {
-  color: #FF6B00;
-}
-
-.modalContentSR + .modalNavButton,
-.modalContentSR ~ .modalNavButton {
-  color: #CC33FF;
-}
-
-.modalContentR + .modalNavButton,
-.modalContentR ~ .modalNavButton {
-  color: #3399FF;
-}
-
-.modalContentN + .modalNavButton,
-.modalContentN ~ .modalNavButton {
-  color: #808080;
-}
-
-/* モバイル向け調整 */
-@media (max-width: 768px) {
-  .modalNavButton {
-    width: 40px;
-    height: 40px;
+  /* タップしやすいようにタグサイズ調整 */
+  .cardTagsContainer {
+    gap: 0.15rem;
+    margin-top: 0.15rem;
   }
   
-  .modalNavigationWrapper {
-    max-width: 90%;
+  .cardTagItem {
+    padding: 0.1rem 0.25rem;
+    font-size: 0.55rem;
+    max-width: 55px;
+  }
+  
+  .moreTagsBadge {
+    padding: 0.1rem 0.25rem;
+    font-size: 0.55rem;
+  }
+  
+  /* モーダル内のタグサイズも調整 */
+  .tagsContainer {
+    gap: 0.3rem;
+  }
+  
+  .tagItem {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.7rem;
+  }
+  
+  .removeTagButton {
+    width: 0.8rem;
+    height: 0.8rem;
+    font-size: 0.65rem;
+  }
+
+  /* ログインバナーの調整 */
+  .loginBanner {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
+  
+  .loginMessage {
+    width: 100%;
+    text-align: center;
+    flex-direction: column;
     gap: 0.5rem;
   }
   
-  .modalContent {
-    padding: 1.5rem;
+  .loginButton {
+    width: 100%;
+    padding: 0.75rem;
   }
 }
 
-/* モーダルナビゲーションのスタイル */
-.modalNavigationWrapper {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  max-width: 800px; /* モーダルより少し広く */
-  gap: 1rem;
-}
-
-.modalNavButton {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.9);
-  border: 1px solid #ddd;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  z-index: 1001; /* モーダルより前面に */
-  flex-shrink: 0; /* ボタンサイズを固定 */
-}
-
-.modalNavButton:hover {
-  background-color: white;
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.modalNavButton:active {
-  transform: scale(0.98);
-}
-
-/* モーダルオーバーレイとモーダルコンテンツの修正 */
-.modalOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-
-/* レア度に応じたナビゲーションボタンの色調整 */
-.modalContentUR + .modalNavButton,
-.modalContentUR ~ .modalNavButton {
-  color: #FF6B00;
-}
-
-.modalContentSR + .modalNavButton,
-.modalContentSR ~ .modalNavButton {
-  color: #CC33FF;
-}
-
-.modalContentR + .modalNavButton,
-.modalContentR ~ .modalNavButton {
-  color: #3399FF;
-}
-
-.modalContentN + .modalNavButton,
-.modalContentN ~ .modalNavButton {
-  color: #808080;
-}
-
-/* モバイル向け調整 */
-@media (max-width: 768px) {
-  .modalNavButton {
-    width: 40px;
-    height: 40px;
-  }
-  
-  .modalNavigationWrapper {
-    max-width: 90%;
-    gap: 0.5rem;
-  }
-  
-  .modalContent {
-    padding: 1.5rem;
-  }
-}
-
-/* styles.module.css に追加 */
+/* モバイル向け（小画面）の追加調整 */
 @media (max-width: 480px) {
   .filterHeader {
     flex-direction: column;
@@ -1390,14 +1631,25 @@
     font-size: 0.7rem;
   }
   
-  .cardTagsContainer {
-    margin-top: 0.15rem;
-  }
-  
+  /* カード内のタグをより小さく */
   .cardTagItem, 
   .moreTagsBadge {
+    padding: 0.05rem 0.15rem;
+    font-size: 0.45rem;
+    max-width: 40px;
+  }
+  
+  /* モーダル内のタグも極小サイズに */
+  .tagItem {
     padding: 0.1rem 0.25rem;
-    font-size: 0.6rem;
+    font-size: 0.58rem;
+  }
+  
+  .removeTagButton {
+    width: 0.65rem;
+    height: 0.65rem;
+    font-size: 0.58rem;
+    min-height: auto; /* hover: none メディアクエリの設定を上書き */
   }
 
   .modalContent {
@@ -1496,66 +1748,48 @@
     width: 100%;
     justify-content: center;
   }
-}
 
-/* styles.module.css に追加 */
-@media (max-width: 680px) {
-  .loginBanner {
-    flex-direction: column;
-    gap: 1rem;
-    padding: 1rem;
+  /* 小さな画面用のさらなる調整 */
+  .modalNavButtonLeft {
+    left: -8px;
   }
   
-  .loginMessage {
-    width: 100%;
-    text-align: center;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  
-  .loginButton {
-    width: 100%;
-    padding: 0.75rem;
+  .modalNavButtonRight {
+    right: -8px;
   }
 }
 
-/* styles.module.css に追加 */
-@media (max-width: 768px) {
-  .parrotCard:hover {
-    transform: none; /* ホバー効果を無効化 */
-  }
-  
-  /* タップ時のエフェクト */
-  .parrotCard:active {
-    transform: scale(0.98);
-  }
-  
-  /* アニメーションの最適化 */
-  .loadingSpinner {
-    border-width: 3px;
-  }
-  
-  /* 進捗バー */
-  .progressSection {
-    padding: 1rem;
-  }
-  
-  .progressInfo {
-    flex-direction: column;
-    align-items: flex-start;
-    margin-bottom: 0.5rem;
-  }
-  
-  .progressLabel {
-    margin-bottom: 0.1rem;
-  }
-  
-  .progressValue {
-    font-size: 1.1rem;
+/* 超小型画面向けの調整 */
+@media (max-width: 360px) {
+  .sortButton,
+  .rarityButton {
+    font-size: 10px;
+    padding: 6px 4px;
   }
 }
 
-/* styles.module.css に追加 */
+/* 画面サイズが非常に小さい場合の極小調整 */
+@media (max-width: 320px) {
+  .cardTagItem, 
+  .moreTagsBadge {
+    padding: 0.03rem 0.1rem;
+    font-size: 0.4rem;
+    max-width: 32px;
+  }
+  
+  .tagItem {
+    padding: 0.08rem 0.18rem;
+    font-size: 0.5rem;
+  }
+  
+  .removeTagButton {
+    width: 0.6rem;
+    height: 0.6rem;
+    font-size: 0.5rem;
+  }
+}
+
+/* タッチデバイス向け最適化 */
 @media (hover: none) {
   /* ホバー状態を無効化し、アクティブ状態（タップ時）に置き換え */
   .parrotCard:hover {
@@ -1593,907 +1827,4 @@
     justify-content: center;
   }
 }
-
-/* styles.module.css に追加 */
-.mobileFilterToggle {
-  display: none;
-}
-
-.filterToggleButton {
-  width: 100%;
-  padding: 0.75rem;
-  background-color: #8B5CF6;
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  font-weight: 500;
-  cursor: pointer;
-  text-align: center;
-}
-
-@media (max-width: 768px) {
-  .mobileFilterToggle {
-    display: block;
-    margin-bottom: 1rem;
-  }
-  
-  .filterHeader {
-    display: none;
-  }
-  
-  .filterHeader.show {
-    display: flex;
-  }
-}
-
-/**
- * styles.module.css に追加するコード
- * タグサイズのレスポンシブ対応：タブレットとモバイル向けの調整
- */
-
-/* styles.module.css ファイル末尾に以下のコードを追加する */
-
-/* タグサイズの追加調整 - 既存のメディアクエリと合わせて適用 */
-@media (max-width: 768px) {
-  /* カード内のタグ表示サイズを縮小 */
-  .cardTagsContainer {
-    gap: 0.15rem;
-    margin-top: 0.15rem;
-  }
-  
-  .cardTagItem {
-    padding: 0.1rem 0.25rem;
-    font-size: 0.55rem;
-    max-width: 55px;
-  }
-  
-  .moreTagsBadge {
-    padding: 0.1rem 0.25rem;
-    font-size: 0.55rem;
-  }
-  
-  /* モーダル内のタグサイズも調整 */
-  .tagsContainer {
-    gap: 0.3rem;
-  }
-  
-  .tagItem {
-    padding: 0.2rem 0.4rem;
-    font-size: 0.7rem;
-  }
-  
-  .removeTagButton {
-    width: 0.8rem;
-    height: 0.8rem;
-    font-size: 0.65rem;
-  }
-}
-
-/* スマホ向けのさらなる調整 - 既存の480px設定を補完 */
-@media (max-width: 480px) {
-  /* カード内のタグをより小さく */
-  .cardTagItem, 
-  .moreTagsBadge {
-    padding: 0.05rem 0.15rem;
-    font-size: 0.45rem;
-    max-width: 40px;
-  }
-  
-  /* モーダル内のタグも極小サイズに */
-  .tagItem {
-    padding: 0.1rem 0.25rem;
-    font-size: 0.58rem;
-  }
-  
-  .removeTagButton {
-    width: 0.65rem;
-    height: 0.65rem;
-    font-size: 0.58rem;
-    min-height: auto; /* hover: none メディアクエリの設定を上書き */
-  }
-}
-
-/* 画面サイズが非常に小さい場合の極小調整 */
-@media (max-width: 320px) {
-  .cardTagItem, 
-  .moreTagsBadge {
-    padding: 0.03rem 0.1rem;
-    font-size: 0.4rem;
-    max-width: 32px;
-  }
-  
-  .tagItem {
-    padding: 0.08rem 0.18rem;
-    font-size: 0.5rem;
-  }
-  
-  .removeTagButton {
-    width: 0.6rem;
-    height: 0.6rem;
-    font-size: 0.5rem;
-  }
-}
-
-/* CollectionPreview/styles.module.css に追加するスタイル */
-
-/* モーダル全体のコンテンツラッパーを修正 */
-.modalNavigationWrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  max-width: 700px;
-}
-
-/* ナビゲーションボタンのスタイルを修正 */
-.modalNavButton {
-  width: 55px;
-  height: 55px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.9);
-  border: 1px solid #ddd;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  z-index: 51; /* モーダルより前面に */
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #4a5568;
-}
-
-.modalNavButtonLeft {
-  left: -20px;
-}
-
-.modalNavButtonRight {
-  right: -20px;
-}
-
-.modalNavButton:hover:not(:disabled) {
-  background-color: white;
-  transform: translateY(-50%) scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.modalNavButton:active:not(:disabled) {
-  transform: translateY(-50%) scale(0.98);
-}
-
-.modalNavButton:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  background-color: rgba(229, 231, 235, 0.8);
-}
-
-
-/* モバイル向け調整 */
-@media (max-width: 768px) {
-  .modalNavButton {
-    width: 50px;
-    height: 50px;
-  }
-  
-  .modalNavButtonLeft {
-    left: -25px;
-  }
-  
-  .modalNavButtonRight {
-    right: -25px;
-  }
-  
-  .modalContent {
-    padding: 20px;
-    max-width: 90%;
-  }
-}
-
-/* 小さいモバイルでさらに調整 */
-@media (max-width: 480px) {
-  .modalNavigationWrapper {
-    width: 95%;
-  }
-  
-  .modalNavButton {
-    width: 45px;
-    height: 45px;
-  }
-  
-  .modalNavButtonLeft {
-    left: -8px;
-  }
-  
-  .modalNavButtonRight {
-    right: -8px;
-  }
-  
-  .modalContent {
-    padding: 16px;
-  }
-}
-
-/* styles.module.css ファイルの末尾に追加 */
-
-/* よく使うタグのコンテナ */
-.frequentTagsContainer {
-  margin-bottom: 1rem;
-}
-
-.frequentTagsLabel {
-  font-size: 0.8rem;
-  color: #6B7280;
-  margin-bottom: 0.5rem;
-}
-
-.frequentTagsItems {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.375rem;
-}
-
-.frequentTagButton {
-  background-color: #EDE9FE;
-  color: #6D28D9;
-  border: none;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.75rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 150px;
-}
-
-.frequentTagButton:hover:not(:disabled) {
-  background-color: #DDD6FE;
-}
-
-.frequentTagButton:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  position: relative;
-}
-
-/* 追加済みタグのスタイル */
-.tagAlreadyAdded {
-  position: relative;
-}
-
-.tagAlreadyAdded:after {
-  content: "✓";
-  position: absolute;
-  right: 0.4rem;
-  font-size: 0.7rem;
-}
-
-/* レア度に合わせたスタイル */
-.modalContentUR .frequentTagButton {
-  background-color: rgba(255, 107, 0, 0.2);
-  color: #ff6b00;
-}
-
-.modalContentSR .frequentTagButton {
-  background-color: rgba(204, 51, 255, 0.2);
-  color: #cc33ff;
-}
-
-.modalContentR .frequentTagButton {
-  background-color: rgba(51, 153, 255, 0.2);
-  color: #3399ff;
-}
-
-.modalContentN .frequentTagButton {
-  background-color: rgba(128, 128, 128, 0.2);
-  color: #808080;
-}
-
-/* レスポンシブ対応 */
-@media (max-width: 768px) {
-  .frequentTagsItems {
-    gap: 0.25rem;
-  }
-  
-  .frequentTagButton {
-    font-size: 0.7rem;
-    padding: 0.2rem 0.5rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .frequentTagButton {
-    font-size: 0.65rem;
-    padding: 0.15rem 0.4rem;
-    max-width: 120px;
-  }
-  
-  .tagAlreadyAdded:after {
-    right: 0.3rem;
-    font-size: 0.6rem;
-  }
-}
-
-/* よく使うタグのコンテナ */
-.frequentTagsContainer {
-  margin-bottom: 1rem;
-}
-
-.frequentTagsLabel {
-  font-size: 0.8rem;
-  color: #6B7280;
-  margin-bottom: 0.5rem;
-}
-
-.frequentTagsItems {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.375rem;
-}
-
-.frequentTagButton {
-  background-color: #EDE9FE;
-  color: #6D28D9;
-  border: none;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.75rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 150px;
-  display: flex;
-  align-items: center;
-}
-
-.frequentTagButton:hover:not(:disabled) {
-  background-color: #DDD6FE;
-}
-
-.frequentTagButton:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* 使用回数表示 */
-.tagUsageCount {
-  margin-left: 0.25rem;
-  font-size: 0.65rem;
-  opacity: 0.8;
-}
-
-/* 選択済みタグのスタイル - チェックマークなし、薄くなるだけ */
-.tagSelected {
-  opacity: 0.5;
-}
-
-/* レア度に合わせたスタイル */
-.modalContentUR .frequentTagButton {
-  background-color: rgba(255, 107, 0, 0.2);
-  color: #ff6b00;
-}
-
-.modalContentSR .frequentTagButton {
-  background-color: rgba(204, 51, 255, 0.2);
-  color: #cc33ff;
-}
-
-.modalContentR .frequentTagButton {
-  background-color: rgba(51, 153, 255, 0.2);
-  color: #3399ff;
-}
-
-.modalContentN .frequentTagButton {
-  background-color: rgba(128, 128, 128, 0.2);
-  color: #808080;
-}
-
-/* レスポンシブ対応 */
-@media (max-width: 768px) {
-  .frequentTagsItems {
-    gap: 0.25rem;
-  }
-  
-  .frequentTagButton {
-    font-size: 0.7rem;
-    padding: 0.2rem 0.5rem;
-  }
-  
-  .tagUsageCount {
-    font-size: 0.6rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .frequentTagButton {
-    font-size: 0.65rem;
-    padding: 0.15rem 0.4rem;
-    max-width: 120px;
-  }
-  
-  .tagUsageCount {
-    font-size: 0.55rem;
-  }
-}
-
-/* styles.module.cssに追加 */
-.frequentTagButton {
-  background-color: #EDE9FE;
-  color: #6D28D9;
-  border: none;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.75rem;
-  cursor: pointer;
-  transition: opacity 0.15s ease, background-color 0.2s ease; /* トランジションを滑らかに */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 150px;
-  display: flex;
-  align-items: center;
-}
-
-.tagSelected {
-  opacity: 0.5;
-  pointer-events: none; /* クリックイベントを無効化 */
-}
-
-/* タグ選択トランジションを滑らかに */
-.frequentTagsItems button {
-  transition: all 0.15s ease;
-}
-
-/* よく使うタグのアニメーション最適化 */
-.frequentTagButton {
-  transition: opacity 0.2s ease, background-color 0.2s ease;
-  will-change: opacity, background-color; /* ブラウザに変更を事前に通知 */
-  /* 既存のスタイル */
-}
-
-/* タグの選択状態のトランジション */
-.tagSelected {
-  opacity: 0.5;
-  pointer-events: none; /* 選択中は再クリック不可 */
-  transition: opacity 0.2s ease;
-}
-
-/* アニメーション最適化のための追加スタイル */
-.tagsContainer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  min-height: 2rem; /* 最小の高さを設定してレイアウトシフトを防止 */
-}
-
-/* 全体のトランジションを最適化 */
-.tagItem, .frequentTagButton {
-  will-change: opacity, transform, background-color;
-  backface-visibility: hidden; /* GPUアクセラレーションを促進 */
-  transform: translateZ(0); /* GPUアクセラレーションを促進 */
-}
-
-/* ドキュメントフローを維持するためのプレースホルダー */
-.tagsContainer::after {
-  content: "";
-  flex: 999;
-  height: 0;
-}
-
-/* 以下をstyles.module.cssに追加 */
-
-/* タグコンテナのレイアウト安定性を向上 */
-.frequentTagsItems {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.375rem;
-  position: relative;
-  min-height: 2rem;
-}
-
-/* タグボタンのスタイル最適化 */
-.frequentTagButton {
-  background-color: #EDE9FE;
-  color: #6D28D9;
-  border: none;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.75rem;
-  cursor: pointer;
-  
-  /* アニメーション最適化 */
-  transition-property: opacity, background-color;
-  transition-duration: 120ms;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  
-  /* GPU支援レンダリング */
-  transform: translateZ(0);
-  will-change: opacity;
-  
-  /* 既存のスタイル */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 150px;
-  display: flex;
-  align-items: center;
-}
-
-/* 選択済みタグのスタイル */
-.tagSelected {
-  opacity: 0.5;
-  pointer-events: none;
-}
-
-/* タグコンテナのレイアウト安定性を確保 */
-.tagsContainer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  position: relative;
-  min-height: 2rem;
-  padding: 0.1rem 0;
-}
-
-/* コンテナ内のアニメーション用プレースホルダー */
-.tagsContainer::after {
-  content: "";
-  flex: 999;
-  height: 0;
-}
-
-/**
- * タグアイテムのスタイル最適化
- */
- .tagItem {
-  display: inline-flex;
-  align-items: center;
-  background-color: #EDE9FE;
-  color: #6D28D9;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  max-width: 100%;
-  overflow: hidden;
-  padding: 0;
-  cursor: pointer; /* タグ全体をクリック可能に */
-  height: 28px; /* 一貫した高さを設定 - 未付与タグと同じ高さに */
-  box-sizing: border-box;
-  transition: background-color 0.2s;
-}
-
-.tagItem:hover {
-  background-color: #DDD6FE; /* ホバー時の背景色変更 */
-}
-
-/* 削除ボタンを視覚的に表現するだけにする */
-.removeTagButton {
-  display: none; /* 実際のボタンは非表示にする */
-}
-
-/* 削除アイコンをタグの右側に表示 */
-.tagText {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 120px;
-  padding: 0.25rem 0.75rem 0.25rem 0.5rem; /* 右側に余白を増やす */
-  position: relative; /* 相対位置指定 */
-}
-
-/* タグアイテムがホバーされたときに×マークをはっきり表示 */
-.tagItem:hover .tagText::after {
-  opacity: 1;
-}
-
-/* よく使うタグボタンの高さも一貫させる */
-.frequentTagButton {
-  height: 28px;
-  box-sizing: border-box;
-}
-
-/* モバイル対応の調整 */
-@media (max-width: 768px) {
-  .tagItem, .frequentTagButton {
-    height: 26px; /* タブレット向けに少し小さく */
-  }
-}
-
-@media (max-width: 480px) {
-  .tagItem, .frequentTagButton {
-    height: 22px; /* モバイル向けにさらに小さく */
-  }
-}
-
-/* タグのテキスト部分 */
-.tagText {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 120px;  /* タグの最大幅を制限 */
-  padding: 0.25rem 0.5rem;  /* 左右のパディングを調整 */
-}
-
-/* 削除ボタンのスタイル最適化 */
-.removeTagButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.1rem;  /* 幅を小さく設定 */
-  height: 1.1rem;  /* 高さを小さく設定 */
-  min-width: 1.1rem;  /* 最小幅を固定して縮小を防止 */
-  border: none;
-  background-color: transparent;
-  color: inherit;  /* 親要素と同じ色を使用 */
-  cursor: pointer;
-  font-size: 0.7rem;  /* フォントサイズを小さく */
-  padding: 0;
-  margin: 0;
-  border-top-right-radius: 9999px;
-  border-bottom-right-radius: 9999px;
-}
-
-.removeTagButton:hover {
-  background-color: rgba(0, 0, 0, 0.05);  /* ホバー時の背景色を微妙に変更 */
-}
-
-/* レアリティボタンの基本スタイル */
-.rarityFilter {
-  justify-content: space-between;
-}
-
-.rarityButton {
-  flex: 1;
-  min-width: auto;
-  font-size: 12px;
-  padding: 8px 6px;
-  white-space: nowrap;
-  text-align: center;
-  margin: 0 2px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: all 0.2s ease;
-}
-
-/* モバイル向けフィルター修正 */
-@media (max-width: 640px) {
-  /* フィルターヘッダー全体を縦並びに */
-  .filterHeader {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-
-  /* 検索ボックスを幅いっぱいに */
-  .searchBox {
-    width: 100%;
-    max-width: 100%;
-  }
-
-  /* 各ボタングループを横いっぱいに */
-  .sortButtons,
-  .obtainedFilter,
-  .rarityFilter {
-    width: 100%;
-    justify-content: space-between;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    padding-bottom: 4px; /* スクロールバー用の余白 */
-  }
-
-  /* ソートボタンのサイズと間隔調整 */
-  .sortButton {
-    flex: 1;
-    min-width: auto;
-    font-size: 12px;
-    padding: 8px 6px;
-    white-space: nowrap;
-    text-align: center;
-    margin: 0 2px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  /* レアリティボタン色の設定 */
-  .rarityButton.active {
-    background: #8b5cf6;
-    color: white;
-    border-color: #8b5cf6;
-  }
-
-  /* 全レアリティボタンはアクティブ時の紫色を維持 */
-  .rarityButton[data-rarity="all"].active {
-    background: #8b5cf6;
-    color: white;
-    border-color: #8b5cf6;
-  }
-
-  /* N(ノーマル)レアリティの色 - グレー */
-  .rarityButton[data-rarity="N"] {
-    border-color: #808080;
-  }
-  .rarityButton[data-rarity="N"].active {
-    background: #808080;
-    color: white;
-    border-color: #808080;
-  }
-
-  /* R(レア)レアリティの色 - 青 */
-  .rarityButton[data-rarity="R"] {
-    border-color: #3399FF;
-  }
-  .rarityButton[data-rarity="R"].active {
-    background: #3399FF;
-    color: white;
-    border-color: #3399FF;
-  }
-
-  /* SR(スーパーレア)レアリティの色 - 紫 */
-  .rarityButton[data-rarity="SR"] {
-    border-color: #CC33FF;
-  }
-  .rarityButton[data-rarity="SR"].active {
-    background: #CC33FF;
-    color: white;
-    border-color: #CC33FF;
-  }
-
-  /* UR(ウルトラレア)レアリティの色 - オレンジ */
-  .rarityButton[data-rarity="UR"] {
-    border-color: #FF6B00;
-  }
-  .rarityButton[data-rarity="UR"].active {
-    background: #FF6B00;
-    color: white;
-    border-color: #FF6B00;
-  }
-
-  /* 獲得済みボタンを幅いっぱいに */
-  .obtainedButton {
-    width: 100%;
-    justify-content: center;
-    padding: 8px;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-  }
-
-  /* タップエリアを十分な大きさに確保 */
-  .sortButton,
-  .rarityButton,
-  .obtainedButton {
-    min-height: 40px;
-  }
-
-  /* フィルターセクション内の余白調整 */
-  .filterSection {
-    margin: 1rem 0;
-  }
-
-  /* タグフィルターも幅いっぱいに */
-  .tagFilter {
-    width: 100%;
-    flex-direction: column;
-    align-items: stretch;
-    margin-top: 12px;
-  }
-
-  .tagFilterLabel {
-    margin-bottom: 6px;
-  }
-
-  .tagFilterSelect {
-    width: 100%;
-    max-width: 100%;
-    padding: 8px;
-  }
-
-  .clearTagFilterButton {
-    margin-top: 6px;
-    width: 100%;
-    padding: 8px;
-  }
-
-  .rarityFilter {
-    justify-content: space-between;
-  }
-
-  .rarityButton {
-    flex: 1;
-    min-width: auto;
-    font-size: 12px;
-    padding: 8px 6px;
-    white-space: nowrap;
-    text-align: center;
-    margin: 0 2px;
-  }
-}
-
-/* 非常に小さい画面サイズ向けの追加調整 */
-@media (max-width: 360px) {
-  .sortButton,
-  .rarityButton {
-    font-size: 10px;
-    padding: 6px 4px;
-  }
-}
-
-/* レアリティボタンの基本スタイル - PCとモバイル共通 */
-.rarityButton {
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  border: 1px solid #e5e7eb;
-  background: white;
-  font-size: 0.875rem;
-  color: #4b5563;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 60px;
-}
-
-.rarityButton:hover {
-  background: #f3f4f6;
-}
-
-/* すべてのレアリティボタンの共通アクティブスタイル */
-.rarityButton.active {
-  background: #8b5cf6;
-  color: white;
-  border-color: #8b5cf6;
-}
-
-/* 「全レアリティ」以外のレアリティ固有のアクティブスタイル */
-/* N(ノーマル)レアリティの色 - グレー */
-.rarityButton[data-rarity="N"],
-.rarityButton[data-rarity="N"]:hover {
-  border-color: #808080;
-}
-.rarityButton[data-rarity="N"].active {
-  background: #808080;
-  color: white;
-  border-color: #808080;
-}
-
-/* R(レア)レアリティの色 - 青 */
-.rarityButton[data-rarity="R"],
-.rarityButton[data-rarity="R"]:hover {
-  border-color: #3399FF;
-}
-.rarityButton[data-rarity="R"].active {
-  background: #3399FF;
-  color: white;
-  border-color: #3399FF;
-}
-
-/* SR(スーパーレア)レアリティの色 - 紫 */
-.rarityButton[data-rarity="SR"],
-.rarityButton[data-rarity="SR"]:hover {
-  border-color: #CC33FF;
-}
-.rarityButton[data-rarity="SR"].active {
-  background: #CC33FF;
-  color: white;
-  border-color: #CC33FF;
-}
-
-/* UR(ウルトラレア)レアリティの色 - オレンジ */
-.rarityButton[data-rarity="UR"],
-.rarityButton[data-rarity="UR"]:hover {
-  border-color: #FF6B00;
-}
-.rarityButton[data-rarity="UR"].active {
-  background: #FF6B00;
-  color: white;
-  border-color: #FF6B00;
-}
+/* #endregion */
