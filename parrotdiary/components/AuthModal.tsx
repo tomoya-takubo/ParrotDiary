@@ -11,6 +11,7 @@ import { Database } from '../types/supabase';
 import { Eye, EyeOff } from 'lucide-react';
 //#endregion
 
+//#region 型定義
 type AuthModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -18,30 +19,202 @@ type AuthModalProps = {
 
 type ModalMode = 'signin' | 'signup' | 'reset';
 
+type FormFeedback = {
+  type: 'success' | 'error';
+  message: string;
+} | null;
+//#endregion
+
+/**
+ * 認証モーダルコンポーネント
+ * 
+ * ログイン、アカウント作成、パスワードリセットの機能を提供するモーダルウィンドウです。
+ * Supabaseの認証システムと連携して動作します。
+ * 
+ * @param {boolean} isOpen - モーダルの表示状態
+ * @param {Function} onClose - モーダルを閉じる際のコールバック関数
+ */
 export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   // Supabaseクライアントの初期化
   const supabase = createClientComponentClient<Database>();
   const router = useRouter();
 
-  //#region フォームの状態を管理
+  //#region 状態管理
+  // モーダルの状態
   const [modalMode, setModalMode] = useState<ModalMode>('signin');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [emailError, setEmailError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [globalLoading, setGlobalLoading] = useState(false);
   const [isProcessingSuccess, setIsProcessingSuccess] = useState(false);
-  const [formFeedback, setFormFeedback] = useState<{
-    type: 'success' | 'error';
-    message: string;
-  } | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // フォームの状態
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  
+  // エラーとフィードバック
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [formFeedback, setFormFeedback] = useState<FormFeedback>(null);
   //#endregion
 
-  //#region 認証処理メイン関数
+  //#region DOM参照
+  const emailInputRef = useRef<HTMLInputElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+  //#endregion
+
+  //#region バリデーション関数
+  /**
+   * メールアドレスのバリデーション
+   * @param {string} email - 検証するメールアドレス
+   * @returns {boolean} - 検証結果
+   */
+  const validateEmail = (email: string) => {
+    const validation = validateEmailFormat(email);
+    setEmailError(validation.message);
+    return validation.isValid;
+  };
+
+  /**
+   * パスワード強度のバリデーション
+   * @param {string} pass - 検証するパスワード
+   * @returns {boolean} - 検証結果
+   */
+  const validatePassword = (pass: string) => {
+    const validation = validatePasswordStrength(pass);
+    setPasswordError(validation.message);
+    return validation.isValid;
+  };
+
+  /**
+   * パスワードと確認用パスワードの一致検証
+   * @returns {boolean} - 検証結果
+   */
+  const validatePasswordMatch = () => {
+    if (password !== confirmPassword) {
+      setPasswordError('パスワードと確認用パスワードが一致しません');
+      return false;
+    }
+    return true;
+  };
+
+  /**
+   * エラーメッセージの日本語変換
+   * @param {string} error - 英語のエラーメッセージ
+   * @returns {string} - 日本語のエラーメッセージ
+   */
+  const translateAuthError = (error: string): string => {
+    // 一般的なSupabaseのエラーメッセージを日本語に変換
+    const errorMap: { [key: string]: string } = {
+      'Invalid login credentials': 'メールアドレスまたはパスワードが正しくありません',
+      'Email not confirmed': 'メールアドレスが未確認です。確認メールをご確認ください',
+      'User already registered': 'このメールアドレスは既に登録されています',
+      'Password should be at least 6 characters': 'パスワードは6文字以上である必要があります',
+      'Email format is invalid': 'メールアドレスの形式が正しくありません',
+      'Password recovery requires an email': 'パスワード回復にはメールアドレスが必要です',
+      'Rate limit exceeded': 'リクエスト回数の上限に達しました。しばらく経ってからお試しください',
+      'User not found': 'ユーザーが見つかりません',
+      'Too Many Requests': 'リクエスト回数の上限に達しました。しばらく経ってからお試しください',
+    };
+
+    return errorMap[error] || 'エラーが発生しました。もう一度お試しください';
+  };
+  //#endregion
+
+  //#region ユーティリティ関数
+  /**
+   * 現在時刻を日本時間（JST）で取得
+   * @returns {string} - ISO形式の日本時間
+   */
+  const getCurrentJSTTime = () => {
+    const now = new Date();
+    // 日本時間に調整（UTC+9）
+    now.setHours(now.getHours() + 9);
+    return now.toISOString();
+  };
+
+  /**
+   * フォームに入力があるか確認
+   * @returns {boolean} - 入力があるかどうか
+   */
+  const hasFormInput = useCallback(() => {
+    if (modalMode === 'reset') {
+      return email.length > 0;
+    }
+    return email.length > 0 || password.length > 0 ||
+      (modalMode === 'signup' && confirmPassword.length > 0);
+  }, [email, password, confirmPassword, modalMode]);
+  //#endregion
+
+  //#region モーダル操作関数
+  /**
+   * モーダルを閉じる前の確認
+   * @returns {boolean} - 閉じてよいかどうか
+   */
+  const confirmClose = useCallback((): boolean => {
+    // 成功処理中は閉じれないように
+    if (isProcessingSuccess) return false;
+    
+    // `hasFormInput` の結果を取得してから判定する
+    if (!hasFormInput()) return true;
+    return window.confirm('入力内容が破棄されます。よろしいですか？');
+  }, [hasFormInput, isProcessingSuccess]);
+
+  /**
+   * モーダルを閉じる処理
+   */
+  const handleClose = useCallback(() => {
+    if (confirmClose()) {
+      setIsVisible(false);
+      setTimeout(() => {
+        onClose();
+        resetForm();
+      }, 200);
+    }
+  }, [confirmClose, onClose]);
+
+  /**
+   * オーバーレイクリックのハンドラ
+   * @param {React.MouseEvent<HTMLDivElement>} e - クリックイベント
+   */
+  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (isProcessingSuccess || isLoading) return;
+
+    if (e.target === e.currentTarget) {
+      handleClose();
+    }
+  };
+
+  /**
+   * モーダルの表示モード切り替え時にフォームをリセット
+   * @param {ModalMode} mode - 新しいモーダルモード
+   */
+  const handleModeChange = (mode: ModalMode) => {
+    setModalMode(mode);
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
+    setPasswordError('');
+    setEmailError('');
+    setFormFeedback(null);
+  };
+
+  /**
+   * フォームの状態をリセット
+   */
+  const resetForm = () => {
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
+    setPasswordError('');
+    setEmailError('');
+    setFormFeedback(null);
+    setModalMode('signin');
+  };
+  //#endregion
+
+  //#region 認証処理関数
   /**
    * 認証フォーム送信時の処理を担当するメインハンドラー
    * 
@@ -52,47 +225,14 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
    * 各処理では適切な入力検証を行い、Supabase認証およびデータベース操作を実行します。
    * エラー発生時は適切なエラーメッセージを表示し、成功時はダッシュボードへリダイレクトします。
    * 
-   * @param e - フォーム送信イベント
+   * @param {React.FormEvent<HTMLFormElement>} e - フォーム送信イベント
    */
   const handleAuthSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    //#region バリデーション関数
-    // メールアドレスの検証
-    const validateEmail = (email: string) => {
-      const validation = validateEmailFormat(email);
-      setEmailError(validation.message);
-      return validation.isValid;
-    };
-
-    // パスワード強度の検証
-    const validatePassword = (pass: string) => {
-      const validation = validatePasswordStrength(pass);
-      setPasswordError(validation.message);
-      return validation.isValid;
-    };
-
-    // パスワードと確認用パスワードの一致検証
-    const validatePasswordMatch = () => {
-      if (password !== confirmPassword) {
-        setPasswordError('パスワードと確認用パスワードが一致しません');
-        return false;
-      }
-      return true;
-    };
-    //#endregion
-
     // 送信処理の開始
     setIsLoading(true);
     setFormFeedback(null); // 前回のフィードバックをクリア
-
-    // 現在時刻を日本時間（JST）で取得
-    const getCurrentJSTTime = () => {
-      const now = new Date();
-      // 日本時間に調整（UTC+9）
-      now.setHours(now.getHours() + 9);
-      return now.toISOString();
-    };
 
     // 現在時刻を取得
     const currentTime = getCurrentJSTTime();
@@ -175,7 +315,6 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
             // Step 3.3: 初期ガチャチケットの付与
             console.log('gacha_ticketsテーブルに挿入開始');
-            console.log('gacha_ticketsテーブルに挿入開始');
             const { error: gachaError } = await supabase.from('gacha_tickets').insert({
               user_id: data.user.id,
               ticket_count: 0,         // 'count' ではなく 'ticket_count'
@@ -249,7 +388,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           const nowIso = now.toISOString();
 
           try {
-            // users テーブルの更新（これは残します）
+            // users テーブルの更新
             const { error: usersError } = await supabase
               .from('users')
               .update({
@@ -311,237 +450,10 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     }
   };
 
-  // エラーメッセージの日本語変換関数を改善
-  const translateAuthError = (error: string): string => {
-    // 一般的なSupabaseのエラーメッセージを日本語に変換
-    const errorMap: { [key: string]: string } = {
-      'Invalid login credentials': 'メールアドレスまたはパスワードが正しくありません',
-      'Email not confirmed': 'メールアドレスが未確認です。確認メールをご確認ください',
-      'User already registered': 'このメールアドレスは既に登録されています',
-      'Password should be at least 6 characters': 'パスワードは6文字以上である必要があります',
-      'Email format is invalid': 'メールアドレスの形式が正しくありません',
-      'Password recovery requires an email': 'パスワード回復にはメールアドレスが必要です',
-      'Rate limit exceeded': 'リクエスト回数の上限に達しました。しばらく経ってからお試しください',
-      'User not found': 'ユーザーが見つかりません',
-      'Too Many Requests': 'リクエスト回数の上限に達しました。しばらく経ってからお試しください',
-    };
-
-    return errorMap[error] || 'エラーが発生しました。もう一度お試しください';
-  };
-
-  //#region パスワードの検証
-  const validatePassword = (pass: string) => {
-    const validation = validatePasswordStrength(pass);
-    setPasswordError(validation.message);
-    return validation.isValid;
-  };
-  //#endregion
-
-  //#region タブ切り替え時にフォームをリセット
-  const handleModeChange = (mode: ModalMode) => {
-    setModalMode(mode);
-    setEmail('');
-    setPassword('');
-    setConfirmPassword('');
-    setPasswordError('');
-    setEmailError('');
-    setFormFeedback(null);
-  }
-  //#endregion
-
-  //#region モーダルを閉じたときにフォームをリセット
-  const resetForm = () => {
-    setEmail('');
-    setPassword('');
-    setConfirmPassword('');
-    setPasswordError('');
-    setEmailError('');
-    setFormFeedback(null);
-    setModalMode('signin');
-  };
-  //#endregion
-
-  //#region emailバリデーション関数を追加
-  const validateEmail = (email: string) => {
-    const validation = validateEmailFormat(email);
-    setEmailError(validation.message);
-    return validation.isValid;
-  };
-  //#endregion
-
-  //#region フォームに入力があるか確認
-  const hasFormInput = useCallback(() => {
-    if (modalMode === 'reset') {
-      return email.length > 0;
-    }
-    return email.length > 0 || password.length > 0 ||
-      (modalMode === 'signup' && confirmPassword.length > 0);
-  }, [email, password, confirmPassword, modalMode]);
-  //#endregion
-
-  //#region モーダルを閉じる前の確認
-  const confirmClose = useCallback((): boolean => {
-    // 成功処理中は閉じれないように
-    if (isProcessingSuccess) return false;
-    
-    // `hasFormInput` の結果を取得してから判定する
-    if (!hasFormInput()) return true;
-    return window.confirm('入力内容が破棄されます。よろしいですか？');
-  }, [hasFormInput, isProcessingSuccess]);
-  //#endregion
-
-  //#region モーダルを閉じる処理
-  const handleClose = useCallback(() => {
-    if (confirmClose()) {
-      setIsVisible(false);
-      setTimeout(() => {
-        onClose();
-        resetForm();
-      }, 200);
-    }
-  }, [confirmClose, onClose]);
-  //#endregion
-
-  //#region オーバーレイクリックのハンドラを追加
-  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
-
-    if (isProcessingSuccess || isLoading) return;
-
-    if (e.target === e.currentTarget) {
-      handleClose();
-    }
-  };
-  //#endregion
-
-  const emailInputRef = useRef<HTMLInputElement>(null);
-  const modalRef = useRef<HTMLDivElement>(null);
-
-  // 既存のuseEffect関連部分はそのまま維持
-  //#region useEffectでisOpenの変更を監視
-  useEffect(() => {
-    if (isOpen) {
-      setIsVisible(true);
-    } else {
-      setIsVisible(false);
-    }
-  }, [isOpen]);
-  //#endregion
-
-  //#region ESCキー検知のためのuseEffectを追加
-  useEffect(() => {
-
-    const handleEscKey = (e: KeyboardEvent) => {
-      // 成功処理中やローディング中はESCキーを無効化
-      if (isProcessingSuccess || isLoading) return;
-      
-      if (e.key === 'Escape') {
-        handleClose();
-      }
-    };
-
-    // モーダルが開いている時のみイベントリスナーを設定
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscKey);
-
-      // クリーンアップ関数
-      return () => {
-        document.removeEventListener('keydown', handleEscKey);
-      };
-    }
-}, [isOpen, handleClose, isProcessingSuccess, isLoading]);
-  //#endregion
-
-  //#region ブラウザのページ離脱防止イベントの設定
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (hasFormInput()) {
-        e.preventDefault();
-        e.returnValue = '';
-      }
-    };
-
-    // モーダルが開いている時のみイベントリスナーを設定
-    if (isOpen) {
-      window.addEventListener('beforeunload', handleBeforeUnload);
-
-      // クリーンアップ関数
-      return () => {
-        window.removeEventListener('beforeunload', handleBeforeUnload);
-      };
-    }
-  }, [isOpen, hasFormInput]);
-  //#endregion
-
-  //#region モーダルを開いた時にメールアドレス入力欄にフォーカス
-  useEffect(() => {
-    if (isOpen && isVisible) {
-      emailInputRef.current?.focus();
-    }
-  }, [isOpen, isVisible]);
-  //#endregion
-
-  //#region フォーカストラップの実装
-  useEffect(() => {
-    const handleTabKey = (e: KeyboardEvent) => {
-      if (e.key === 'Tab' && modalRef.current) {
-        const focusableElements = modalRef.current.querySelectorAll(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-        );
-        const firstElement = focusableElements[0] as HTMLElement;
-        const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
-
-        if (e.shiftKey) {
-          if (document.activeElement === firstElement) {
-            e.preventDefault();
-            lastElement.focus();
-          }
-        } else {
-          if (document.activeElement === lastElement) {
-            e.preventDefault();
-            firstElement.focus();
-          }
-        }
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleTabKey);
-      return () => {
-        document.removeEventListener('keydown', handleTabKey);
-      };
-    }
-  }, [isOpen]);
-  //#endregion
-
-  // セッションの確認と自動リダイレクト
-  useEffect(() => {
-    const checkSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
-        // すでにログイン済みの場合はダッシュボードにリダイレクト
-        router.push('/dashboard');
-        onClose();
-      }
-    };
-
-    if (isOpen) {
-      checkSession();
-    }
-  }, [isOpen, router, onClose, supabase.auth]);
-  
-  useEffect(() => {
-    console.log(modalMode);
-  }, [modalMode]);
-
-  // デバッグ用のログ追加
-  useEffect(() => {
-    if (modalMode === 'reset') {
-      console.log('リセットモードに変更されました');
-    }
-  }, [modalMode]);
-
-  // パスワードリセット専用の処理関数
-  // パスワードリセット処理関数
+  /**
+   * パスワードリセット処理関数
+   * @param {React.FormEvent<HTMLFormElement>} e - フォーム送信イベント
+   */
   const handleResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log('パスワードリセット処理開始');
@@ -603,9 +515,131 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       setIsLoading(false);
     }
   };
+  //#endregion
+
+  //#region useEffect関連
+  // モーダルが開閉状態の変化を監視
+  useEffect(() => {
+    if (isOpen) {
+      setIsVisible(true);
+    } else {
+      setIsVisible(false);
+    }
+  }, [isOpen]);
+
+  // ESCキー検知のためのuseEffect
+  useEffect(() => {
+    const handleEscKey = (e: KeyboardEvent) => {
+      // 成功処理中やローディング中はESCキーを無効化
+      if (isProcessingSuccess || isLoading) return;
+      
+      if (e.key === 'Escape') {
+        handleClose();
+      }
+    };
+
+    // モーダルが開いている時のみイベントリスナーを設定
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscKey);
+
+      // クリーンアップ関数
+      return () => {
+        document.removeEventListener('keydown', handleEscKey);
+      };
+    }
+  }, [isOpen, handleClose, isProcessingSuccess, isLoading]);
+
+  // ブラウザのページ離脱防止イベントの設定
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasFormInput()) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    // モーダルが開いている時のみイベントリスナーを設定
+    if (isOpen) {
+      window.addEventListener('beforeunload', handleBeforeUnload);
+
+      // クリーンアップ関数
+      return () => {
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+      };
+    }
+  }, [isOpen, hasFormInput]);
+
+  // モーダルを開いた時にメールアドレス入力欄にフォーカス
+  useEffect(() => {
+    if (isOpen && isVisible) {
+      emailInputRef.current?.focus();
+    }
+  }, [isOpen, isVisible]);
+
+  // フォーカストラップの実装
+  useEffect(() => {
+    const handleTabKey = (e: KeyboardEvent) => {
+      if (e.key === 'Tab' && modalRef.current) {
+        const focusableElements = modalRef.current.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        const firstElement = focusableElements[0] as HTMLElement;
+        const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement) {
+            e.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement.focus();
+          }
+        }
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleTabKey);
+      return () => {
+        document.removeEventListener('keydown', handleTabKey);
+      };
+    }
+  }, [isOpen]);
+
+  // セッションの確認と自動リダイレクト
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        // すでにログイン済みの場合はダッシュボードにリダイレクト
+        router.push('/dashboard');
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      checkSession();
+    }
+  }, [isOpen, router, onClose, supabase.auth]);
+
+  // デバッグ用ログ出力
+  useEffect(() => {
+    console.log(modalMode);
+  }, [modalMode]);
+
+  // リセットモード変更時のデバッグログ
+  useEffect(() => {
+    if (modalMode === 'reset') {
+      console.log('リセットモードに変更されました');
+    }
+  }, [modalMode]);
+  //#endregion
 
   if (!isOpen) return null;
 
+  //#region レンダリング
   return (
     <>
       <div
@@ -629,7 +663,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   登録済みのメールアドレスを入力してください。<br />
                   パスワードリセット用のリンクをお送りします。
                 </p>
-                {/* 重要な修正: リセットパスワード用のフォームを専用のハンドラに接続 */}
+                {/* パスワードリセット用フォーム */}
                 <form className={styles.form} onSubmit={handleResetPassword}>
                   <div className={styles.formGroup}>
                     <label className={styles.label}>メールアドレス</label>
@@ -686,12 +720,12 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 </form>
               </div>
             ) : (
-              // ログイン/サインアップ用のフォーム部分は変更なし
+              // ログイン/サインアップ用のフォーム部分
               <div className={styles.modalInner}>
                 <h2 id="modalTitle" className={styles.modalTitle}>
                   {modalMode === 'signup' ? 'アカウント作成' : 'ログイン'}
                 </h2>
-                {/* タブ切り替えを追加 */}
+                {/* タブ切り替え */}
                 <div className={styles.tabs}>
                   <button
                     className={`${styles.tab} ${modalMode === 'signin' ? styles.activeTab : ''}`}
@@ -835,4 +869,5 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       )}
     </>
   );
+  //#endregion
 }
