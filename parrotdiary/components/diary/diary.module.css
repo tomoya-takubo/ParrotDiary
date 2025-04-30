@@ -683,3 +683,18 @@
   background-color: #b91c1c;
 }
 /* #endregion */
+
+/* #region レスポンシブ対応*/
+@media (max-width: 640px) {
+  .resultControlRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .exportButtons {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+/* #endregion */
