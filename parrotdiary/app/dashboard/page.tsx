@@ -17,6 +17,7 @@ import type { UserStatus } from '@/types';
 // #endregion
 
 export default function Dashboard() {
+  
   const router = useRouter();
   const supabase = createClientComponentClient();
   
@@ -598,6 +599,7 @@ export default function Dashboard() {
               <span>{isLoggingOut ? 'ログアウト中...' : 'ログアウト'}</span>
             </button>
             <div className={styles.divider}></div>
+            {/* パロットコレクションボタン */}
             <button 
               className={`${styles.navButton} ${styles.primaryButton}`}
               onClick={() => router.push('/collection')}
@@ -683,8 +685,7 @@ export default function Dashboard() {
               <div className={styles.statDescription}>
                 {isLoadingUserStatus ? '読込中...' : getDiarySubtext(userStatus.totalDiaryEntries)}
               </div>
-
-              </div>
+            </div>
             
             {/* 継続記録 */}
             <div className={styles.statItem}>
