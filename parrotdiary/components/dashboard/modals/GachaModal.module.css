@@ -1,3 +1,4 @@
+/* #region 基本的なモーダル構造 */
 .modalOverlay {
   position: fixed;
   top: 0;
@@ -20,7 +21,9 @@
   margin: 0 16px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
+/* #endregion 基本的なモーダル構造 */
 
+/* #region ヘッダー部分のスタイル */
 .modalHeader {
   display: flex;
   justify-content: space-between;
@@ -45,41 +48,51 @@
 .closeButton:hover {
   background-color: #f7fafc;
 }
+/* #endregion ヘッダー部分のスタイル */
 
-.initialState {
+/* #region 共通要素のスタイル */
+/* テキストスタイル */
+.prompt, .spinnerText, .resultDescription {
+  color: #4a5568;
+}
+
+/* ボタン共通スタイル */
+.gachaButton, .closeResultButton {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+/* 中央寄せコンテナ */
+.initialState, .spinningState, .resultState {
   text-align: center;
   padding: 32px 0;
 }
+/* #endregion 共通要素のスタイル */
 
+/* #region 初期状態のスタイル */
 .iconWrapper {
   margin: 0 auto 16px;
   color: #8b5cf6;
 }
 
 .prompt {
-  color: #4a5568;
   margin-bottom: 24px;
 }
 
 .gachaButton {
-  padding: 12px 24px;
   background: linear-gradient(to right, #ec4899, #8b5cf6);
   color: white;
-  border: none;
-  border-radius: 12px;
   font-weight: 500;
-  cursor: pointer;
 }
 
 .gachaButton:hover {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
+/* #endregion 初期状態のスタイル */
 
-.spinningState {
-  text-align: center;
-  padding: 48px 0;
-}
-
+/* #region ガチャ演出中のスタイル */
 .spinner {
   height: 128px;
   width: 128px;
@@ -101,14 +114,10 @@
 
 .spinnerText {
   margin-top: 16px;
-  color: #4a5568;
 }
+/* #endregion ガチャ演出中のスタイル */
 
-.resultState {
-  text-align: center;
-  padding: 32px 0;
-}
-
+/* #region 結果表示のスタイル */
 .resultImage {
   width: 128px;
   height: 128px;
@@ -124,22 +133,19 @@
 }
 
 .resultDescription {
-  color: #4a5568;
   margin-bottom: 24px;
 }
 
 .closeResultButton {
-  padding: 12px 24px;
   background-color: #e2e8f0;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
 }
 
 .closeResultButton:hover {
   background-color: #cbd5e0;
 }
+/* #endregion 結果表示のスタイル */
 
+/* #region レスポンシブデザイン - タブレット */
 @media (max-width: 768px) {
   .modalContainer {
     width: calc(100% - 32px);
@@ -155,7 +161,9 @@
     margin-bottom: 12px;
   }
 }
+/* #endregion レスポンシブデザイン - タブレット */
 
+/* #region レスポンシブデザイン - モバイル */
 @media (max-width: 480px) {
   .modalContainer {
     padding: 16px;
@@ -197,3 +205,4 @@
     height: 96px;
   }
 }
+/* #endregion レスポンシブデザイン - モバイル */
