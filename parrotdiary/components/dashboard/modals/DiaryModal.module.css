@@ -1,3 +1,4 @@
+/* #region モーダル基本構造 */
 .modalOverlay {
   position: fixed;
   top: 0;
@@ -11,6 +12,29 @@
   z-index: 50;
 }
 
+.modalContentWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 700px;
+}
+
+.modalContainer {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+/* #endregion */
+
+/* #region モーダルヘッダー */
 .modalHeader {
   display: flex;
   justify-content: space-between;
@@ -46,245 +70,17 @@
   background-color: #f7fafc;
 }
 
-.entriesContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+/* 曜日の色分け */
+.sundayText {
+  color: #e53e3e; /* 赤色 */
 }
 
-.entryCard {
-  border: none; /* 枠線を削除 */
-  border-radius: 12px;
-  padding: 16px;
-  background-color: #f9f9fb; /* 背景色を添付画像に合わせる */
+.saturdayText {
+  color: #3182ce; /* 青色 */
 }
+/* #endregion */
 
-.entryHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-
-.entryTime {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: #718096;
-}
-
-.entryTags {
-  display: flex;
-  gap: 8px;
-}
-
-.entryTag {
-  padding: 4px 8px;
-  font-size: 12px;
-  border-radius: 9999px;
-  background-color: #f7fafc;
-  color: #4a5568;
-  font-weight: 500;
-}
-
-.activityItem {
-  padding: 4px 0 4px 16px;
-  color: #4a5568;
-}
-
-.addRecordSection {
-  margin-top: 24px;
-  padding-top: 24px;
-  border-top: 1px solid #e2e8f0;
-}
-
-.addRecordButton {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px 16px;
-  background-color: #f7fafc;
-  border: none;
-  border-radius: 12px;
-  color: #4a5568;
-  cursor: pointer;
-}
-
-.addRecordButton:hover {
-  background-color: #edf2f7;
-}
-
-/* 活動内容の表示スタイル */
-.activityItem {
-  padding: 4px 0;
-  color: #333333;
-  background: transparent; /* 背景色をなしに */
-  border: none; /* 枠線なし */
-  font-size: 16px;
-  line-height: 1.5;
-}
-
-/* エントリーの時間表示 */
-.entryTime {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 14px;
-  color: #666666; /* 薄めのグレー */
-}
-
-/* エントリータグのスタイル */
-.entryTag {
-  font-size: 10px;
-  padding: 4px 8px;
-  border-radius: 9999px;
-  background-color: #e0f2fe;
-  color: #0284c7;
-  /* 縦位置の調整と一貫性のために追加 */
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-  height: 24px;
-  box-sizing: border-box;
-  vertical-align: middle;
-}
-
-/* 編集ボタンのスタイル */
-.editButton {
-  font-size: 10px; /* サイズ統一 */
-  padding: 4px 8px;
-  border-radius: 9999px;
-  background-color: #f1f5f9;
-  color: #64748b;
-  border: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-  height: 24px;
-  box-sizing: border-box;
-  vertical-align: middle;
-  gap: 4px; /* アイコンとテキストの間隔 */
-}
-
-.editButton:hover {
-  background-color: #e2e8f0;
-}
-
-/* エントリーカードのヘッダーとボディの間隔 */
-.entryHeader {
-  margin-bottom: 10px;
-}
-
-/* エントリーがない場合のメッセージ */
-.noEntriesMessage {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
-  text-align: center;
-  background-color: #f9f9fb; /* 非常に薄いグレー */
-  border-radius: 8px;
-  border: none; /* 枠線なし */
-  margin: 1rem 0;
-  min-height: 120px;
-}
-
-/* パロット表示のコンテナスタイル */
-.parrotContainer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 10px;
-  justify-content: flex-end; /* 右寄せ表示 */
-}
-
-.parrotGif {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-}
-
-/* エントリーの内容部分のコンテナ化（パロット表示のため） */
-.entryContent {
-  position: relative;
-  width: 100%;
-}
-
-/* エントリーカードのスタイル - 余分な高さを削除 */
-.entryCard {
-  position: relative;
-  min-height: auto; /* 自動高さに変更 */
-  padding: 16px;
-  background-color: #f9f9fb;
-  border-radius: 12px;
-  margin-bottom: 8px;
-}
-
-/* エントリーコンテンツのスタイル - 余白を最小化 */
-.entryContent {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  padding-bottom: 0; /* 余分なパディングを削除 */
-}
-
-/* アクティビティセクション - 右側の余白調整 */
-.activitiesSection {
-  flex: 1;
-  padding-right: 30px; /* パロット用の余白は維持 */
-  margin-bottom: 0; /* 下部の余白を削除 */
-}
-
-/* パロット表示用のコンテナ - 絶対配置で右下に固定 */
-.parrotContainer {
-  position: absolute;
-  bottom: 0;
-  right: -2px;
-  display: flex;
-  gap: 5px;
-  z-index: 5;
-}
-
-/* パロットのスタイル */
-.parrotGif {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
-  transform: scaleX(-1); /* このプロパティを追加することでGIFが左右反転します */
-}
-
-/* アクティビティアイテムのスタイル - 余分な余白を削除 */
-.activityItem {
-  padding: 2px 0 2px 12px; /* 上下のパディングを縮小 */
-  color: #333333;
-  font-size: 16px;
-  line-height: 1.4; /* 行間を詰める */
-}
-
-.addRecordTop {
-  margin-bottom: 16px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-/* モーダル全体のコンテンツラッパー - 新しく追加 */
-.modalContentWrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  max-width: 700px;
-}
-
-/* ナビゲーションボタンのスタイル - 修正 */
+/* #region ナビゲーションボタン */
 .modalNavButton {
   width: 55px;
   height: 55px;
@@ -328,20 +124,180 @@
   background-color: rgba(229, 231, 235, 0.8);
 }
 
-/* モーダルコンテナのスタイル - 修正 */
-.modalContainer {
-  position: relative;
-  width: 100%;
-  max-width: 600px;
-  max-height: 80vh;
-  overflow-y: auto;
-  background-color: #ffffff;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+/* ナビゲーションボタンのローディング状態 */
+.modalNavButton.loading {
+  pointer-events: none;
+  opacity: 0.6;
+}
+/* #endregion */
+
+/* #region エントリーコンテナ */
+.entriesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
-/* ローディングインジケーター */
+.entryCard {
+  position: relative;
+  min-height: auto; /* 自動高さに変更 */
+  padding: 16px;
+  background-color: #f9f9fb;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  border: none; /* 枠線を削除 */
+}
+
+/* エントリーがない場合のメッセージ */
+.noEntriesMessage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  text-align: center;
+  background-color: #f9f9fb; /* 非常に薄いグレー */
+  border-radius: 8px;
+  border: none; /* 枠線なし */
+  margin: 1rem 0;
+  min-height: 120px;
+}
+/* #endregion */
+
+/* #region エントリーヘッダー */
+.entryHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.entryTime {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #718096;
+}
+
+.entryTags {
+  display: flex;
+  gap: 8px;
+}
+
+.entryTag {
+  font-size: 10px;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  background-color: #e0f2fe;
+  color: #0284c7;
+  /* 縦位置の調整と一貫性のために追加 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  height: 24px;
+  box-sizing: border-box;
+  vertical-align: middle;
+}
+
+/* 編集ボタンのスタイル */
+.editButton {
+  font-size: 10px; /* サイズ統一 */
+  padding: 4px 8px;
+  border-radius: 9999px;
+  background-color: #f1f5f9;
+  color: #64748b;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  height: 24px;
+  box-sizing: border-box;
+  vertical-align: middle;
+  gap: 4px; /* アイコンとテキストの間隔 */
+}
+
+.editButton:hover {
+  background-color: #e2e8f0;
+}
+/* #endregion */
+
+/* #region エントリーコンテンツ */
+/* エントリーの内容部分のコンテナ化（パロット表示のため） */
+.entryContent {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0; /* 余分なパディングを削除 */
+}
+
+/* アクティビティセクション - 右側の余白調整 */
+.activitiesSection {
+  flex: 1;
+  padding-right: 30px; /* パロット用の余白は維持 */
+  margin-bottom: 0; /* 下部の余白を削除 */
+}
+
+/* 活動内容の表示スタイル */
+.activityItem {
+  padding: 2px 0 2px 12px; /* 上下のパディングを縮小 */
+  color: #333333;
+  background: transparent; /* 背景色をなしに */
+  border: none; /* 枠線なし */
+  font-size: 16px;
+  line-height: 1.4; /* 行間を詰める */
+}
+
+/* パロット表示用のコンテナ - 絶対配置で右下に固定 */
+.parrotContainer {
+  position: absolute;
+  bottom: 0;
+  right: -2px;
+  display: flex;
+  gap: 5px;
+  z-index: 5;
+}
+
+/* パロットのスタイル */
+.parrotGif {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  transform: scaleX(-1); /* このプロパティを追加することでGIFが左右反転します */
+}
+/* #endregion */
+
+/* #region 記録追加ボタン */
+.addRecordTop {
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.addRecordButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background-color: #f7fafc;
+  border: none;
+  border-radius: 12px;
+  color: #4a5568;
+  cursor: pointer;
+}
+
+.addRecordButton:hover {
+  background-color: #edf2f7;
+}
+/* #endregion */
+
+/* #region ローディングインジケーター */
 .loadingIndicator {
   position: absolute;
   top: 0;
@@ -370,14 +326,9 @@
     transform: rotate(360deg);
   }
 }
+/* #endregion */
 
-/* ナビゲーションボタンのローディング状態 */
-.modalNavButton.loading {
-  pointer-events: none;
-  opacity: 0.6;
-}
-
-/* モバイル向け調整 */
+/* #region レスポンシブ対応 - 通常タブレット */
 @media (max-width: 768px) {
   .modalContentWrapper {
     max-width: 90%;
@@ -429,8 +380,9 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 }
+/* #endregion */
 
-/* 小さいモバイルでさらに調整 */
+/* #region レスポンシブ対応 - モバイル */
 @media (max-width: 480px) {
   .modalContentWrapper {
     width: 95%;
@@ -522,14 +474,5 @@
   .modalTitle {
     font-size: 20px;
   }
-
 }
-
-/* 曜日の色分け */
-.sundayText {
-  color: #e53e3e; /* 赤色 */
-}
-
-.saturdayText {
-  color: #3182ce; /* 青色 */
-}
+/* #endregion */

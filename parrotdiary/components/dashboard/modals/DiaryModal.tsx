@@ -2,7 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { X, Calendar, Clock, Edit2, ChevronLeft, ChevronRight } from 'lucide-react';
 import styles from './DiaryModal.module.css';
 
-// ActivityHistoryで使用する日記エントリー型
+// #region 型定義
+/**
+ * 日記エントリーの型定義
+ * ActivityHistoryで使用する
+ */
 type ActivityDiaryEntry = {
   time: string;
   tags: string[];
@@ -11,7 +15,9 @@ type ActivityDiaryEntry = {
   parrots?: string[];
 };
 
-// 修正したDiaryModalの型（日付ナビゲーション機能を追加）
+/**
+ * DiaryModalのプロパティ定義
+ */
 type DiaryModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -20,31 +26,65 @@ type DiaryModalProps = {
   onDataUpdated: () => void;
   isToday: boolean;
   onEditEntry?: (entry: ActivityDiaryEntry) => void;
-  onDateChange?: (newDate: string) => void; // 日付変更ハンドラを追加
+  onDateChange?: (newDate: string) => void; // 日付変更ハンドラ
 };
+// #endregion
 
+/**
+ * 日記モーダルコンポーネント
+ * 日記エントリーを表示し、ナビゲーション機能を提供する
+ */
 const DiaryModal: React.FC<DiaryModalProps> = ({ 
   isOpen, 
   onClose, 
   date, 
-  entries, // すでにパロット情報を含むエントリー
+  entries,
   isToday,
   onEditEntry,
-  onDateChange // 日付変更ハンドラを受け取る
+  onDateChange
 }) => {
+  // #region 状態管理
+  // ローディングインジケーター表示のための状態
+  const [isLoading, setIsLoading] = useState(false);
+  // #endregion
 
+  // #region ユーティリティ関数
+  /**
+   * 日付をyyyy年MM月dd日形式にフォーマットする関数
+   */
+  const formatDateToJapanese = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    
+    return `${year}年${month}月${day}日`;
+  };
+  // #endregion
+
+  // #region イベントハンドラ
+  /**
+   * モーダルのオーバーレイをクリックした時のハンドラ
+   * モーダル外をクリックした場合のみ閉じる
+   */
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       onClose();
     }
   };
 
+  /**
+   * エントリー編集ボタンクリック時のハンドラ
+   */
   const handleEditClick = (entry: ActivityDiaryEntry) => {
     if (onEditEntry) {
       onEditEntry(entry);
     }
   };
 
+  /**
+   * 記録追加ボタンクリック時のハンドラ
+   * 空のエントリーを作成して編集モードを開始
+   */
   const handleAddRecordClick = () => {
     if (onEditEntry) {
       const emptyEntry: ActivityDiaryEntry = {
@@ -56,8 +96,13 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
       onEditEntry(emptyEntry);
     }
   };
+  // #endregion
 
-  // 前日へナビゲート
+  // #region ナビゲーション機能
+  /**
+   * 前日へナビゲートする関数
+   * 現在の日付から1日前の日付を計算し、親コンポーネントに通知
+   */
   const navigateToPreviousDay = () => {
     if (isLoading) return; // ローディング中は操作を無効化
     
@@ -103,7 +148,10 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
     }
   };
 
-  // 翌日へナビゲート
+  /**
+   * 翌日へナビゲートする関数
+   * 現在の日付から1日後の日付を計算し、今日より未来でなければ親コンポーネントに通知
+   */
   const navigateToNextDay = () => {
     if (isLoading) return; // ローディング中は操作を無効化
     
@@ -155,26 +203,22 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
       setIsLoading(false);
     }
   };
+  // #endregion
 
-  // 日付をyyyy年MM月dd日形式にフォーマットする関数
-  const formatDateToJapanese = (date: Date): string => {
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    
-    return `${year}年${month}月${day}日`;
-  };
-  
-  // 日付変更が完了したときの処理
+  // #region 副作用
+  /**
+   * 日付変更が完了したときの処理
+   * 新しいエントリーを受け取ったらローディング状態を解除
+   */
   useEffect(() => {
     // 日付が変更されたらローディング状態を解除
     setIsLoading(false);
   }, [entries]);
 
-  // ローディングインジケーター表示のための状態
-  const [isLoading, setIsLoading] = useState(false);
-
-  // キーボードでのナビゲーション
+  /**
+   * キーボードでのナビゲーション設定
+   * 左右矢印キーで日付移動、ESCキーでモーダルを閉じる
+   */
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isOpen) return;
@@ -194,9 +238,12 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen, date]);
+  // #endregion
 
+  // モーダルが閉じているときは何も表示しない
   if (!isOpen) return null;
 
+  // #region レンダリング
   return (
     <div 
       className={styles.modalOverlay}
@@ -270,7 +317,7 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
             </button>
           </div>
 
-          {/* 記録追加ボタンを上に移動 */}
+          {/* 記録追加ボタン（今日の日付の場合のみ表示） */}
           {isToday && (
             <div className={styles.addRecordTop}>
               <button 
@@ -328,7 +375,7 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
                       ))}
                     </div>
                   
-                    {/* パロットGIFの表示 - imgタグを使用 */}
+                    {/* パロットGIFの表示 */}
                     {entry.parrots && entry.parrots.length > 0 ? (
                       <div className={styles.parrotContainer}>
                         {entry.parrots.map((parrot, parrotIndex) => (
@@ -371,6 +418,7 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
       </div>
     </div>
   );
+  // #endregion
 };
 
 export default DiaryModal;
