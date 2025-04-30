@@ -685,16 +685,379 @@
 /* #endregion */
 
 /* #region レスポンシブ対応*/
+/* ===== レスポンシブ対応 - リファクタリング版 ===== */
+
+/* 
+ * メディアクエリの構成:
+ * 1. タブレット向け (max-width: 768px)
+ * 2. スマホ大画面向け (max-width: 640px)
+ * 3. スマホ小画面向け (max-width: 480px)
+ * 4. タッチデバイス向け (hover: none)
+ * 5. タッチデバイスのスマホ向け (hover: none) and (max-width: 480px)
+ */
+
+/* ===== 1. タブレット向けスタイル (768px以下) ===== */
+@media (max-width: 768px) {
+  /* モーダル関連 */
+  .modalContainer {
+    width: calc(100% - 32px);
+    max-width: none;
+    padding: 16px;
+    margin: 0 16px;
+    max-height: 85vh;
+  }
+  
+  .modalTitle {
+    font-size: 20px;
+  }
+  
+  .modalNavigationWrapper {
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .modalNavButton {
+    width: 36px;
+    height: 36px;
+  }
+  
+  /* エントリーカード */
+  .entryCard {
+    padding: 12px;
+  }
+
+  /* グリッドレイアウト */
+  .entriesGrid {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* フォーカススタイル */
+  .searchInput:focus,
+  .dateInput:focus,
+  .pageSizeSelect:focus {
+    outline: 2px solid #3182ce;
+    border-color: transparent;
+  }
+  
+  /* パフォーマンス最適化 */
+  .entriesContainer {
+    will-change: auto;
+  }
+  
+  /* イベントデリゲーション */
+  .entryTags {
+    contain: content;
+  }
+
+  /* パロット表示 */
+  .parrotBottomRight {
+    bottom: -4px;
+    right: -4px;
+  }
+  
+  .parrotGif {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* ===== 2. スマホ大画面向けスタイル (640px以下) ===== */
 @media (max-width: 640px) {
+  /* レイアウト調整 */
+  .entryHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .dateRangeContainer {
+    flex-direction: column;
+  }
+
+  /* 検索バー */
+  .searchInput {
+    font-size: 14px;
+    padding: 10px 14px;
+  }
+  
+  /* 結果コントロール行 */
   .resultControlRow {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
   }
   
+  /* ページネーション */
+  .pagination {
+    flex-wrap: wrap;
+  }
+  
+  /* フィルター行 */
+  .parrotToggle {
+    margin-right: 0;
+  }
+  
+  /* エクスポートボタン */
   .exportButtons {
     width: 100%;
     justify-content: flex-start;
+  }
+  
+  /* 固定ページネーション */
+  .fixedPagination {
+    padding: 6px;
+    bottom: 12px;
+  }
+  
+  .paginationButton {
+    min-width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+}
+
+/* ===== 3. スマホ小画面向けスタイル (480px以下) ===== */
+@media (max-width: 480px) {
+  /* フィルターパネル */
+  .filterPanel {
+    padding: 12px;
+  }
+  
+  .tagsList {
+    max-height: 150px;
+    padding: 6px;
+  }
+  
+  .tagButton {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+  
+  .dateRangeContainer {
+    width: 100%;
+  }
+  
+  .dateInput {
+    font-size: 12px;
+    padding: 6px;
+  }
+  
+  .clearFiltersButton {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  /* モーダル */
+  .modalContainer {
+    padding: 12px;
+    margin: 0 8px;
+    max-height: 90vh;
+  }
+  
+  .modalTitle {
+    font-size: 18px;
+  }
+  
+  .headerTitleContainer {
+    gap: 8px;
+  }
+  
+  .modalNavButton {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .closeButton {
+    padding: 4px;
+  }
+
+  /* 検索関連 */
+  .searchContainer {
+    margin-bottom: 12px;
+  }
+  
+  .searchInput {
+    padding: 8px 30px 8px 10px;
+    font-size: 14px;
+  }
+  
+  .searchIcon {
+    right: 10px;
+  }
+  
+  .filterButton {
+    padding: 6px 0;
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+
+  /* エントリーカード */
+  .entryCard {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+    
+  .entryDate {
+    font-size: 12px;
+    margin-bottom: 6px;
+    width: 100%;
+  }
+  
+  /* タグ関連 */
+  .entryTags {
+    width: 100%;
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 6px;
+    padding-bottom: 8px;
+  }
+  
+  /* スクロールバーカスタマイズ */
+  .entryTags::-webkit-scrollbar {
+    height: 3px;
+  }
+  
+  .entryTags::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+  }
+  
+  .entryTag {
+    flex-shrink: 0;
+    white-space: nowrap;
+    font-size: 11px;
+    padding: 3px 6px;
+    border-radius: 9999px;
+    background-color: #e0f2fe;
+    color: #0284c7;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    height: 22px;
+    box-sizing: border-box;
+    vertical-align: middle;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: fit-content;
+  }
+
+  /* 編集・削除ボタン */
+  .editButton,
+  .deleteButton {
+    flex-shrink: 0;
+    font-size: 11px;
+    padding: 3px 6px;
+    height: 22px;
+    line-height: 1;
+    white-space: nowrap;
+    vertical-align: middle;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+  }
+
+  .entryContent p {
+    font-size: 14px;
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+  
+  /* パロット表示調整 */
+  .parrotBottomRight {
+    bottom: -3px;
+    right: -3px;
+  }
+  
+  .parrotGif {
+    width: 32px;
+    height: 32px;
+  }
+
+  /* ページネーション */
+  .pagination {
+    gap: 4px;
+  }
+  
+  .paginationButton {
+    min-width: 32px;
+    height: 32px;
+    font-size: 12px;
+    padding: 0 4px;
+  }
+  
+  /* タイトルセクション */
+  .titleSection {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+  }
+  
+  .title {
+    font-size: 20px;
+    margin-bottom: 0.5rem;
+  }
+  
+  .backToDashboardButton {
+    width: 100%;
+    justify-content: center;
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  .entryContent {
+    gap: 6px;
+  }
+  
+  /* フィルター行 */
+  .filterRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .parrotToggle {
+    align-self: flex-end; /* スマホ表示時は右寄せ */
+  }
+}
+
+/* ===== 4. タッチデバイス向け調整 ===== */
+@media (hover: none) {
+  /* タップ領域の調整 */
+  .entryTag,
+  .tagButton,
+  .editButton {
+    padding: 4px 8px;
+  }
+  
+  /* ホバーエフェクトを無効化 */
+  .tagButton:hover,
+  .entryTag:hover,
+  .paginationButton:hover,
+  .filterButton:hover,
+  .clearFiltersButton:hover {
+    background-color: inherit;
+  }
+  
+  /* アクティブ（タップ）エフェクトを設定 */
+  .tagButton:active,
+  .entryTag:active,
+  .paginationButton:active,
+  .filterButton:active,
+  .clearFiltersButton:active {
+    opacity: 0.7;
+  }
+}
+
+/* ===== 5. タッチデバイスのスマホ向け調整 ===== */
+@media (hover: none) and (max-width: 480px) {
+  .searchInput {
+    -webkit-appearance: none;
+    appearance: none;
+    font-size: 16px; /* iOSでのズーム防止 */
   }
 }
 /* #endregion */
