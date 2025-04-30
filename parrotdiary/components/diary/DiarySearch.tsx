@@ -6,6 +6,7 @@ import styles from './diary.module.css';
 import Image from 'next/image';
 import EditDiaryModal from '@/components/dashboard/modals/EditDiaryModal';
 import { getEntryParrots } from '@/components/dashboard/Diary/ParrotSelector';
+import { supabase } from '@/lib/supabase';
 
 // #region 型定義
 /**
@@ -32,11 +33,12 @@ type EditDiaryEntryType = {
  * 日記検索ページのコンポーネント
  * ログインユーザーの日記を検索・フィルタリングする機能を提供します
  */
-const DiarySearch = () => {
+const DiarySearch = ({ initialUserId }: { initialUserId?: string }) => {
   // #region 状態管理
   // 認証情報
   const { user } = useAuth();
-  
+  const [effectiveUserId, setEffectiveUserId] = useState<string | undefined>(initialUserId);
+
   // 検索・フィルター関連の状態
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -77,14 +79,39 @@ const DiarySearch = () => {
    */
   useEffect(() => {
     const fetchData = async () => {
-      if (!user) return;
+      // ページから直接渡されたユーザーIDを優先して使用
+      let userId = effectiveUserId || user?.id;
+
+      if (!userId) {
+        try {
+          // バックアップとしてSupabaseセッションから直接取得
+          const { data: { session } } = await supabase.auth.getSession();
+          userId = session?.user?.id;
+          
+          // 取得できたIDを保存
+          if (userId) {
+            setEffectiveUserId(userId);
+          }
+        } catch (error) {
+          console.error('Supabaseセッション取得エラー:', error);
+        }
+      }
+      
+      if (!userId) {
+        console.error('有効なユーザーIDが見つかりません');
+        setError('認証情報を取得できませんでした。再度ログインしてください。');
+        setIsLoading(false);
+        return;
+      }
+      
+      console.log('DiarySearch: データ取得開始 - ユーザーID:', userId);
       
       try {
         setIsLoading(true);
         setError(null);
-        
+
         // Supabaseサービスを使って日記データを取得
-        const diaryResponse = await diaryService.getUserDiaryEntries(user.id);
+        const diaryResponse = await diaryService.getUserDiaryEntries(user!.id);
         
         // パロット情報を持つ拡張エントリーとして初期化
         const extendedEntries: ExtendedDiaryEntry[] = diaryResponse.map(entry => ({
@@ -96,7 +123,7 @@ const DiarySearch = () => {
         setDiaryEntries(extendedEntries);
         
         // タグデータを取得
-        const tagsResponse = await diaryService.getUserTags(user.id);
+        const tagsResponse = await diaryService.getUserTags(user!.id);
         setAllTags(tagsResponse);
         
         // 各エントリーのパロット情報を取得
