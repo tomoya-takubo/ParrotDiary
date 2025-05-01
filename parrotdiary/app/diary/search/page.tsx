@@ -140,16 +140,6 @@ export default function DiarySearchPage() {
   }, [loading, effectiveUserId, router]);
   // #endregion
 
-  // #region イベントハンドラ
-  /**
-   * DiarySearchコンポーネントからのデータ読み込み完了通知を受け取るハンドラ
-   */
-  const handleDataLoaded = () => {
-    console.log('DiarySearch: データロード完了通知を受信');
-    setDataLoaded(true);
-  };
-  // #endregion
-
   // #region レンダリング
   /**
    * ローディング画面のレンダリング
