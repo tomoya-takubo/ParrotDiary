@@ -407,7 +407,7 @@
 
 /* エントリータグのスタイル */
 .entryTag {
-  font-size: 10px;
+  font-size: 14px;
   padding: 4px 8px;
   border-radius: 9999px;
   background-color: #e0f2fe;
@@ -423,7 +423,7 @@
 
 /* 編集ボタン */
 .editButton {
-  font-size: 10px;
+  font-size: 14px;
   padding: 4px 8px;
   border-radius: 9999px;
   background-color: #f1f5f9;
@@ -445,7 +445,7 @@
 
 /* 削除ボタン */
 .deleteButton {
-  font-size: 10px;
+  font-size: 14px;
   padding: 4px 8px;
   border-radius: 9999px;
   background-color: #fee2e2;
@@ -924,42 +924,6 @@
     border-radius: 3px;
   }
   
-  .entryTag {
-    flex-shrink: 0;
-    white-space: nowrap;
-    font-size: 11px;
-    padding: 3px 6px;
-    border-radius: 9999px;
-    background-color: #e0f2fe;
-    color: #0284c7;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-    height: 22px;
-    box-sizing: border-box;
-    vertical-align: middle;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: fit-content;
-  }
-
-  /* 編集・削除ボタン */
-  .editButton,
-  .deleteButton {
-    flex-shrink: 0;
-    font-size: 11px;
-    padding: 3px 6px;
-    height: 22px;
-    line-height: 1;
-    white-space: nowrap;
-    vertical-align: middle;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 16px;
-  }
-
   .entryContent p {
     font-size: 14px;
     margin-bottom: 6px;
