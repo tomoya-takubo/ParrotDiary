@@ -102,13 +102,13 @@ export default function DiarySearchPage() {
   // ローディング中の表示
   if (loading || !effectiveUserId || !dataLoaded) {
     return (
-      <>
+      <div style={{ position: 'relative', minHeight: '100vh' }}>
         <div className={styles.loadingContainer}>
           <div className={styles.loadingSpinnerWrapper}>
             <div className={styles.loadingSpinner}></div>
             <div className={styles.loadingIconContainer}>
               <Image
-                src="/parrot-icon.png"
+                src="/gif/parrots/60fpsparrot.gif"
                 alt="Parrot Icon"
                 width={64}
                 height={64}
@@ -122,19 +122,22 @@ export default function DiarySearchPage() {
         
         {/* 不可視のDiarySearchコンポーネントを背後でレンダリングしてデータを先読み */}
         {effectiveUserId && (
-          <div style={{ display: 'none' }}>
+          <div style={{ visibility: 'hidden', position: 'absolute', left: '-9999px', height: '0px', overflow: 'hidden' }}>
             <DiarySearch 
               initialUserId={effectiveUserId} 
               ref={diarySearchRef}
-              onDataLoaded={handleDataLoaded} 
+              onDataLoaded={() => {
+                console.log('DiarySearch: データロード完了通知を受信');
+                setDataLoaded(true);
+              }} 
               preloadData={true}
             />
           </div>
         )}
-      </>
+      </div>
     );
   }
-
+  
   // ユーザーIDがある場合のみ日記検索コンポーネントを表示
   if (effectiveUserId) {
     // diarySearchRefから取得したデータを新しいコンポーネントインスタンスに渡す
@@ -148,7 +151,7 @@ export default function DiarySearchPage() {
       />
     );
   }
-  
+
   // 未認証の場合（リダイレクト中）
   return <div className={styles.loadingContainer}>リダイレクト中...</div>;
 }
