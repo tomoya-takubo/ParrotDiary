@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { Search, FilterIcon, Calendar, ChevronLeft, ChevronRight, Edit2, Trash2 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import diaryService, { DiaryEntry, TagWithCount } from '@/services/diaryService';
@@ -14,6 +14,15 @@ import { supabase } from '@/lib/supabase';
  */
 interface ExtendedDiaryEntry extends DiaryEntry {
   parrots?: string[]; // パロットGIF画像のURL配列
+}
+
+// コンポーネントのprops拡張
+interface DiarySearchProps {
+  initialUserId?: string;
+  onDataLoaded?: () => void;  // データロード完了時のコールバック
+  preloadData?: boolean;      // データ先読みモードかどうか
+  initialEntries?: ExtendedDiaryEntry[];  // 追加
+  initialTags?: TagWithCount[];          // 追加
 }
 
 /**
@@ -33,7 +42,13 @@ type EditDiaryEntryType = {
  * 日記検索ページのコンポーネント
  * ログインユーザーの日記を検索・フィルタリングする機能を提供します
  */
-const DiarySearch = ({ initialUserId }: { initialUserId?: string }) => {
+const DiarySearch = forwardRef(({ 
+  initialUserId, 
+  onDataLoaded, 
+  preloadData = false,
+  initialEntries = [],
+  initialTags = []
+}: DiarySearchProps, ref) => {
   // #region 状態管理
   // 認証情報
   const { user } = useAuth();
@@ -47,11 +62,12 @@ const DiarySearch = ({ initialUserId }: { initialUserId?: string }) => {
   const [showAllTags, setShowAllTags] = useState(false);
   
   // データ関連の状態
-  const [diaryEntries, setDiaryEntries] = useState<ExtendedDiaryEntry[]>([]);
-  const [allTags, setAllTags] = useState<TagWithCount[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [diaryEntries, setDiaryEntries] = useState<ExtendedDiaryEntry[]>(initialEntries);
+  const [allTags, setAllTags] = useState<TagWithCount[]>(initialTags);
+  const [isLoading, setIsLoading] = useState(initialEntries.length === 0);
   const [error, setError] = useState<string | null>(null);
-  
+  const [dataInitialized, setDataInitialized] = useState(initialEntries.length > 0);
+
   // 編集モーダル用の状態
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editEntry, setEditEntry] = useState<EditDiaryEntryType | null>(null);
@@ -73,15 +89,32 @@ const DiarySearch = ({ initialUserId }: { initialUserId?: string }) => {
   const entriesContainerRef = useRef<HTMLDivElement>(null);
   // #endregion
 
+  // refを使って外部からデータ取得状態にアクセスできるようにする
+  useImperativeHandle(ref, () => ({
+    isDataLoaded: () => !isLoading && dataInitialized,
+    getEntries: () => diaryEntries,
+    getTags: () => allTags
+  }));
+
   // #region データ取得
   /**
    * 初期データ取得（コンポーネントマウント時）
    */
   useEffect(() => {
+
+    // 既にデータが提供されている場合は取得処理をスキップ
+    if (initialEntries.length > 0 && initialTags.length > 0 && !preloadData) {
+      console.log('初期データが提供されているため、データ取得をスキップします');
+      if (onDataLoaded) {
+        onDataLoaded();
+      }
+      return;
+    }
+
     const fetchData = async () => {
       // ページから直接渡されたユーザーIDを優先して使用
       let userId = effectiveUserId || user?.id;
-
+  
       if (!userId) {
         try {
           // バックアップとしてSupabaseセッションから直接取得
@@ -109,9 +142,10 @@ const DiarySearch = ({ initialUserId }: { initialUserId?: string }) => {
       try {
         setIsLoading(true);
         setError(null);
-
+  
         // Supabaseサービスを使って日記データを取得
-        const diaryResponse = await diaryService.getUserDiaryEntries(user!.id);
+        // 重要：user!.id ではなく userId を使用
+        const diaryResponse = await diaryService.getUserDiaryEntries(userId);
         
         // パロット情報を持つ拡張エントリーとして初期化
         const extendedEntries: ExtendedDiaryEntry[] = diaryResponse.map(entry => ({
@@ -122,32 +156,37 @@ const DiarySearch = ({ initialUserId }: { initialUserId?: string }) => {
         // 一時的にエントリーを設定
         setDiaryEntries(extendedEntries);
         
-        // タグデータを取得
-        const tagsResponse = await diaryService.getUserTags(user!.id);
+        // タグデータを取得 - userId を使用
+        const tagsResponse = await diaryService.getUserTags(userId);
         setAllTags(tagsResponse);
         
         // 各エントリーのパロット情報を取得
         const entriesWithParrots = await Promise.all(
           extendedEntries.map(async (entry) => {
             try {
-              // getEntryParrotsが文字列の引数を期待している場合は変換
               const entryId = String(entry.entry_id);
               const parrotUrls = await getEntryParrots(entryId);
-              // パロット情報をセット
               return {
                 ...entry,
                 parrots: Array.isArray(parrotUrls) ? parrotUrls : []
               };
             } catch (err) {
               console.error(`エントリー ${entry.entry_id} のパロット取得エラー:`, err);
-              return entry; // エラー時は元のエントリーを返す
+              return entry;
             }
           })
         );
         
         // パロット情報を含むエントリーで更新
         setDiaryEntries(entriesWithParrots);
-        
+        setDataInitialized(true);
+  
+        // データ読み込み完了のコールバックを呼び出し
+        if (onDataLoaded) {
+          console.log('データ読み込み完了 - コールバック呼び出し');
+          onDataLoaded();
+        }
+  
       } catch (error) {
         console.error('データの取得に失敗しました:', error);
         setError('データの読み込み中にエラーが発生しました。再度お試しください。');
@@ -155,10 +194,10 @@ const DiarySearch = ({ initialUserId }: { initialUserId?: string }) => {
         setIsLoading(false);
       }
     };
-
-    fetchData();
-  }, [user]);
   
+    fetchData();
+}, [user, effectiveUserId, onDataLoaded, initialEntries.length, initialTags.length, preloadData]);
+
   /**
    * パロット情報を含むデータ再取得関数
    * 編集や削除後のデータ更新に使用
@@ -636,6 +675,11 @@ const DiarySearch = ({ initialUserId }: { initialUserId?: string }) => {
     (dateRange.end ? 1 : 0);
   // #endregion
 
+  // preloadDataモードの場合は何も表示しない（先読み用）
+  if (preloadData) {
+    return null;
+  }
+  
   // #region レンダリング
   return (
     <>
@@ -944,6 +988,9 @@ const DiarySearch = ({ initialUserId }: { initialUserId?: string }) => {
     </>
   );
   // #endregion
-};
+});
+
+// 表示名をセット
+DiarySearch.displayName = 'DiarySearch';
 
 export default DiarySearch;

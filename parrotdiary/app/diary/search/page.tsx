@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import DiarySearch from '@/components/diary/DiarySearch';
 import { useAuth } from '@/lib/AuthContext';
@@ -17,6 +17,8 @@ export default function DiarySearchPage() {
   // 状態
   const [loading, setLoading] = useState(true);
   const [effectiveUserId, setEffectiveUserId] = useState<string | null>(null);
+  const [dataLoaded, setDataLoaded] = useState(false);
+  const diarySearchRef = useRef<any>(null);
 
   // 初期化処理
   useEffect(() => {
@@ -30,7 +32,6 @@ export default function DiarySearchPage() {
         if (!authLoading && user) {
           console.log('AuthContextからユーザー情報取得:', user.id);
           setEffectiveUserId(user.id);
-          setLoading(false);
           return;
         }
         
@@ -45,16 +46,15 @@ export default function DiarySearchPage() {
           // すでにログイン済みの場合
           console.log('Supabaseセッションからユーザー情報取得:', session.user.id);
           setEffectiveUserId(session.user.id);
-          setLoading(false);
           return;
         }
         
         console.log('認証情報なし - リダイレクト必要');
         // ここでリダイレクト処理を行わない（下記の専用useEffectで行う）
-        setLoading(false);
         
       } catch (error) {
         console.error('初期化エラー:', error);
+      } finally {
         setLoading(false);
       }
     };
@@ -69,12 +69,10 @@ export default function DiarySearchPage() {
         if (session?.user) {
           console.log('ログイン検出:', session.user.id);
           setEffectiveUserId(session.user.id);
-          setLoading(false);
         }
       } else if (event === 'SIGNED_OUT') {
         console.log('ログアウト検出');
         setEffectiveUserId(null);
-        setLoading(false);
         router.push('/');
       }
     });
@@ -95,34 +93,62 @@ export default function DiarySearchPage() {
       return () => clearTimeout(timer);
     }
   }, [loading, effectiveUserId, router]);
+  
+  // データの読み込み完了通知を受け取るハンドラ
+  const handleDataLoaded = () => {
+    setDataLoaded(true);
+  };
 
   // ローディング中の表示
-  if (loading) {
+  if (loading || !effectiveUserId || !dataLoaded) {
     return (
-      <div className={styles.loadingContainer}>
-        <div className={styles.loadingSpinnerWrapper}>
-          <div className={styles.loadingSpinner}></div>
-          <div className={styles.loadingIconContainer}>
-            <Image
-              src="/parrot-icon.png"
-              alt="Parrot Icon"
-              width={64}
-              height={64}
-              className={styles.loadingIcon}
+      <>
+        <div className={styles.loadingContainer}>
+          <div className={styles.loadingSpinnerWrapper}>
+            <div className={styles.loadingSpinner}></div>
+            <div className={styles.loadingIconContainer}>
+              <Image
+                src="/parrot-icon.png"
+                alt="Parrot Icon"
+                width={64}
+                height={64}
+                className={styles.loadingIcon}
+              />
+            </div>
+          </div>
+          <p className={styles.loadingText}>日記データを読み込み中...</p>
+          <p className={styles.loadingSubtext}>お気に入りの日記がもうすぐ表示されます</p>
+        </div>
+        
+        {/* 不可視のDiarySearchコンポーネントを背後でレンダリングしてデータを先読み */}
+        {effectiveUserId && (
+          <div style={{ display: 'none' }}>
+            <DiarySearch 
+              initialUserId={effectiveUserId} 
+              ref={diarySearchRef}
+              onDataLoaded={handleDataLoaded} 
+              preloadData={true}
             />
           </div>
-        </div>
-        <p className={styles.loadingText}>日記データを読み込み中...</p>
-        <p className={styles.loadingSubtext}>お気に入りの日記がもうすぐ表示されます</p>
-      </div>
+        )}
+      </>
     );
   }
 
   // ユーザーIDがある場合のみ日記検索コンポーネントを表示
   if (effectiveUserId) {
-    return <DiarySearch initialUserId={effectiveUserId} />;
+    // diarySearchRefから取得したデータを新しいコンポーネントインスタンスに渡す
+    return (
+      <DiarySearch 
+        initialUserId={effectiveUserId} 
+        preloadData={false}
+        // 重要: 既に読み込んだデータを初期データとして渡す
+        initialEntries={diarySearchRef.current?.getEntries() || []}
+        initialTags={diarySearchRef.current?.getTags() || []}
+      />
+    );
   }
-
+  
   // 未認証の場合（リダイレクト中）
   return <div className={styles.loadingContainer}>リダイレクト中...</div>;
 }
