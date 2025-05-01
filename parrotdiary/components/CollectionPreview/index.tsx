@@ -1310,7 +1310,7 @@ export default function CollectionPreview() {
           <div className={styles.loadingSpinner}></div>
           <div className={styles.loadingIconContainer}>
             <img 
-              src="/parrot-icon.png" 
+              src="/gif/parrots/60fpsparrot.gif" 
               alt="Parrot Icon" 
               className={styles.loadingIcon}
               onError={(e) => {
