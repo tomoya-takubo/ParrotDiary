@@ -111,6 +111,7 @@ export default function CollectionPreview() {
   const [itemsPerPage, setItemsPerPage] = useState(24); // デフォルトのアイテム数
   const [totalPages, setTotalPages] = useState(1);
   const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const [minLoadingTimeElapsed, setMinLoadingTimeElapsed] = useState(false);
   // #endregion
 
   // #region サブコンポーネント定義
@@ -448,6 +449,18 @@ export default function CollectionPreview() {
   // #endregion
 
   // #region 副作用（useEffect）
+
+  // 最低表示時間のタイマー設定を追加
+  useEffect(() => {
+    // ページロード時に最低表示時間のタイマーを開始
+    const timer = setTimeout(() => {
+      setMinLoadingTimeElapsed(true);
+      console.log('最低表示時間（3秒）経過');
+    }, 3000); // 3秒間のタイマー
+
+    return () => clearTimeout(timer);
+  }, []);
+
   // リサイズイベントのリスナー設定
   useEffect(() => {
     updateItemsPerPage(); // 初回のサイズ設定
@@ -1303,7 +1316,7 @@ export default function CollectionPreview() {
 
   // #region レンダリング
   // ローディング表示
-  if (loading || authLoading) {
+  if (loading || authLoading || !minLoadingTimeElapsed) {
     return (
       <div className={styles.loadingContainer}>
         <div className={styles.loadingSpinnerWrapper}>

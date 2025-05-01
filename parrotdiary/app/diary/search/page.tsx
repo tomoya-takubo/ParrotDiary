@@ -18,8 +18,9 @@ export default function DiarySearchPage() {
   const [loading, setLoading] = useState(true);
   const [effectiveUserId, setEffectiveUserId] = useState<string | null>(null);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [minLoadingTimeElapsed, setMinLoadingTimeElapsed] = useState(false);
   const diarySearchRef = useRef<any>(null);
-
+  
   // 初期化処理
   useEffect(() => {
     // パターンをコレクションページと完全に合わせる
@@ -82,6 +83,17 @@ export default function DiarySearchPage() {
     };
   }, [user, authLoading, router, supabase.auth]);
   
+  // 最低表示時間のタイマー設定
+  useEffect(() => {
+    // ページロード時に最低表示時間のタイマーを開始
+    const timer = setTimeout(() => {
+      setMinLoadingTimeElapsed(true);
+      console.log('最低表示時間（3秒）経過');
+    }, 3000); // 3秒間のタイマー
+
+    return () => clearTimeout(timer);
+  }, []);
+  
   // リダイレクト処理用のuseEffect（ロード完了後かつユーザーIDがない場合）
   useEffect(() => {
     if (!loading && !effectiveUserId) {
@@ -96,11 +108,15 @@ export default function DiarySearchPage() {
   
   // データの読み込み完了通知を受け取るハンドラ
   const handleDataLoaded = () => {
+    console.log('データロード完了');
     setDataLoaded(true);
   };
 
+  // 両方の条件（データロード完了 AND 最低表示時間経過）が満たされるまでローディング画面を表示
+  const shouldShowLoading = loading || !effectiveUserId || !dataLoaded || !minLoadingTimeElapsed;
+
   // ローディング中の表示
-  if (loading || !effectiveUserId || !dataLoaded) {
+  if (shouldShowLoading) {
     return (
       <div style={{ position: 'relative', minHeight: '100vh' }}>
         <div className={styles.loadingContainer}>
