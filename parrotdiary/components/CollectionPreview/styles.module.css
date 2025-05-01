@@ -1167,6 +1167,7 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
+  border-radius: 50%; /* 追加 - 丸い形状に */
 }
 
 .loadingText {
