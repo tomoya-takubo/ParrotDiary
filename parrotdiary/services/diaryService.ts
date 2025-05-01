@@ -17,6 +17,9 @@ export interface TagWithCount {
   name: string;
   count: number;
 }
+export interface ExtendedDiaryEntry extends DiaryEntry {
+  parrots?: string[]; // パロットGIF画像のURL配列
+}
 
 // Supabaseから返ってくるデータの型定義
 interface DiaryEntryData {

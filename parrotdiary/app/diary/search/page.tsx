@@ -7,24 +7,50 @@ import { useAuth } from '@/lib/AuthContext';
 import styles from './styles.module.css';
 import Image from 'next/image';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { ExtendedDiaryEntry, TagWithCount } from '@/services/diaryService';
 
+// #region 型定義
+/**
+ * DiarySearchコンポーネントへの参照用インターフェース
+ */
+interface DiarySearchRef {
+  isDataLoaded: () => boolean;
+  getEntries: () => ExtendedDiaryEntry[];
+  getTags: () => TagWithCount[];
+}
+// #endregion
+
+/**
+ * 日記検索ページのメインコンポーネント
+ * ユーザー認証とデータ読み込みの管理、および
+ * DiarySearchコンポーネントの表示を制御します
+ */
 export default function DiarySearchPage() {
-  // 認証情報
+  // #region 状態管理
+  // 認証関連
   const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const supabase = createClientComponentClient();
   
-  // 状態
-  const [loading, setLoading] = useState(true);
-  const [effectiveUserId, setEffectiveUserId] = useState<string | null>(null);
-  const [dataLoaded, setDataLoaded] = useState(false);
-  const [minLoadingTimeElapsed, setMinLoadingTimeElapsed] = useState(false);
-  const diarySearchRef = useRef<any>(null);
+  // ユーザー情報と読み込み状態
+  const [loading, setLoading] = useState(true);                // 認証処理の読み込み状態
+  const [effectiveUserId, setEffectiveUserId] = useState<string | null>(null); // 有効なユーザーID
+  const [dataLoaded, setDataLoaded] = useState(false);         // データ読み込み完了フラグ
+  const [minLoadingTimeElapsed, setMinLoadingTimeElapsed] = useState(false); // 最低表示時間経過フラグ
   
-  // 初期化処理
+  // DiarySearchコンポーネントへの参照
+  const diarySearchRef = useRef<DiarySearchRef | null>(null);
+  
+  // 両方の条件（データロード完了 AND 最低表示時間経過）が満たされるまでローディング画面を表示
+  const shouldShowLoading = loading || !effectiveUserId || !dataLoaded || !minLoadingTimeElapsed;
+  // #endregion
+
+  // #region 初期化処理
+  /**
+   * ユーザー認証とセッション状態の初期化
+   */
   useEffect(() => {
-    // パターンをコレクションページと完全に合わせる
-    const initializeData = async () => {
+    const initializeAuth = async () => {
       try {
         setLoading(true);
         console.log('認証状態確認開始');
@@ -51,8 +77,7 @@ export default function DiarySearchPage() {
         }
         
         console.log('認証情報なし - リダイレクト必要');
-        // ここでリダイレクト処理を行わない（下記の専用useEffectで行う）
-        
+        // リダイレクト処理は別のuseEffectで行う
       } catch (error) {
         console.error('初期化エラー:', error);
       } finally {
@@ -60,9 +85,10 @@ export default function DiarySearchPage() {
       }
     };
     
-    initializeData();
+    // 初期化処理の実行
+    initializeAuth();
     
-    // 認証状態変更リスナー - コレクションページと同じパターン
+    // 認証状態変更リスナーの設定
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('認証状態変更イベント:', event, session?.user?.id || 'なし');
       
@@ -78,12 +104,16 @@ export default function DiarySearchPage() {
       }
     });
     
+    // クリーンアップ関数
     return () => {
       authListener?.subscription.unsubscribe();
     };
   }, [user, authLoading, router, supabase.auth]);
   
-  // 最低表示時間のタイマー設定
+  /**
+   * 最低表示時間のタイマー設定
+   * ユーザー体験のためにローディング画面を少なくとも3秒間表示する
+   */
   useEffect(() => {
     // ページロード時に最低表示時間のタイマーを開始
     const timer = setTimeout(() => {
@@ -94,7 +124,10 @@ export default function DiarySearchPage() {
     return () => clearTimeout(timer);
   }, []);
   
-  // リダイレクト処理用のuseEffect（ロード完了後かつユーザーIDがない場合）
+  /**
+   * リダイレクト処理
+   * ログインしていない場合はホームページにリダイレクト
+   */
   useEffect(() => {
     if (!loading && !effectiveUserId) {
       const timer = setTimeout(() => {
@@ -105,17 +138,22 @@ export default function DiarySearchPage() {
       return () => clearTimeout(timer);
     }
   }, [loading, effectiveUserId, router]);
-  
-  // データの読み込み完了通知を受け取るハンドラ
+  // #endregion
+
+  // #region イベントハンドラ
+  /**
+   * DiarySearchコンポーネントからのデータ読み込み完了通知を受け取るハンドラ
+   */
   const handleDataLoaded = () => {
-    console.log('データロード完了');
+    console.log('DiarySearch: データロード完了通知を受信');
     setDataLoaded(true);
   };
+  // #endregion
 
-  // 両方の条件（データロード完了 AND 最低表示時間経過）が満たされるまでローディング画面を表示
-  const shouldShowLoading = loading || !effectiveUserId || !dataLoaded || !minLoadingTimeElapsed;
-
-  // ローディング中の表示
+  // #region レンダリング
+  /**
+   * ローディング画面のレンダリング
+   */
   if (shouldShowLoading) {
     return (
       <div style={{ position: 'relative', minHeight: '100vh' }}>
@@ -154,7 +192,10 @@ export default function DiarySearchPage() {
     );
   }
   
-  // ユーザーIDがある場合のみ日記検索コンポーネントを表示
+  /**
+   * メインコンテンツのレンダリング
+   * ユーザーIDがある場合のみ日記検索コンポーネントを表示
+   */
   if (effectiveUserId) {
     // diarySearchRefから取得したデータを新しいコンポーネントインスタンスに渡す
     return (
@@ -168,6 +209,9 @@ export default function DiarySearchPage() {
     );
   }
 
-  // 未認証の場合（リダイレクト中）
+  /**
+   * 未認証時のフォールバック表示
+   */
   return <div className={styles.loadingContainer}>リダイレクト中...</div>;
+  // #endregion
 }

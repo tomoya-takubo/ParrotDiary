@@ -1,33 +1,46 @@
-/* app/diary/search/styles.module.css */
-/* CollectionPreviewのスタイルを参考にしたローディング表示スタイル */
-
-/* ローディング関連のスタイル */
-.loadingContainer {
+/* #region ローディングコンテナ */
+/**
+ * ローディング表示の全画面コンテナ
+ * 固定位置で画面全体を覆い、グラデーション背景を表示
+ */
+ .loadingContainer {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh; /* 70vhから100vhに変更 */
+  min-height: 100vh;
   width: 100%;
   text-align: center;
   padding: 2rem;
   background: linear-gradient(to bottom, #EFF6FF, #F5F3FF);
-  position: fixed; /* 追加 */
-  top: 0; /* 追加 */
-  left: 0; /* 追加 */
-  right: 0; /* 追加 */
-  bottom: 0; /* 追加 */
-  z-index: 1000; /* 追加 - 他の要素より前面に表示 */
+  
+  /* 画面全体を覆うための固定位置設定 */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
 }
+/* #endregion */
 
+/* #region ローディングスピナー */
+/**
+ * スピナーのコンテナ要素
+ * 相対位置を設定し、オーバーフロー部分を隠す
+ */
 .loadingSpinnerWrapper {
   position: relative;
   width: 80px;
   height: 80px;
   margin-bottom: 1.5rem;
-  overflow: hidden; /* 追加 - はみ出した部分を隠す */
+  overflow: hidden;
 }
 
+/**
+ * 回転するスピナー要素
+ * 円形のボーダーで構成され、トップの色だけ異なる
+ */
 .loadingSpinner {
   width: 80px;
   height: 80px;
@@ -38,9 +51,12 @@
   position: absolute;
   top: 0;
   left: 0;
-  box-sizing: border-box; /* 追加 - ボーダーを幅と高さに含める */
+  box-sizing: border-box;
 }
 
+/**
+ * スピナー中央のアイコン配置用コンテナ
+ */
 .loadingIconContainer {
   position: absolute;
   top: 50%;
@@ -51,16 +67,26 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2; /* 追加 - スピナーより前面に */
+  z-index: 2;
 }
 
+/**
+ * パロットアイコン画像
+ * コンテナに合わせたサイズで表示
+ */
 .loadingIcon {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  border-radius: 50%; /* 追加 - 丸い形状に */
+  border-radius: 50%;
 }
+/* #endregion */
 
+/* #region テキスト要素 */
+/**
+ * メインのローディングテキスト
+ * 大きめのフォントサイズと強調表示
+ */
 .loadingText {
   font-size: 1.2rem;
   font-weight: 600;
@@ -68,11 +94,21 @@
   margin-bottom: 0.5rem;
 }
 
+/**
+ * 補足テキスト
+ * メインテキストより小さく、薄い色で表示
+ */
 .loadingSubtext {
   color: #6B7280;
   font-size: 0.9rem;
 }
+/* #endregion */
 
+/* #region アニメーション */
+/**
+ * スピナーの回転アニメーション定義
+ */
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+/* #endregion */
