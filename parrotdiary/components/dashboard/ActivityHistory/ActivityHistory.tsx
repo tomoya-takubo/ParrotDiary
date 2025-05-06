@@ -1,3 +1,4 @@
+//#region インポート
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import styles from './ActivityHistory.module.css';
@@ -6,7 +7,7 @@ import DiaryModal from '@/components/dashboard/modals/DiaryModal';
 import { useAuth } from '@/lib/AuthContext';
 import EditDiaryModal from '@/components/dashboard/modals/EditDiaryModal';
 import { getEntryParrots } from '@/components/dashboard/Diary/ParrotSelector';
-
+//#endregion
 
 //#region 型定義
 type ActivityHistoryProps = {
