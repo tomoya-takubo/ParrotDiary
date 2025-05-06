@@ -10,13 +10,19 @@ import { getEntryParrots } from '@/components/dashboard/Diary/ParrotSelector';
 //#endregion
 
 //#region 型定義
+/**
+ * ActivityHistoryコンポーネントのprops
+ */
 type ActivityHistoryProps = {
   onCellClick?: (date: string) => void;
   width?: string | number;
   isGachaOpen?: boolean;
-  onSave?: () => void; // ← 追加
+  onSave?: () => void;
 };
 
+/**
+ * Supabaseから取得する日記エントリーの型
+ */
 type DBDiaryEntry = {
   entry_id: number;
   user_id: string;
@@ -30,6 +36,9 @@ type DBDiaryEntry = {
   updated_at: string;
 };
 
+/**
+ * モーダル表示用の日記エントリーの型
+ */
 type ModalDiaryEntry = {
   time: string;
   tags: string[];
@@ -39,8 +48,14 @@ type ModalDiaryEntry = {
   parrots?: string[];
 };
 
+/**
+ * アクティビティのレベル（0-4）
+ */
 type ActivityLevel = 0 | 1 | 2 | 3 | 4;
 
+/**
+ * カレンダーセルのデータ型
+ */
 type CellData = {
   date: string;
   day: number;
@@ -53,21 +68,27 @@ type CellData = {
 };
 //#endregion
 
+//#region 定数と初期化
 // Supabase クライアントの初期化
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseKey);
+//#endregion
 
+/**
+ * ActivityHistory コンポーネント
+ * ユーザーの活動履歴をカレンダー形式で表示する
+ */
 const ActivityHistory: React.FC<ActivityHistoryProps> = ({ 
   onCellClick, 
   width = '100%',
   isGachaOpen = false,
-  onSave, // ← これを追加！
+  onSave,
 }) => {
   const { user, session, isLoading: authLoading } = useAuth();
   
   //#region 定数
-  const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']; // 英語の曜日表示
+  const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const MAX_AUTH_RETRIES = 3;
   const MONTHS_JP = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
   //#endregion
@@ -107,13 +128,18 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   //#endregion
 
-  // データを再取得する関数
+  //#region データ操作関数
+  /**
+   * データを再取得するトリガー関数
+   */
   const refreshData = () => {
     setRefreshTrigger(prev => prev + 1);
   };
 
-  //#region データ取得
-  // 日付文字列の処理を改善する関数
+  /**
+   * 日付文字列の処理を改善する関数
+   * 異なる形式の日付文字列を統一形式に変換する
+   */
   const formatDateForComparison = (dateString: string): string => {
     // スペース区切り形式
     if (typeof dateString === 'string' && dateString.includes(' ')) {
@@ -125,8 +151,121 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
     }
     return dateString;
   };
-  
-  // 認証状態とトリガーに基づいてデータを取得
+
+  /**
+   * 日付文字列をYYYY-MM-DD形式に変換
+   */
+  const formatDateString = (date: Date): string => {
+    // クライアントのローカルタイムゾーンで日付部分だけを取得
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+    
+  /**
+   * 日付を表示形式に変換（例: 2024年3月15日）
+   */
+  const formatDisplayDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${year}年${month}月${day}日`;
+  };
+
+  /**
+   * 表示形式の日付から内部形式への変換（例: 2024年3月15日 → 2024-03-15）
+   */
+  const parseDisplayDate = (displayDate: string): string | null => {
+    try {
+      const matches = displayDate.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
+      if (!matches) return null;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const [_, year, month, day] = matches;
+      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    } catch (e) {
+      console.error('日付変換エラー:', e);
+      return null;
+    }
+  };
+
+  /**
+   * DBデータをモーダル表示用データに変換
+   * 日記エントリーからモーダル表示用のフォーマットに変換し、タグとパロット情報も取得する
+   */
+  const convertToModalEntry = async (dbEntry: DBDiaryEntry): Promise<ModalDiaryEntry> => {
+    const recordedTime = new Date(dbEntry.recorded_at);
+    const hours = String(recordedTime.getHours()).padStart(2, '0');
+    const minutes = String(recordedTime.getMinutes()).padStart(2, '0');
+    const timeStr = `${hours}:${minutes}`;
+      
+    const activities = [dbEntry.line1];
+    if (dbEntry.line2) activities.push(dbEntry.line2);
+    if (dbEntry.line3) activities.push(dbEntry.line3);
+
+    let tags: string[] = [];
+
+    try {
+      // タグ使用履歴を取得
+      const { data: tagUsages } = await supabase
+        .from('tag_usage_histories')
+        .select('tag_id')
+        .eq('entry_id', dbEntry.entry_id);
+
+      const tagIds = tagUsages?.map(t => t.tag_id).filter(Boolean);
+      if (tagIds && tagIds.length > 0) {
+        // タグ名を取得
+        const { data: tagNames } = await supabase
+          .from('tags')
+          .select('name')
+          .in('tag_id', tagIds);
+        tags = tagNames?.map(t => t.name) || [];
+      }
+    } catch (error) {
+      console.error('タグ取得エラー:', error);
+    }
+
+    // パロット情報を取得
+    let parrots: string[] = [];
+    try {
+      if (dbEntry.entry_id) {
+        const entryId = String(dbEntry.entry_id);
+        const parrotUrls = await getEntryParrots(entryId);
+        if (Array.isArray(parrotUrls) && parrotUrls.length > 0) {
+          parrots = parrotUrls;
+        }
+      }
+    } catch (error) {
+      console.error('パロット取得エラー:', error);
+    }
+
+    return {
+      time: timeStr,
+      tags: tags.length > 0 ? tags : ['3行日記'], // タグがないときのフォールバック
+      activities,
+      created_at: dbEntry.created_at,
+      entry_id: dbEntry.entry_id,
+      parrots // パロット情報を追加
+    };
+  };
+
+  /**
+   * 月を変更する関数
+   */
+  const changeMonth = (increment: number) => {
+    setCurrentDate(prevDate => {
+      const newDate = new Date(prevDate);
+      newDate.setMonth(newDate.getMonth() + increment);
+      return newDate;
+    });
+  };
+  //#endregion
+
+  //#region データ取得とカレンダー生成
+  /**
+   * 認証状態とトリガーに基づいてデータを取得するuseEffect
+   */
   useEffect(() => {
     const fetchDiaryEntries = async () => {
       try {
@@ -205,29 +344,10 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
       fetchDiaryEntries();
     }
   }, [user, session, authLoading, refreshTrigger]);
-  //#endregion
 
-  //#region カレンダーグリッド生成
-  useEffect(() => {
-    if (!loading || Object.keys(entriesByDate).length >= 0) {
-      generateCalendarGrid();
-    }
-  }, [currentDate, entriesByDate, loading]);
-
-  // 認証リトライを処理するuseEffect
-  useEffect(() => {
-    if (authLoading && authRetryCount < MAX_AUTH_RETRIES) {
-      const timer = setTimeout(() => {
-        console.log(`認証リトライ ${authRetryCount + 1}/${MAX_AUTH_RETRIES}`);
-        setAuthRetryCount(prev => prev + 1);
-        setRefreshTrigger(prev => prev + 1);
-      }, 2000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [authLoading, authRetryCount]);
-    
-  // カレンダーグリッドの生成（月間カレンダー形式）
+  /**
+   * カレンダーグリッドの生成（月間カレンダー形式）
+   */
   const generateCalendarGrid = () => {
     const today = new Date();
     const todayStr = formatDateString(today);
@@ -251,7 +371,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
     // カレンダーグリッドを初期化
     const grid: CellData[][] = Array(rowCount).fill(null).map(() => Array(7).fill(null));
     
-    // 前月の日を埋める
+    // 日付の設定
     let day = 1;
     let nextMonthFlag = false;
     
@@ -327,138 +447,37 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
     
     setCalendarData(grid);
   };
-  //#endregion
 
-  //#region ヘルパー関数
-  // 日付文字列をYYYY-MM-DD形式に変換
-  const formatDateString = (date: Date): string => {
-    // クライアントのローカルタイムゾーンで日付部分だけを取得
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-    
-  // 日付を表示形式に変換（例: 2024年3月15日）
-  const formatDisplayDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    return `${year}年${month}月${day}日`;
-  };
-
-  // 表示形式の日付から内部形式への変換（例: 2024年3月15日 → 2024-03-15）
-  const parseDisplayDate = (displayDate: string): string | null => {
-    try {
-      const matches = displayDate.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
-      if (!matches) return null;
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const [_, year, month, day] = matches;
-      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-    } catch (e) {
-      console.error('日付変換エラー:', e);
-      return null;
+  /**
+   * カレンダーグリッド生成のトリガーuseEffect
+   */
+  useEffect(() => {
+    if (!loading || Object.keys(entriesByDate).length >= 0) {
+      generateCalendarGrid();
     }
-  };
+  }, [currentDate, entriesByDate, loading]);
 
-  // 日記モーダルの日付変更ハンドラー
-  const handleDateChange = async (newDisplayDate: string) => {
-    console.log('日付変更:', newDisplayDate);
-    const newDateString = parseDisplayDate(newDisplayDate);
-    
-    if (newDateString) {
-      try {
-        setSelectedDate(newDateString);
-        
-        // 新しい日付のデータを取得
-        const entries = entriesByDate[newDateString] || [];
-        
-        // データ変換処理
-        let modalData: ModalDiaryEntry[] = [];
-        if (entries.length > 0) {
-          modalData = await Promise.all(entries.map(convertToModalEntry));
-        }
-        
-        // 処理完了後にモーダルエントリーを更新
-        setModalEntries(modalData);
-      } catch (error) {
-        console.error("エントリー変換中にエラーが発生しました:", error);
-        setModalEntries([]);
-      }
-    }
-  };  
-
-  // DBデータをモーダル表示用データに変換
-  // convertToModalEntry 関数を確認・修正
-  const convertToModalEntry = async (dbEntry: DBDiaryEntry): Promise<ModalDiaryEntry> => {
-    const recordedTime = new Date(dbEntry.recorded_at);
-    const hours = String(recordedTime.getHours()).padStart(2, '0');
-    const minutes = String(recordedTime.getMinutes()).padStart(2, '0');
-    const timeStr = `${hours}:${minutes}`;
+  /**
+   * 認証リトライを処理するuseEffect
+   */
+  useEffect(() => {
+    if (authLoading && authRetryCount < MAX_AUTH_RETRIES) {
+      const timer = setTimeout(() => {
+        console.log(`認証リトライ ${authRetryCount + 1}/${MAX_AUTH_RETRIES}`);
+        setAuthRetryCount(prev => prev + 1);
+        setRefreshTrigger(prev => prev + 1);
+      }, 2000);
       
-    const activities = [dbEntry.line1];
-    if (dbEntry.line2) activities.push(dbEntry.line2);
-    if (dbEntry.line3) activities.push(dbEntry.line3);
-
-    let tags: string[] = [];
-
-    try {
-      const { data: tagUsages } = await supabase
-        .from('tag_usage_histories')
-        .select('tag_id')
-        .eq('entry_id', dbEntry.entry_id);
-
-      const tagIds = tagUsages?.map(t => t.tag_id).filter(Boolean);
-      if (tagIds && tagIds.length > 0) {
-        const { data: tagNames } = await supabase
-          .from('tags')
-          .select('name')
-          .in('tag_id', tagIds);
-        tags = tagNames?.map(t => t.name) || [];
-      }
-    } catch (error) {
-      console.error('タグ取得エラー:', error);
+      return () => clearTimeout(timer);
     }
-
-    // パロット情報を取得
-    let parrots: string[] = [];
-    try {
-      if (dbEntry.entry_id) {
-        const entryId = String(dbEntry.entry_id);
-        const parrotUrls = await getEntryParrots(entryId);
-        if (Array.isArray(parrotUrls) && parrotUrls.length > 0) {
-          parrots = parrotUrls;
-        }
-      }
-    } catch (error) {
-      console.error('パロット取得エラー:', error);
-    }
-
-    return {
-      time: timeStr,
-      tags: tags.length > 0 ? tags : ['3行日記'], // タグがないときのフォールバック
-      activities,
-      created_at: dbEntry.created_at,
-      entry_id: dbEntry.entry_id,
-      parrots // パロット情報を追加
-    };
-  };
-
-  // 月を変更する関数
-  const changeMonth = (increment: number) => {
-    setCurrentDate(prevDate => {
-      const newDate = new Date(prevDate);
-      newDate.setMonth(newDate.getMonth() + increment);
-      return newDate;
-    });
-  };
-  
+  }, [authLoading, authRetryCount]);
   //#endregion
 
   //#region イベントハンドラー
-  // セルクリックのハンドラー
-  // handleCellClick関数を非同期関数に変更
+  /**
+   * セルクリックのハンドラー
+   * カレンダーのセルがクリックされたときの処理
+   */
   const handleCellClick = async (cell: CellData) => {
     if (isGachaOpen) return;
   
@@ -496,12 +515,16 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
     }
   };
 
-  // モーダルを閉じるハンドラー
+  /**
+   * モーダルを閉じるハンドラー
+   */
   const handleCloseModal = () => {
     setShowModal(false);
   };
 
-  // エントリー編集ハンドラー
+  /**
+   * エントリー編集ハンドラー
+   */
   const handleEditEntry = (entry: ModalDiaryEntry) => {
     // entry_id が string 型の場合は number に変換
     const convertedEntry = {
@@ -516,23 +539,57 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
     setShowModal(false); // DiaryModalを閉じる
   };
   
-  // 編集モーダルを閉じるハンドラー
+  /**
+   * 編集モーダルを閉じるハンドラー
+   */
   const handleCloseEditModal = () => {
     setIsEditModalOpen(false);
     setEditingEntry(null);
   };
 
-  // 編集完了後のハンドラー
+  /**
+   * 編集完了後のハンドラー
+   */
   const handleEditComplete = () => {
     setIsEditModalOpen(false);
     setEditingEntry(null);
-    refreshData(); // ← 自分自身のカレンダー再取得
-    onSave?.(); // ← page.tsx に通知して refreshKey を増やす！
+    refreshData(); // 自分自身のカレンダー再取得
+    onSave?.(); // page.tsx に通知して refreshKey を増やす
   };
-    //#endregion
 
+  /**
+   * 日記モーダルの日付変更ハンドラー
+   */
+  const handleDateChange = async (newDisplayDate: string) => {
+    console.log('日付変更:', newDisplayDate);
+    const newDateString = parseDisplayDate(newDisplayDate);
+    
+    if (newDateString) {
+      try {
+        setSelectedDate(newDateString);
+        
+        // 新しい日付のデータを取得
+        const entries = entriesByDate[newDateString] || [];
+        
+        // データ変換処理
+        let modalData: ModalDiaryEntry[] = [];
+        if (entries.length > 0) {
+          modalData = await Promise.all(entries.map(convertToModalEntry));
+        }
+        
+        // 処理完了後にモーダルエントリーを更新
+        setModalEntries(modalData);
+      } catch (error) {
+        console.error("エントリー変換中にエラーが発生しました:", error);
+        setModalEntries([]);
+      }
+    }
+  };
+  //#endregion
+
+  //#region レンダリング
   return (
-          <div className={`${styles.container} ${isGachaOpen ? styles.gachaOpen : ''}`} style={{ width }} ref={containerRef}>
+    <div className={`${styles.container} ${isGachaOpen ? styles.gachaOpen : ''}`} style={{ width }} ref={containerRef}>
       {/* カレンダーカード */}
       <div className={styles.calendarCard}>
         {/* カードヘッダー（タイトルとナビゲーションボタン） */}
@@ -635,9 +692,10 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
         onDataUpdated={refreshData}
         isToday={selectedDate === formatDateString(new Date())}
         onEditEntry={handleEditEntry}
-        onDateChange={handleDateChange} // ← 新しく追加
+        onDateChange={handleDateChange}
       />
       
+      {/* 編集モーダル */}
       {isEditModalOpen && editingEntry && (
         <EditDiaryModal
           isOpen={isEditModalOpen}
@@ -649,6 +707,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
       )}
     </div>
   );
+  //#endregion
 };
 
 export default ActivityHistory;

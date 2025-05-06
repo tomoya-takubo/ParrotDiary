@@ -1,8 +1,12 @@
-/* アニメーション */
+/* #region 基本アニメーション */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
-}.container {
+}
+/* #endregion */
+
+/* #region コンテナ設定 */
+.container {
   width: 100%;
   font-family: sans-serif;
   /* z-indexやpositionは設定しない */
@@ -19,7 +23,9 @@
   box-sizing: border-box;
   /* position プロパティを設定しない */
 }
+/* #endregion */
 
+/* #region ヘッダー要素 */
 /* カードヘッダー */
 .cardHeader {
   display: flex;
@@ -35,6 +41,7 @@
   margin: 0;
 }
 
+/* ナビゲーションボタン */
 .navigationButtons {
   display: flex;
   gap: 8px;
@@ -62,7 +69,9 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+/* #endregion */
 
+/* #region カレンダーコンテンツ */
 .calendarContent {
   position: relative;
   min-height: 350px;
@@ -74,8 +83,9 @@
   background-color: white;
   border-radius: 8px;
 }
+/* #endregion */
 
-/* 曜日ヘッダー */
+/* #region 曜日ヘッダー */
 .weekdayHeader {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -104,7 +114,9 @@
 .weekdayHeaderCell:last-child {
   color: #64b5f6;
 }
+/* #endregion */
 
+/* #region カレンダーグリッド */
 /* 月間グリッド */
 .monthlyGrid {
   display: flex;
@@ -118,7 +130,9 @@
   grid-template-columns: repeat(7, 1fr);
   gap: 6px;
 }
+/* #endregion */
 
+/* #region 日付セル基本スタイル */
 .dayCell {
   height: 70px;
   position: relative;
@@ -153,7 +167,9 @@
   position: relative;
   z-index: 2;
 }
+/* #endregion */
 
+/* #region 曜日と日付の特殊スタイル */
 /* 他の月の日付 */
 .otherMonth {
   background-color: #f9f9f9;
@@ -201,7 +217,9 @@
 .weekRow > div:last-child .dayNumber {
   color: #64b5f6;
 }
+/* #endregion */
 
+/* #region アクティビティインジケーター */
 /* アクティビティインジケーター - セル全体に背景色を適用 */
 .level0, .level1, .level2, .level3, .level4 {
   position: relative;
@@ -257,7 +275,9 @@
 .level4::after {
   background-color: #34c759;
 }
+/* #endregion */
 
+/* #region レベル説明レジェンド */
 /* レベル説明 */
 .levelLegend {
   display: flex;
@@ -284,7 +304,9 @@
   border-radius: 6px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
+/* #endregion */
 
+/* #region 状態表示 */
 /* ローディングと状態 */
 .loading, .error {
   text-align: center;
@@ -302,7 +324,9 @@
   background-color: rgba(255, 255, 255, 0.8);
   z-index: 20;
 }
+/* #endregion */
 
+/* #region ガチャモーダル状態 */
 /* ガチャモーダル表示中のスタイル - 完全なグレーアウト版 */
 .gachaOpen .calendarCard {
   opacity: 0.4;
@@ -320,8 +344,31 @@
 .gachaOpen .title {
   pointer-events: none;
 }
+/* #endregion */
 
-/* レスポンシブ対応 */
+/* #region フィルターボタン */
+/* フィルターボタン用のスタイルを追加 */
+.filterButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.filterButton {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1 1 auto;
+  text-align: center;
+  min-width: 80px;
+}
+/* #endregion */
+
+/* #region レスポンシブ対応 - 標準タブレット */
 @media (max-width: 768px) {
   .calendarCard {
     padding: 20px;
@@ -343,7 +390,9 @@
     right: 6px;
   }
 }
+/* #endregion */
 
+/* #region レスポンシブ対応 - モバイル */
 @media (max-width: 480px) {
   .calendarCard {
     padding: 12px;
@@ -392,75 +441,6 @@
   .legendText {
     font-size: 10px;
   }
-}
-
-/* タッチデバイス向けの調整 */
-@media (hover: none) {
-  .dayCell:hover {
-    transform: none; /* ホバーエフェクトを無効化 */
-    box-shadow: none;
-  }
-  
-  /* タップ時のエフェクト */
-  .dayCell:active {
-    background-color: rgba(59, 130, 246, 0.1);
-  }
-}
-
-/* フィルターボタン用のスタイルを追加 */
-.filterButtons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.filterButton {
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex: 1 1 auto;
-  text-align: center;
-  min-width: 80px;
-}
-
-/* レスポンシブ対応の修正 */
-@media (max-width: 480px) {
-  /* 既存のスタイル */
-  .calendarCard {
-    padding: 12px;
-  }
-  
-  .title {
-    font-size: 16px;
-  }
-  
-  .dayCell {
-    height: 40px;
-    padding: 2px;
-    border-radius: 6px;
-  }
-  
-  .dayNumber {
-    font-size: 11px;
-  }
-  
-  .activityCount {
-    font-size: 8px;
-    padding: 0 2px;
-    bottom: 2px;
-    right: 2px;
-    min-width: auto;
-    height: auto;
-  }
-  
-  .weekdayHeaderCell {
-    font-size: 10px;
-    padding: 4px 0;
-  }
   
   /* フィルターボタンのスタイルを調整 */
   .filterButtons {
@@ -475,7 +455,9 @@
     flex: 0 1 auto;
   }
 }
+/* #endregion */
 
+/* #region レスポンシブ対応 - 極小画面 */
 /* さらに小さい画面向けの調整 */
 @media (max-width: 360px) {
   .filterButtons {
@@ -488,3 +470,19 @@
     margin-bottom: 4px;
   }
 }
+/* #endregion */
+
+/* #region タッチデバイス向け対応 */
+/* タッチデバイス向けの調整 */
+@media (hover: none) {
+  .dayCell:hover {
+    transform: none; /* ホバーエフェクトを無効化 */
+    box-shadow: none;
+  }
+  
+  /* タップ時のエフェクト */
+  .dayCell:active {
+    background-color: rgba(59, 130, 246, 0.1);
+  }
+}
+/* #endregion */
