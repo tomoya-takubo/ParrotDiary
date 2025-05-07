@@ -653,7 +653,7 @@ export default function Dashboard() {
                   <span className={styles.ticketCount}>
                     {isLoadingTickets ? '読込中...' : `${ticketCount}枚`}
                   </span>
-                </div>z
+                </div>
                 <div className={styles.gachaButtonContent}>
                   <Gift size={24} />
                   <span>ガチャを回す</span>
