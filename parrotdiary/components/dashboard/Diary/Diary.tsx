@@ -394,7 +394,7 @@ const Diary: React.FC<DiaryProps> = ({ onSave }) => {
               </div>
             ) : (
               getFilteredEntries().map(entry => (
-                <div key={entry.entry_id} className={styles.diaryEntry} style={{ position: 'relative' }}>
+                <div key={entry.entry_id} className={styles.diaryEntry}>
                   {/* エントリのヘッダー部分（日時・タグ・編集ボタン） */}
                   <div className={styles.entryHeader}>
                     <div className={styles.entryTimestamp}>
@@ -441,13 +441,15 @@ const Diary: React.FC<DiaryProps> = ({ onSave }) => {
                   </div>
                   {/* エントリの内容部分 */}
                   {entry.line1 ? (
-                    <div className={styles.entryContent}>
-                      <div className={styles.entryLine}>{entry.line1}</div>
-                      {entry.line2 && <div className={styles.entryLine}>{entry.line2}</div>}
-                      {entry.line3 && <div className={styles.entryLine}>{entry.line3}</div>}
-                      {/* パロット表示 */}
+                    <>
+                      <div className={styles.entryContent}>
+                        <div className={styles.entryLine}>{entry.line1}</div>
+                        {entry.line2 && <div className={styles.entryLine}>{entry.line2}</div>}
+                        {entry.line3 && <div className={styles.entryLine}>{entry.line3}</div>}
+                      </div>
+                      {/* パロットを別セクションに表示 */}
                       {entry.parrots && entry.parrots.length > 0 && (
-                        <div className={styles.parrotBottomRight}>
+                        <div className={styles.parrotSection}>
                           {entry.parrots.map((parrot, index) => (
                             <div key={index} className={styles.parrotContainer}>
                               <Image 
@@ -461,7 +463,7 @@ const Diary: React.FC<DiaryProps> = ({ onSave }) => {
                           ))}
                         </div>
                       )}
-                    </div>
+                    </>
                   ) : (
                     <div className={styles.emptyEntry}>
                       まだ記録がありません
@@ -469,7 +471,7 @@ const Diary: React.FC<DiaryProps> = ({ onSave }) => {
                   )}
                 </div>
               ))
-            )}
+                          )}
           </div>
 
           {/* 編集/追加モーダル */}

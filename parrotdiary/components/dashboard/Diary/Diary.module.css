@@ -538,22 +538,10 @@
 /* #endregion */
 
 /* #region パロット関連 - アイコン表示と選択UI */
-/* パロット表示用のスタイル */   
-.parrotBottomRight {
-  position: absolute;
-  bottom: -4px;  /* 位置調整 */
-  right: -4px;   /* 位置調整 */
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 10px;
-  z-index: 2;
-  padding: 6px;
-}
 
 .parrotGif {
-  width: 40px;
-  height: 40px;
+  width: 30px;
+  height: 30px;
   object-fit: contain;
   border-radius: 4px;
   cursor: default; /* カーソルを通常のものに変更 */
@@ -561,13 +549,25 @@
   transform: scaleX(-1); /* GIFを左右反転 */
 }
 
+/* パロットコンテナ用のスタイル */
 .parrotContainer {
-  /* パロットコンテナ用のスタイル */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* パロットセレクタ */
 .parrotSelector {
   position: relative;
+}
+
+.parrotSection {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 12px;
+  margin-top: 8px;
+  border-top: 1px dashed #e2e8f0;
 }
 
 .parrotDropdown {
@@ -797,12 +797,6 @@
     justify-content: flex-start;
   }
   
-  /* パロットの位置調整 */
-  .parrotBottomRight {
-    bottom: -4px;
-    right: -4px;
-  }
-  
   .parrotGif {
     width: 40px;
     height: 40px;
@@ -884,12 +878,6 @@
     white-space: nowrap;
   }
 
-  /* パロット表示調整 */
-  .parrotBottomRight {
-    bottom: -3px;
-    right: -3px;
-  }
-  
   .parrotGif {
     width: 32px;
     height: 32px;
