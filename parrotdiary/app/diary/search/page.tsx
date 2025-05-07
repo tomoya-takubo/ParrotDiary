@@ -192,9 +192,9 @@ export default function DiarySearchPage() {
       <DiarySearch 
         initialUserId={effectiveUserId} 
         preloadData={false}
-        // 重要: 既に読み込んだデータを初期データとして渡す
-        initialEntries={diarySearchRef.current?.getEntries() || []}
-        initialTags={diarySearchRef.current?.getTags() || []}
+        // 重要: ここでデータが本当に完全に読み込まれたことを確認する
+        initialEntries={diarySearchRef.current?.isDataLoaded() ? (diarySearchRef.current?.getEntries() || []) : []}
+        initialTags={diarySearchRef.current?.isDataLoaded() ? (diarySearchRef.current?.getTags() || []) : []}
       />
     );
   }

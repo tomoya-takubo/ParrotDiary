@@ -103,12 +103,29 @@ const DiarySearch = forwardRef(({
    * 初期データ取得（コンポーネントマウント時）
    */
   useEffect(() => {
-
     // 既にデータが提供されている場合は取得処理をスキップ
     if (initialEntries.length > 0 && initialTags.length > 0 && !preloadData) {
       console.log('初期データが提供されているため、データ取得をスキップします');
-      if (onDataLoaded) {
-        onDataLoaded();
+      
+      // 重要な修正: パロット情報がない場合は再取得する
+      const needsParrottData = initialEntries.some(entry => 
+        !entry.parrots || entry.parrots.length === 0
+      );
+      
+      if (needsParrottData && effectiveUserId) {
+        console.log('パロット情報が不足しているため、再取得します');
+        // 初期ロード時はローディング表示しない
+        fetchDataWithParrots(effectiveUserId, true);
+        
+        // ここでデータの読み込み完了を通知（非同期処理の完了を待たない）
+        if (onDataLoaded) {
+          onDataLoaded();
+        }
+      } else {
+        // データが完全な場合はそのまま完了通知
+        if (onDataLoaded) {
+          onDataLoaded();
+        }
       }
       return;
     }
@@ -198,43 +215,63 @@ const DiarySearch = forwardRef(({
     };
   
     fetchData();
-}, [user, effectiveUserId, onDataLoaded, initialEntries.length, initialTags.length, preloadData]);
+  }, [user, effectiveUserId, onDataLoaded, initialEntries.length, initialTags.length, preloadData]);
 
   /**
    * パロット情報を含むデータ再取得関数
    * 編集や削除後のデータ更新に使用
+   * @param userId ユーザーID
+   * @param isInitialLoad 初期ロード中かどうか（ローディング表示の制御用）
    */
-  const fetchDataWithParrots = async (userId: string) => {
+  const fetchDataWithParrots = async (userId: string, isInitialLoad = false) => {
     try {
-      setIsLoading(true);
+      // isInitialLoad=falseの場合にのみローディング状態を表示
+      if (!isInitialLoad) {
+        setIsLoading(true);
+      }
       
       // 日記エントリーを取得
-      const diaryResponse = await diaryService.getUserDiaryEntries(userId);
+      let diaryResponse;
       
-      // 拡張エントリーとして初期化
-      const extendedEntries: ExtendedDiaryEntry[] = diaryResponse.map(entry => ({
-        ...entry,
-        parrots: [] // 初期値として空配列を設定
-      }));
+      if (isInitialLoad && diaryEntries.length > 0) {
+        // 既存のエントリーを再利用（既にExtendedDiaryEntry型）
+        diaryResponse = diaryEntries;
+      } else {
+        // 新しくエントリーを取得（DiaryEntry型）
+        diaryResponse = await diaryService.getUserDiaryEntries(userId);
+      }
       
-      // 各エントリーのパロット情報を取得
+      // パロット情報の取得処理
       const entriesWithParrots = await Promise.all(
-        extendedEntries.map(async (entry) => {
+        diaryResponse.map(async (entry) => {
+          // ここで型を明示的に扱う
+          const currentEntry = entry as ExtendedDiaryEntry;
+          
+          // 既にパロット情報があるか確認
+          if (currentEntry.parrots && currentEntry.parrots.length > 0) {
+            return currentEntry;
+          }
+          
           try {
             const entryId = String(entry.entry_id);
             const parrotUrls = await getEntryParrots(entryId);
             return {
               ...entry,
               parrots: Array.isArray(parrotUrls) ? parrotUrls : []
-            };
+            } as ExtendedDiaryEntry;
           } catch (err) {
             console.error(`エントリー ${entry.entry_id} のパロット取得エラー:`, err);
-            return entry;
+            return {
+              ...entry,
+              parrots: []
+            } as ExtendedDiaryEntry;
           }
         })
       );
       
       setDiaryEntries(entriesWithParrots);
+      setDataInitialized(true);
+      
     } catch (error) {
       console.error('データの再取得に失敗しました:', error);
       setError('データの更新中にエラーが発生しました。再度お試しください。');
@@ -910,7 +947,7 @@ const DiarySearch = forwardRef(({
         )}
 
         {/* ローディング状態と日記エントリー表示 */}
-        {isLoading ? (
+        {isLoading && diaryEntries.length === 0 ? (
           <div className={styles.loading}>データを読み込み中...</div>
         ) : (
           <>
