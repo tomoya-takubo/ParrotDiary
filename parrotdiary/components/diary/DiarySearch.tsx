@@ -49,6 +49,10 @@ const DiarySearch = forwardRef(({
   initialEntries = [],
   initialTags = []
 }: DiarySearchProps, ref) => {
+  // #region 定数
+  const MAX_PARROTS = 5; // 最大パロット数
+  // #endregion
+
   // #region 状態管理
   // 認証情報
   const { user } = useAuth();
@@ -75,8 +79,6 @@ const DiarySearch = forwardRef(({
   
   // ページネーション用の状態
   const [currentPage, setCurrentPage] = useState(1);
-  const [entriesPerPage, setEntriesPerPage] = useState(3);
-  const [pageSizeOptions] = useState([3, 5, 10, 20, 50]);
 
   // パロット表示制御の状態
   const [showParrots, setShowParrots] = useState(true); // デフォルトでは表示する
@@ -240,6 +242,18 @@ const DiarySearch = forwardRef(({
       setIsLoading(false);
     }
   };
+
+  // 初期ページサイズの設定を画面サイズに応じて変更
+  const getInitialPageSize = () => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 1024 ? 6 : 3;
+    }
+    return 3; // デフォルト値
+  };
+
+  // ステート宣言部分で使用
+  const [entriesPerPage, setEntriesPerPage] = useState(getInitialPageSize());
+
   // #endregion
 
   // #region イベントハンドラ
@@ -675,6 +689,37 @@ const DiarySearch = forwardRef(({
     (dateRange.end ? 1 : 0);
   // #endregion
 
+  // #region リサイズ対応
+  useEffect(() => {
+    const handleResize = () => {
+      const newSize = window.innerWidth >= 1024 ? 6 : 3;
+      if (newSize !== entriesPerPage) {
+        setEntriesPerPage(newSize);
+        // ページ番号も調整して表示件数の変更によるページずれを防止
+        const newTotalPages = Math.ceil(filteredEntries.length / newSize);
+        if (currentPage > newTotalPages) {
+          setCurrentPage(Math.max(1, newTotalPages));
+        }
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [entriesPerPage, currentPage, filteredEntries.length]);
+
+  // ページサイズオプションの修正
+  const getPageSizeOptions = () => {
+    if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
+      return [6, 12, 18, 24, 48]; // PC用（2列×3行の倍数）
+    }
+    return [3, 5, 10, 20, 50]; // モバイル用
+  };
+
+  const [pageSizeOptions] = useState(getPageSizeOptions());
+  // #endregion
+
   // preloadDataモードの場合は何も表示しない（先読み用）
   if (preloadData) {
     return null;
@@ -871,73 +916,84 @@ const DiarySearch = forwardRef(({
           <>
             {/* 日記エントリー - 常に縦1列のリスト表示 */}
             <div ref={entriesContainerRef} className={styles.entriesContainer}>
-              {currentEntries.length > 0 ? (
-                currentEntries.map((entry) => (
-                  <div key={entry.entry_id} className={styles.entryCard}>
-                    {/* 日時とタグ */}
-                    <div className={styles.entryHeader}>
-                    <span className={styles.entryDate}>
-                      {formatDateTime(entry.created_at)}
-                    </span>
-                      <div className={styles.entryTags}>
-                        {entry.tags.map((tag, tagIndex) => (
-                          <span 
-                            key={tagIndex} 
-                            className={styles.entryTag}
-                            onClick={() => handleTagToggle(tag)}
+              <div className={styles.entriesGrid}>
+                {currentEntries.length > 0 ? (
+                  currentEntries.map((entry) => (
+                    <div key={entry.entry_id} className={styles.entryCard}>
+                      {/* 日時とタグ */}
+                      <div className={styles.entryHeader}>
+                      <span className={styles.entryDate}>
+                        {formatDateTime(entry.created_at)}
+                      </span>
+                        <div className={styles.entryTags}>
+                          {entry.tags.map((tag, tagIndex) => (
+                            <span 
+                              key={tagIndex} 
+                              className={styles.entryTag}
+                              onClick={() => handleTagToggle(tag)}
+                            >
+                              #{tag}
+                            </span>
+                          ))}
+                          {/* 編集ボタン */}
+                          <button 
+                            onClick={() => openEditModal(entry)}
+                            className={styles.editButton}
                           >
-                            #{tag}
-                          </span>
-                        ))}
-                        {/* 編集ボタン */}
-                        <button 
-                          onClick={() => openEditModal(entry)}
-                          className={styles.editButton}
-                        >
-                          <Edit2 size={14} />
-                          編集
-                        </button>
-                        {/* 削除ボタン */}
-                        <button 
-                          onClick={() => openDeleteModal(entry)}
-                          className={styles.deleteButton}
-                        >
-                          <Trash2 size={14} />
-                          削除
-                        </button>
+                            <Edit2 size={14} />
+                            編集
+                          </button>
+                          {/* 削除ボタン */}
+                          <button 
+                            onClick={() => openDeleteModal(entry)}
+                            className={styles.deleteButton}
+                          >
+                            <Trash2 size={14} />
+                            削除
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* 日記内容 */}
+                      <div className={styles.entryContent}>
+                        <p>{entry.line1}</p>
+                        {entry.line2 && <p>{entry.line2}</p>}
+                        {entry.line3 && <p>{entry.line3}</p>}
+                        
+                        {/* パロットGIFの表示 */}
+                        {showParrots && (
+                          <div className={styles.parrotSection}>
+                            <div className={styles.parrotSlotContainer}>
+                              {/* 最大5つの枠を常に表示 */}
+                              {Array(MAX_PARROTS).fill(null).map((_, index) => (
+                                <div key={index} className={styles.parrotSlot}>
+                                  {entry.parrots && entry.parrots[index] ? (
+                                    <div className={styles.parrotContainer}>
+                                      <Image 
+                                        src={entry.parrots[index]}
+                                        alt={`Parrot ${index + 1}`}
+                                        width={32}
+                                        height={32}
+                                        className={styles.parrotGif}
+                                      />
+                                    </div>
+                                  ) : (
+                                    <div className={styles.emptyParrotSlot} />
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
-
-                    {/* 日記内容 */}
-                    <div className={styles.entryContent}>
-                      <p>{entry.line1}</p>
-                      {entry.line2 && <p>{entry.line2}</p>}
-                      {entry.line3 && <p>{entry.line3}</p>}
-                      
-                      {/* パロットGIFの表示 */}
-                      {showParrots && entry.parrots && entry.parrots.length > 0 && (
-                        <div className={styles.parrotBottomRight}>
-                          {entry.parrots.map((parrot, index) => (
-                            <div key={index} className={styles.parrotContainer}>
-                              <Image 
-                                src={parrot}
-                                alt={`Parrot ${index + 1}`}
-                                width={40}
-                                height={40}
-                                className={styles.parrotGif}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                  ))
+                ) : (
+                  <div className={styles.noResults}>
+                    検索条件に一致する日記が見つかりませんでした
                   </div>
-                ))
-              ) : (
-                <div className={styles.noResults}>
-                  検索条件に一致する日記が見つかりませんでした
-                </div>
-              )}
+                )}
+              </div>
             </div>
             
             {/* 下部ページネーション */}
