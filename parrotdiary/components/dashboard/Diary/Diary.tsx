@@ -63,6 +63,10 @@ type DiaryProps = {
  * ユーザーの日記エントリを表示し、新規作成や編集、検索機能を提供する
  */
 const Diary: React.FC<DiaryProps> = ({ onSave }) => {
+  // #region 定数
+  const MAX_PARROTS = 5; // 最大パロット数
+  // #endregion
+
   // #region ステート管理
   const router = useRouter();
   const { user: authUser, isLoading: authLoading } = useAuth();
@@ -476,21 +480,28 @@ const Diary: React.FC<DiaryProps> = ({ onSave }) => {
                         {entry.line3 && <div className={styles.entryLine}>{entry.line3}</div>}
                       </div>
                       {/* パロットを別セクションに表示 */}
-                      {entry.parrots && entry.parrots.length > 0 && (
-                        <div className={styles.parrotSection}>
-                          {entry.parrots.map((parrot, index) => (
-                            <div key={index} className={styles.parrotContainer}>
-                              <Image 
-                                src={parrot}
-                                alt={`Parrot ${index + 1}`}
-                                width={32}
-                                height={32}
-                                className={styles.parrotGif}
-                              />
+                      <div className={styles.parrotSection}>
+                        {/* パロットスロットの順序を反転するための新しいコンテナ */}
+                        <div className={styles.parrotSlotContainer}>
+                          {Array(MAX_PARROTS).fill(null).map((_, index) => (
+                            <div key={index} className={styles.parrotSlot}>
+                              {entry.parrots && entry.parrots[index] ? (
+                                <div className={styles.parrotContainer}>
+                                  <Image 
+                                    src={entry.parrots[index]}
+                                    alt={`Parrot ${index + 1}`}
+                                    width={32}
+                                    height={32}
+                                    className={styles.parrotGif}
+                                  />
+                                </div>
+                              ) : (
+                                <div className={styles.emptyParrotSlot} />
+                              )}
                             </div>
                           ))}
                         </div>
-                      )}
+                      </div>
                     </>
                   ) : (
                     <div className={styles.emptyEntry}>

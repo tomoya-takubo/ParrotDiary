@@ -549,8 +549,10 @@
   transform: scaleX(-1); /* GIFを左右反転 */
 }
 
-/* パロットコンテナ用のスタイル */
+/* パロットコンテナ - 実際のパロット画像を包む要素 */
 .parrotContainer {
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -568,6 +570,30 @@
   padding-top: 12px;
   margin-top: 8px;
   border-top: 1px dashed #e2e8f0;
+}
+
+/* パロットスロット - 枠を表示する親要素 */
+.parrotSlot {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* 空のパロットスロット */
+.emptyParrotSlot {
+  width: 100%;
+  height: 100%;
+  background-color: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 4px;
+}
+
+/* パロットスロットの順序を反転するための新しいコンテナ */
+.parrotSlotContainer {
+  display: flex;
+  flex-direction: row-reverse; /* パロットの並び順だけを反転 */
+  gap: 8px;
 }
 
 .parrotDropdown {
@@ -594,10 +620,6 @@
   transition: transform 0.2s;
   border: 2px solid transparent;
 }
-
-/* .parrotOption:hover {
-  transform: scale(1.1);
-} */
 
 .parrotOptionSelected {
   border-color: #3b82f6;
@@ -908,9 +930,14 @@
     white-space: nowrap;
   }
 
+  .parrotSlot {
+    width: 28px;
+    height: 28px;
+  }
+  
   .parrotGif {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
   }
 }
 /* #endregion */
