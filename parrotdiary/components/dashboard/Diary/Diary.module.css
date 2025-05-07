@@ -779,6 +779,36 @@
 /* #endregion */
 
 /* #region レスポンシブ対応 - メディアクエリ */
+/* PCブラウザ向けのグリッドレイアウト */
+@media (min-width: 1024px) {
+  .diaryEntries {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2列 */
+    gap: 20px; /* カード間の間隔を広げる */
+  }
+  
+  .diaryEntry {
+    /* カードの区別を明確にする */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .entryContent {
+    flex-grow: 1; /* 内容部分が伸びるようにする */
+  }
+}
+
+/* タブレット以下では従来通り縦並びに */
+@media (max-width: 1023px) {
+  .diaryEntries {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
 @media (max-width: 768px) {
   .diaryEntry {
     padding: 12px;

@@ -85,13 +85,16 @@ const Diary: React.FC<DiaryProps> = ({ onSave }) => {
     if (!authUser?.id) return;
   
     try {
+      // PCサイズの場合は6件、それ以外は3件を取得
+      const limit = typeof window !== 'undefined' && window.innerWidth >= 1024 ? 6 : 3;
+
       // 日記エントリの取得
       const { data: diaryData, error: diaryError } = await supabase
         .from('diary_entries')
         .select('*')
         .eq('user_id', authUser.id)
         .order('recorded_at', { ascending: false })
-        .limit(3);
+        .limit(limit);
   
       if (diaryError) throw diaryError;
   
@@ -167,6 +170,9 @@ const Diary: React.FC<DiaryProps> = ({ onSave }) => {
       if (authUser?.id) {
         setIsLoading(true);
         try {
+          // PCサイズの場合は6件、それ以外は3件を取得
+          const limit = typeof window !== 'undefined' && window.innerWidth >= 1024 ? 6 : 3;
+
           // reloadData関数と同様の処理だが、初期読み込み用
           // TODO: コードの重複を避けるためreloadDataを呼び出すように修正することを検討
           const { data: diaryData, error: diaryError } = await supabase
@@ -174,7 +180,7 @@ const Diary: React.FC<DiaryProps> = ({ onSave }) => {
             .select('*')
             .eq('user_id', authUser.id)
             .order('recorded_at', { ascending: false })
-            .limit(3);
+            .limit(limit);
       
           if (diaryError) throw diaryError;
       
@@ -237,6 +243,26 @@ const Diary: React.FC<DiaryProps> = ({ onSave }) => {
 
     handleAuth();
   }, [authUser, authLoading, reloadTrigger]);
+
+  useEffect(() => {
+    // 画面サイズ変更時のハンドラ
+    const handleResize = () => {
+      // 画面サイズが変わったときに再度データを取得
+      reloadData();
+    };
+
+    // リサイズイベントのリスナーを設定
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', handleResize);
+    }
+    
+    // クリーンアップ関数
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', handleResize);
+      }
+    };
+  }, [reloadData]);
   // #endregion
 
   // #region モーダル操作関数
@@ -322,10 +348,12 @@ const Diary: React.FC<DiaryProps> = ({ onSave }) => {
 
   // #region ユーティリティ関数
   /**
-   * 表示する日記エントリを最大3件まで取得
+   * 表示する日記エントリを解像度に応じて最大6件または3件まで取得
    */
   const getFilteredEntries = () => {
-    return diaryEntries.slice(0, 3);
+    // PCサイズの場合は6件、それ以外は3件を返す
+    const limit = typeof window !== 'undefined' && window.innerWidth >= 1024 ? 6 : 3;
+    return diaryEntries.slice(0, limit);
   };
   // #endregion
 
@@ -471,7 +499,7 @@ const Diary: React.FC<DiaryProps> = ({ onSave }) => {
                   )}
                 </div>
               ))
-                          )}
+            )}
           </div>
 
           {/* 編集/追加モーダル */}
