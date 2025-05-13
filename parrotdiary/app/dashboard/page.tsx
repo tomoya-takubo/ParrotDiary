@@ -325,15 +325,19 @@ export default function Dashboard() {
                 // 日本時間のタイムゾーンオフセット（+9時間 = +9*60*60*1000ミリ秒）
                 const jstOffset = 9 * 60 * 60 * 1000;
                 
-                // 現在時刻と前回ログイン時刻をJST基準の日付文字列に変換
-                const getJstDateString = (dateString) => {
+                /**
+                 * 日付をJST形式の文字列に変換する関数
+                 * @param dateString 日付を表す文字列またはDate型オブジェクト
+                 * @returns YYYY/MM/DD 形式の日付文字列
+                 */
+                const getJstDateString = (dateString: string | Date): string => {
                   const date = new Date(dateString);
                   // UTC時間に9時間を加算して日本時間にする
                   const jstDate = new Date(date.getTime() + jstOffset);
                   // YYYY/MM/DD 形式の文字列を返す
                   return `${jstDate.getFullYear()}/${jstDate.getMonth() + 1}/${jstDate.getDate()}`;
                 };
-                
+
                 // 今日の日付を取得
                 const todayJst = getJstDateString(now);
                 
