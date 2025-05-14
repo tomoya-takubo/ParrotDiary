@@ -64,10 +64,10 @@ ParrotDiaryは「書いたらご褒美がある」「感情の変化を見返せ
 ## 💻 主な画面と機能（一部）
 
 <p align="center">
-  <img src="images/diary.gif" alt="日記記録" width="60%" style="margin-bottom: 20px;"/>
+  <img src="images/diary.gif" alt="日記記録" width="100%" style="margin-bottom: 20px;"/>
 </p>
 <p align="center">
-  <img src="images/gacha.gif" alt="ガチャ演出" width="60%" />
+  <img src="images/gacha.gif" alt="ガチャ演出" width="100%" />
 </p>
 
 * 他にもカレンダー表示、タグ検索、パロットコレクションなど、継続を支援する機能を実装
