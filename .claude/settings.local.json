@@ -2,7 +2,16 @@
   "permissions": {
     "allow": [
       "Bash(tree:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(mkdir:*)",
+      "Bash(ls:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx eslint:*)",
+      "Bash(curl:*)",
+      "Bash(pkill:*)",
+      "Bash(grep:*)",
+      "Bash(jq:*)",
+      "Bash(sed:*)"
     ],
     "deny": []
   }
