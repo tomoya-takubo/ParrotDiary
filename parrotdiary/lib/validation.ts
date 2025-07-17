@@ -1,3 +1,8 @@
+/**
+ * パスワード強度を検証
+ * @param password 検証するパスワード
+ * @returns 検証結果とメッセージ
+ */
 export function validatePasswordStrength(password: string): {
   isValid: boolean;
   message: string;
@@ -25,6 +30,11 @@ export function validatePasswordStrength(password: string): {
   return { isValid: true, message: '' };
 }
 
+/**
+ * メールアドレス形式を検証
+ * @param email 検証するメールアドレス
+ * @returns 検証結果とメッセージ
+ */
 export function validateEmailFormat(email: string): {
   isValid: boolean;
   message: string;

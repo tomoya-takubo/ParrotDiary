@@ -79,7 +79,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  // ログイン関数
+  /**
+   * ログイン関数
+   * @param email メールアドレス
+   * @param password パスワード
+   * @returns 認証レスポンス
+   */
   const signIn = async (email: string, password: string) => {
     setIsLoading(true);
     try {
@@ -101,7 +106,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // ログアウト関数
+  /**
+   * ログアウト関数
+   * @returns void
+   */
   const signOut = async () => {
     setIsLoading(true);
     try {
@@ -131,7 +139,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-// 認証コンテキストを使用するためのフック
+/**
+ * 認証コンテキストを使用するためのフック
+ * @returns AuthContextType
+ */
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {

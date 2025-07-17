@@ -12,6 +12,8 @@ export type AuthResponse = {
 
 /**
  * パスワードを更新
+ * @param password 新しいパスワード
+ * @returns 更新結果
  */
 export const updatePassword = async (password: string): Promise<AuthResponse> => {
   const supabase = createClientComponentClient<Database>();
@@ -61,6 +63,7 @@ export const updatePassword = async (password: string): Promise<AuthResponse> =>
 
 /**
  * サインアウト
+ * @returns サインアウト結果
  */
 export const signOut = async (): Promise<AuthResponse> => {
   const supabase = createClientComponentClient<Database>();

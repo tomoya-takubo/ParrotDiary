@@ -13,6 +13,10 @@ if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
 // シングルトンパターンでクライアントを管理
 let supabaseInstance: ReturnType<typeof createClient> | null = null;
 
+/**
+ * Supabaseクライアントインスタンスを取得
+ * @returns Supabaseクライアント
+ */
 export const getSupabase = () => {
   if (!supabaseInstance) {
     console.log('Supabase: 新しいクライアントインスタンスを作成');

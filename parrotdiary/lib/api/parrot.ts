@@ -2,6 +2,11 @@
 import { supabase } from '../supabase';
 import { UserParrot } from '@/types/parrot';
 
+/**
+ * パロットデータを取得
+ * @param userId ユーザーID（オプション）
+ * @returns パロット基本データとユーザー所持データ
+ */
 export const fetchParrotData = async (userId?: string) => {
   // パロット基本データの取得
   const { data: parrots, error: parrotError } = await supabase
