@@ -496,6 +496,7 @@ export default function Dashboard() {
           onCellClick={handleActivityCellClick} 
           isGachaOpen={showGachaModal} 
           onSave={() => setRefreshKey(k => k + 1)}
+          refreshKey={refreshKey}
         />
 
         {/* 3行日記 */}

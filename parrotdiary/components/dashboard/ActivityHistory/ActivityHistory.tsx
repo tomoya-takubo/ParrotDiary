@@ -18,6 +18,7 @@ type ActivityHistoryProps = {
   width?: string | number;
   isGachaOpen?: boolean;
   onSave?: () => void;
+  refreshKey?: number;
 };
 
 /**
@@ -84,6 +85,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
   width = '100%',
   isGachaOpen = false,
   onSave,
+  refreshKey,
 }) => {
   const { user, session, isLoading: authLoading } = useAuth();
   
@@ -363,7 +365,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
     if (!authLoading || user?.id) {
       fetchDiaryEntries();
     }
-  }, [user, session, authLoading, refreshTrigger]);
+  }, [user, session, authLoading, refreshTrigger, refreshKey]);
 
   /**
    * カレンダーグリッドの生成（月間カレンダー形式）
