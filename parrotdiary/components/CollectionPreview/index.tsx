@@ -8,7 +8,6 @@ import styles from './styles.module.css';
 import { useAuth } from '@/lib/AuthContext';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
-// #region 型定義
 /**
  * パロットに関する型定義
  */
@@ -87,14 +86,11 @@ type TagUsageCount = {
   parrot_tag_name: string;
   usage_count: number;
 };
-// #endregion
 
-// #region メインコンポーネント
 /**
  * パロットコレクション一覧を表示するメインコンポーネント
  */
 export default function CollectionPreview() {
-  // #region 状態管理
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [parrots, setParrots] = useState<Parrot[]>([]);
@@ -112,13 +108,10 @@ export default function CollectionPreview() {
   const [totalPages, setTotalPages] = useState(1);
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [minLoadingTimeElapsed, setMinLoadingTimeElapsed] = useState(false);
-  // #endregion
 
-  // #region サブコンポーネント定義
   const supabase = createClientComponentClient();
   const { user, isLoading: authLoading } = useAuth();
 
-  // #region ユーティリティ関数
   /**
    * レアリティの順序を数値として取得
    * @param rarityAbbreviation レアリティの略称
@@ -172,9 +165,7 @@ export default function CollectionPreview() {
     // 短い名前やparrotを含まない名前はそのまま返す
     return name;
   };
-  // #endregion
 
-  // #region データ処理関数
   /**
    * パロットデータを読み込む
    * @param userId ユーザーID（未ログイン時はnull）
@@ -349,9 +340,7 @@ export default function CollectionPreview() {
         });
     }
   };
-  // #endregion
 
-  // #region イベントハンドラ
   /**
    * パロットカードクリック時の処理
    * @param parrot クリックされたパロット
@@ -418,9 +407,7 @@ export default function CollectionPreview() {
       setItemsPerPage(8); // 小さい画面では2x4
     }
   };
-  // #endregion
 
-  // #region 検索とフィルタリング
   // 検索とフィルタリングを適用したパロットリスト
   const filteredParrots = parrots
     .filter(parrot => {
@@ -446,9 +433,7 @@ export default function CollectionPreview() {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
-  // #endregion
 
-  // #region 副作用（useEffect）
 
   // 最低表示時間のタイマー設定を追加
   useEffect(() => {
@@ -567,7 +552,6 @@ export default function CollectionPreview() {
       setCurrentPage(pages);
     }
   }, [sortedAndFilteredParrots.length, itemsPerPage, currentPage]);
-  // #endregion
 
   /**
    * フィルターボタンコンポーネント
@@ -1312,9 +1296,7 @@ export default function CollectionPreview() {
       </div>
     );
   };
-  // #endregion
 
-  // #region レンダリング
   // ローディング表示
   if (loading || authLoading || !minLoadingTimeElapsed) {
     return (
@@ -1602,5 +1584,4 @@ export default function CollectionPreview() {
       )}
     </div>
   );
-  // #endregion
 }

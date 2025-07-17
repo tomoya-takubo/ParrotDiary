@@ -9,7 +9,6 @@ import Image from 'next/image';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { ExtendedDiaryEntry, TagWithCount } from '@/services/diaryService';
 
-// #region 型定義
 /**
  * DiarySearchコンポーネントへの参照用インターフェース
  */
@@ -18,7 +17,6 @@ interface DiarySearchRef {
   getEntries: () => ExtendedDiaryEntry[];
   getTags: () => TagWithCount[];
 }
-// #endregion
 
 /**
  * 日記検索ページのメインコンポーネント
@@ -26,7 +24,6 @@ interface DiarySearchRef {
  * DiarySearchコンポーネントの表示を制御します
  */
 export default function DiarySearchPage() {
-  // #region 状態管理
   // 認証関連
   const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
@@ -43,9 +40,7 @@ export default function DiarySearchPage() {
   
   // 両方の条件（データロード完了 AND 最低表示時間経過）が満たされるまでローディング画面を表示
   const shouldShowLoading = loading || !effectiveUserId || !dataLoaded || !minLoadingTimeElapsed;
-  // #endregion
 
-  // #region 初期化処理
   /**
    * ユーザー認証とセッション状態の初期化
    */
@@ -138,9 +133,7 @@ export default function DiarySearchPage() {
       return () => clearTimeout(timer);
     }
   }, [loading, effectiveUserId, router]);
-  // #endregion
 
-  // #region レンダリング
   /**
    * ローディング画面のレンダリング
    */
@@ -203,5 +196,4 @@ export default function DiarySearchPage() {
    * 未認証時のフォールバック表示
    */
   return <div className={styles.loadingContainer}>リダイレクト中...</div>;
-  // #endregion
 }

@@ -1,12 +1,10 @@
 // components/EnvChecker.tsx
 'use client';
 
-//#region 型定義
 type EnvStatus = {
   name: string;
   value: string | undefined;
 };
-//#endregion
 
 /**
  * 環境変数チェックコンポーネント
@@ -17,7 +15,6 @@ type EnvStatus = {
  * @returns React コンポーネント
  */
 export default function EnvChecker() {
-  //#region 環境変数の状態確認
   const envVariables: EnvStatus[] = [
     {
       name: 'SUPABASE_URL',
@@ -28,9 +25,7 @@ export default function EnvChecker() {
       value: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     }
   ];
-  //#endregion
 
-  //#region ステータス判定ヘルパー関数
   /**
    * 環境変数の設定状態を文字列で返す
    * @param value - 環境変数の値
@@ -39,9 +34,7 @@ export default function EnvChecker() {
   const getStatusText = (value: string | undefined): string => {
     return value ? '設定済み' : '未設定';
   };
-  //#endregion
 
-  //#region レンダリング
   return (
     <div style={{ 
       padding: '1rem', 
@@ -63,5 +56,4 @@ export default function EnvChecker() {
       ))}
     </div>
   );
-  //#endregion
 }

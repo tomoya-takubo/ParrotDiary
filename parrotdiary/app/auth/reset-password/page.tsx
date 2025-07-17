@@ -12,7 +12,6 @@ import { Eye, EyeOff, Check, X } from 'lucide-react';
  * ユーザーが新しいパスワードを設定するためのフォームを提供します
  */
 export default function ResetPasswordPage() {
-  // #region 状態変数の定義
   // フォーム入力状態
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -35,9 +34,7 @@ export default function ResetPasswordPage() {
   });
   
   const router = useRouter();
-  // #endregion
 
-  // #region パスワード強度と要件のチェック
   /**
    * パスワードの入力に応じて強度と要件充足状況を更新します
    */
@@ -79,9 +76,7 @@ export default function ResetPasswordPage() {
       setPasswordStrength('strong');
     }
   }, [password]);
-  // #endregion
 
-  // #region ユーティリティ関数
   /**
    * パスワードが要件を満たしているか検証します
    * @param pass 検証するパスワード
@@ -105,9 +100,7 @@ export default function ResetPasswordPage() {
   const toggleConfirmPasswordVisibility = () => {
     setConfirmPasswordVisible(!confirmPasswordVisible);
   };
-  // #endregion
 
-  // #region フォーム送信処理
   /**
    * フォーム送信時の処理を行います
    * @param e フォームイベント
@@ -155,9 +148,7 @@ export default function ResetPasswordPage() {
       setLoading(false);
     }
   };
-  // #endregion
 
-  // #region レンダリング
   return (
     <div className={styles.resetContainer}>
       <div className={styles.resetPasswordCard}>
@@ -299,5 +290,4 @@ export default function ResetPasswordPage() {
       </div>
     </div>
   );
-  // #endregion
 }

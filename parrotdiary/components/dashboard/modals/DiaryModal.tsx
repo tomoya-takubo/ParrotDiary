@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { X, Calendar, Clock, Edit2, ChevronLeft, ChevronRight } from 'lucide-react';
 import styles from './DiaryModal.module.css';
 
-// #region 型定義
 /**
  * 日記エントリーの型定義
  * ActivityHistoryで使用する
@@ -28,7 +27,6 @@ type DiaryModalProps = {
   onEditEntry?: (entry: ActivityDiaryEntry) => void;
   onDateChange?: (newDate: string) => void; // 日付変更ハンドラ
 };
-// #endregion
 
 /**
  * 日記モーダルコンポーネント
@@ -43,12 +41,9 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
   onEditEntry,
   onDateChange
 }) => {
-  // #region 状態管理
   // ローディングインジケーター表示のための状態
   const [isLoading, setIsLoading] = useState(false);
-  // #endregion
 
-  // #region ユーティリティ関数
   /**
    * 日付をyyyy年MM月dd日形式にフォーマットする関数
    */
@@ -59,9 +54,7 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
     
     return `${year}年${month}月${day}日`;
   };
-  // #endregion
 
-  // #region イベントハンドラ
   /**
    * モーダルのオーバーレイをクリックした時のハンドラ
    * モーダル外をクリックした場合のみ閉じる
@@ -96,9 +89,7 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
       onEditEntry(emptyEntry);
     }
   };
-  // #endregion
 
-  // #region ナビゲーション機能
   /**
    * 前日へナビゲートする関数
    * 現在の日付から1日前の日付を計算し、親コンポーネントに通知
@@ -203,9 +194,7 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
       setIsLoading(false);
     }
   };
-  // #endregion
 
-  // #region 副作用
   /**
    * 日付変更が完了したときの処理
    * 新しいエントリーを受け取ったらローディング状態を解除
@@ -238,12 +227,10 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen, date]);
-  // #endregion
 
   // モーダルが閉じているときは何も表示しない
   if (!isOpen) return null;
 
-  // #region レンダリング
   return (
     <div 
       className={styles.modalOverlay}
@@ -418,7 +405,6 @@ const DiaryModal: React.FC<DiaryModalProps> = ({
       </div>
     </div>
   );
-  // #endregion
 };
 
 export default DiaryModal;

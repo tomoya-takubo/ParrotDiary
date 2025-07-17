@@ -1,4 +1,3 @@
-// #region インポート
 import { useAuth } from '@/lib/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { Edit2, Search } from 'lucide-react';
@@ -8,9 +7,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import styles from './Diary.module.css';
 import { getEntryParrots } from './ParrotSelector';
 import EditDiaryModal from '@/components/dashboard/modals/EditDiaryModal';
-// #endregion
 
-// #region 型定義
 /**
  * 日記エントリの型定義
  * データベースから取得した日記データの構造を表す
@@ -56,18 +53,14 @@ type ModalState = {
 type DiaryProps = {
   onSave?: () => void;
 };
-// #endregion
 
 /**
  * 3行日記コンポーネント
  * ユーザーの日記エントリを表示し、新規作成や編集、検索機能を提供する
  */
 const Diary: React.FC<DiaryProps> = ({ onSave }) => {
-  // #region 定数
   const MAX_PARROTS = 5; // 最大パロット数
-  // #endregion
 
-  // #region ステート管理
   const router = useRouter();
   const { user: authUser, isLoading: authLoading } = useAuth();
   const [diaryEntries, setDiaryEntries] = useState<DiaryEntryType[]>([]);
@@ -78,9 +71,7 @@ const Diary: React.FC<DiaryProps> = ({ onSave }) => {
     entry: null,
     date: null
   });
-  // #endregion
 
-  // #region データ取得関数
   /**
    * 日記データを再読み込みする関数
    * タグやパロットの情報も含めて日記データを取得する
@@ -156,9 +147,7 @@ const Diary: React.FC<DiaryProps> = ({ onSave }) => {
       console.error('reloadData() 実行中のエラー:', err);
     }
   }, [authUser]);
-  // #endregion
 
-  // #region 副作用と初期化
   /**
    * 認証状態の変化やリロードトリガーの変更時にデータを取得
    */
@@ -267,9 +256,7 @@ const Diary: React.FC<DiaryProps> = ({ onSave }) => {
       }
     };
   }, [reloadData]);
-  // #endregion
 
-  // #region モーダル操作関数
   /**
    * 編集モーダルを開く
    * @param entry 編集対象の日記エントリ
@@ -348,9 +335,7 @@ const Diary: React.FC<DiaryProps> = ({ onSave }) => {
       date: null
     });
   };
-  // #endregion
 
-  // #region ユーティリティ関数
   /**
    * 表示する日記エントリを解像度に応じて最大6件または3件まで取得
    */
@@ -359,9 +344,7 @@ const Diary: React.FC<DiaryProps> = ({ onSave }) => {
     const limit = typeof window !== 'undefined' && window.innerWidth >= 1024 ? 6 : 3;
     return diaryEntries.slice(0, limit);
   };
-  // #endregion
 
-  // #region レンダリング
   return (
     <div className={styles.diaryContainer}>
       {/* タイトルは常に表示 */}
@@ -530,7 +513,6 @@ const Diary: React.FC<DiaryProps> = ({ onSave }) => {
       )}
     </div>
   );
-  // #endregion
 };
 
 export default Diary;

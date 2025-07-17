@@ -5,7 +5,6 @@ import { createClient } from '@supabase/supabase-js';
 import styles from '@/styles/Home.module.css';
 import Image from 'next/image';
 
-// #region 定数・設定
 /**
  * Supabase関連の設定
  * - 環境変数からSupabaseの接続情報を取得
@@ -14,9 +13,7 @@ import Image from 'next/image';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
-// #endregion
 
-// #region ユーティリティ関数
 /**
  * 画像の公開URLを取得する関数
  * @param path ストレージ内のファイルパス
@@ -25,21 +22,17 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const getPublicUrl = (path: string): string => {
   return supabase.storage.from('Parrots').getPublicUrl(path).data.publicUrl;
 };
-// #endregion
 
 /**
  * ParrotCollection コンポーネント
  * オウムのGIF画像をランダムに4つ表示するコンポーネント
  */
 export const ParrotCollection = () => {
-  // #region 状態管理
   // 表示する画像のURLリスト
   const [displayParrots, setDisplayParrots] = useState<string[]>([]);
   // 読み込み状態
   const [isLoading, setIsLoading] = useState(true);
-  // #endregion
 
-  // #region データフェッチ
   useEffect(() => {
     /**
      * Supabaseストレージから画像を取得する非同期関数
@@ -92,9 +85,7 @@ export const ParrotCollection = () => {
     // コンポーネントマウント時に画像取得を実行
     fetchParrotImages();
   }, []);
-  // #endregion
 
-  // #region レンダリング
   return (
     <div className={styles.parrotGrid}>
       {isLoading ? (
@@ -121,5 +112,4 @@ export const ParrotCollection = () => {
       )}
     </div>
   );
-  // #endregion
 };

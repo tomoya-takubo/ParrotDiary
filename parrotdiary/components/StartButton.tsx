@@ -1,14 +1,11 @@
 'use client';
 
-//#region インポート
 import { useState, useEffect } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import React, { ReactNode } from 'react';
 import AuthModal from './AuthModal';
 import styles from '../styles/Home.module.css';
-//#endregion
 
-//#region 型定義
 /**
  * タップエリア拡大用コンポーネントのプロパティ
  */
@@ -18,7 +15,6 @@ interface EnhanceTapAreaProps {
   /** パディングサイズ（デフォルト: 8px） */
   padding?: string;
 }
-//#endregion
 
 /**
  * アプリケーション開始ボタンコンポーネント
@@ -29,16 +25,13 @@ interface EnhanceTapAreaProps {
  * @returns React コンポーネント
  */
 export default function StartButton() {
-  //#region 状態管理
   // モーダルの表示状態
   const [isModalOpen, setIsModalOpen] = useState(false);
   // ローディング状態
   const [isLoading, setIsLoading] = useState(true);
   // Supabaseクライアント
   const supabase = createClientComponentClient();
-  //#endregion
 
-  //#region コンポーネント内部ヘルパーコンポーネント
   /**
    * タップエリアを拡大する高階コンポーネント
    * モバイルデバイスでのユーザビリティを向上させるため、
@@ -61,9 +54,7 @@ export default function StartButton() {
       </div>
     );
   };
-  //#endregion
 
-  //#region イベントハンドラ
   /**
    * モーダルを閉じるハンドラー
    */
@@ -98,9 +89,7 @@ export default function StartButton() {
       setIsLoading(false);
     }
   };
-  //#endregion
 
-  //#region 副作用
   /**
    * コンポーネントマウント時に認証状態をチェック
    */
@@ -134,9 +123,7 @@ export default function StartButton() {
       document.body.classList.remove('overlay-active');
     };
   }, [isLoading]);
-  //#endregion
 
-  //#region レンダリング
   return (
     <>
       <EnhanceTapArea>
@@ -169,5 +156,4 @@ export default function StartButton() {
       )}
     </>
   );
-  //#endregion
 }

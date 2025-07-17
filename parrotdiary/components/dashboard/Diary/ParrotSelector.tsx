@@ -4,7 +4,6 @@ import { X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './ParrotSelector.module.css';
 
-// #region 型定義
 /**
  * パロットの型定義
  */
@@ -70,9 +69,7 @@ interface ParrotCache {
     parrots: ParrotType[];
   }
 }
-// #endregion 型定義
 
-// #region 定数・ユーティリティ
 // パロットデータをメモリにキャッシュ（セッション中のみ）
 const parrotCache: ParrotCache = {};
 const CACHE_DURATION = 5 * 60 * 1000; // 5分間キャッシュを保持
@@ -87,9 +84,7 @@ function getFileNameFromUrl(url: string): string {
   const parts = url.split('/');
   return parts[parts.length - 1];
 }
-// #endregion 定数・ユーティリティ
 
-// #region メインコンポーネント
 /**
  * パロット選択コンポーネント
  * ユーザーが所有するパロットを表示し、選択できるようにする
@@ -102,7 +97,6 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
   compact = false,
   forceOpen = false,
 }) => {
-  // #region state定義
   const [availableParrots, setAvailableParrots] = useState<ParrotType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -114,9 +108,7 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   
   const dropdownRef = useRef<HTMLDivElement>(null);
-  // #endregion state定義
 
-  // #region データ取得関連
   /**
    * パロットデータをキャッシュから取得する関数
    */
@@ -318,9 +310,7 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
       setIsLoading(false);
     }
   }, [userId, isLoading]);
-  // #endregion データ取得関連
 
-  // #region イベントハンドラ
   /**
    * パロットの選択/解除を処理する関数
    */
@@ -361,9 +351,7 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
     setSelectedTag(selectedTag === tagName ? null : tagName);
     setCurrentPage(0); // ページをリセット
   };
-  // #endregion イベントハンドラ
 
-  // #region フィルタリングとページング
   /**
    * パロットをフィルタリングする処理
    */
@@ -388,9 +376,7 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
   const hasNextPage = filteredParrots.length > (currentPage + 1) * pageSize;
   // 前のページがあるかどうか
   const hasPrevPage = currentPage > 0;
-  // #endregion フィルタリングとページング
 
-  // #region useEffect
   // ユーザーIDが変更されたときに再取得
   useEffect(() => {
     if (userId) {
@@ -419,9 +405,7 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
       setShowParrotDropdown(true); // モーダル表示時に展開
     }
   }, [forceOpen]);
-  // #endregion useEffect
 
-  // #region サブコンポーネント
   /**
    * 人気タグ表示コンポーネント
    */
@@ -448,9 +432,7 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
       </div>
     );
   };
-  // #endregion サブコンポーネント
 
-  // #region レンダリング
   // エラー表示
   if (loadError) {
     return (
@@ -596,11 +578,8 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
       )}
     </div>
   );
-  // #endregion レンダリング
 };
-// #endregion メインコンポーネント
 
-// #region ユーティリティ関数
 /**
  * 日記エントリー保存時にパロット情報を保存する関数
  * @param entryId エントリーID
@@ -794,4 +773,3 @@ export const getEntryParrots = async (entryId: string | number): Promise<string[
     return [];
   }
 };
-// #endregion ユーティリティ関数

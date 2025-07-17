@@ -8,7 +8,6 @@ import EditDiaryModal from '@/components/dashboard/modals/EditDiaryModal';
 import { getEntryParrots } from '@/components/dashboard/Diary/ParrotSelector';
 import { supabase } from '@/lib/supabase';
 
-// #region 型定義
 /**
  * 基本のDiaryEntryにパロット情報を追加した拡張型
  */
@@ -36,7 +35,6 @@ type EditDiaryEntryType = {
   entry_id?: number | string; // エントリーID
   parrots?: string[];   // パロットGIF画像のURL配列
 };
-// #endregion
 
 /**
  * 日記検索ページのコンポーネント
@@ -49,11 +47,8 @@ const DiarySearch = forwardRef(({
   initialEntries = [],
   initialTags = []
 }: DiarySearchProps, ref) => {
-  // #region 定数
   const MAX_PARROTS = 5; // 最大パロット数
-  // #endregion
 
-  // #region 状態管理
   // 認証情報
   const { user } = useAuth();
   const [effectiveUserId, setEffectiveUserId] = useState<string | undefined>(initialUserId);
@@ -89,7 +84,6 @@ const DiarySearch = forwardRef(({
 
   // DOM参照
   const entriesContainerRef = useRef<HTMLDivElement>(null);
-  // #endregion
 
   // refを使って外部からデータ取得状態にアクセスできるようにする
   useImperativeHandle(ref, () => ({
@@ -98,7 +92,6 @@ const DiarySearch = forwardRef(({
     getTags: () => allTags
   }));
 
-  // #region データ取得
   /**
    * 初期データ取得（コンポーネントマウント時）
    */
@@ -291,9 +284,7 @@ const DiarySearch = forwardRef(({
   // ステート宣言部分で使用
   const [entriesPerPage, setEntriesPerPage] = useState(getInitialPageSize());
 
-  // #endregion
 
-  // #region イベントハンドラ
   /**
    * パロット表示/非表示切り替え
    */
@@ -568,9 +559,7 @@ const DiarySearch = forwardRef(({
     link.click();
     document.body.removeChild(link);
   };
-  // #endregion
 
-  // #region フィルタリングとフォーマット
   /**
    * 日付と時間のフォーマット
    * フォーマットを「2025/04/20（日） 19:33」のように変更し、
@@ -724,9 +713,7 @@ const DiarySearch = forwardRef(({
     selectedTags.length + 
     (dateRange.start ? 1 : 0) + 
     (dateRange.end ? 1 : 0);
-  // #endregion
 
-  // #region リサイズ対応
   useEffect(() => {
     const handleResize = () => {
       const newSize = window.innerWidth >= 1024 ? 6 : 3;
@@ -755,14 +742,12 @@ const DiarySearch = forwardRef(({
   };
 
   const [pageSizeOptions] = useState(getPageSizeOptions());
-  // #endregion
 
   // preloadDataモードの場合は何も表示しない（先読み用）
   if (preloadData) {
     return null;
   }
   
-  // #region レンダリング
   return (
     <>
       {/* 全画面背景 */}
@@ -1080,7 +1065,6 @@ const DiarySearch = forwardRef(({
       </div>
     </>
   );
-  // #endregion
 });
 
 // 表示名をセット

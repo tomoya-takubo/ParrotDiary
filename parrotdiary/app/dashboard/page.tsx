@@ -1,6 +1,5 @@
 'use client';
 
-// #region インポート
 import React, { useState, useEffect } from 'react';
 import { Star, Gift, Book, Award, LogOut, Shield, Medal, Trophy } from 'lucide-react';
 import styles from './page.module.css';
@@ -14,15 +13,11 @@ import ActivityHistory from '@/components/dashboard/ActivityHistory/ActivityHist
 import Diary from '@/components/dashboard/Diary/Diary';
 import EditDiaryModal from '@/components/dashboard/modals/EditDiaryModal';
 import type { UserStatus } from '@/types';
-// #endregion
 
 export default function Dashboard() {
-  // #region ルーター・Supabaseクライアント
   const router = useRouter();
   const supabase = createClientComponentClient();
-  // #endregion
 
-  // #region 状態変数
   const [showGachaModal, setShowGachaModal] = useState(false);
   const [showNewDiaryModal, setShowNewDiaryModal] = useState<boolean>(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -38,9 +33,7 @@ export default function Dashboard() {
   });
   const [refreshKey, setRefreshKey] = useState(0);
   const [isLoadingUserStatus, setIsLoadingUserStatus] = useState<boolean>(true);
-  // #endregion
 
-  // #region 定数・ユーティリティ関数
   // ランクの閾値
   const RANK_THRESHOLDS = {
     SILVER: 10,
@@ -177,9 +170,7 @@ export default function Dashboard() {
     };
   };
 
-  // #endregion
 
-  // #region データ取得・更新系useEffect
   // ログイン直後に新規日記モーダルを表示
   useEffect(() => {
     const checkAndShowModal = async () => {
@@ -293,9 +284,7 @@ export default function Dashboard() {
   useEffect(() => {
     updateTicketCount();
   }, [refreshKey, updateTicketCount]);
-  // #endregion
 
-  // #region イベントハンドラ
   /** 活動履歴セルクリック */
   const handleActivityCellClick = (date: string) => {
     if (showGachaModal) return;
@@ -337,9 +326,7 @@ export default function Dashboard() {
   const closeGacha = () => {
     setShowGachaModal(false);
   };
-  // #endregion
 
-  // #region レンダリング
   const rankStyle = getRankStyle(userStatus.ranking);
 
   return (
@@ -529,5 +516,4 @@ export default function Dashboard() {
       </div>
     </div>
   );
-  // #endregion
 }

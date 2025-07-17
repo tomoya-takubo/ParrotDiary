@@ -1,6 +1,5 @@
 'use client';
 
-//#region インポート
 // import { Card, CardContent } from './ui/Card';
 import styles from '../styles/Home.module.css';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -9,9 +8,7 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
 import { Database } from '../types/supabase';
 import { Eye, EyeOff } from 'lucide-react';
-//#endregion
 
-//#region 型定義
 type AuthModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -23,7 +20,6 @@ type FormFeedback = {
   type: 'success' | 'error';
   message: string;
 } | null;
-//#endregion
 
 /**
  * 認証モーダルコンポーネント
@@ -39,7 +35,6 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const supabase = createClientComponentClient<Database>();
   const router = useRouter();
 
-  //#region 状態管理
   // モーダルの状態
   const [modalMode, setModalMode] = useState<ModalMode>('signin');
   const [isVisible, setIsVisible] = useState(false);
@@ -57,14 +52,10 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [formFeedback, setFormFeedback] = useState<FormFeedback>(null);
-  //#endregion
 
-  //#region DOM参照
   const emailInputRef = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
-  //#endregion
 
-  //#region バリデーション関数
   /**
    * メールアドレスのバリデーション
    * @param {string} email - 検証するメールアドレス
@@ -120,9 +111,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
     return errorMap[error] || 'エラーが発生しました。もう一度お試しください';
   };
-  //#endregion
 
-  //#region ユーティリティ関数
   /**
    * 現在時刻を日本時間（JST）で取得
    * @returns {string} - ISO形式の日本時間
@@ -145,9 +134,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     return email.length > 0 || password.length > 0 ||
       (modalMode === 'signup' && confirmPassword.length > 0);
   }, [email, password, confirmPassword, modalMode]);
-  //#endregion
 
-  //#region モーダル操作関数
   /**
    * モーダルを閉じる前の確認
    * @returns {boolean} - 閉じてよいかどうか
@@ -212,9 +199,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setFormFeedback(null);
     setModalMode('signin');
   };
-  //#endregion
 
-  //#region 認証処理関数
   /**
    * 認証フォーム送信時の処理を担当するメインハンドラー
    * 
@@ -238,10 +223,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     const currentTime = getCurrentJSTTime();
 
     try {
-      //#region モード別処理分岐
       // modalModeに応じて処理を分岐（サインアップ、ログイン）
       if (modalMode === 'signup') {
-        //#region アカウント新規作成処理
         // サインアップ用の追加検証
         if (!validateEmail(email) || !validatePassword(password) || !validatePasswordMatch()) {
           setIsLoading(false);
@@ -276,7 +259,6 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         // Step 3: 関連テーブルにユーザーデータを挿入
         if (data.user?.id && data.user?.email) {
           try {
-            //#region データベースへのレコード挿入処理
             // Step 3.1: usersテーブルにユーザー基本情報を挿入
             console.log('usersテーブルに挿入開始');
             const { error: usersError } = await supabase.from('users').insert({
@@ -326,12 +308,10 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               throw new Error(`gacha_ticketsテーブルINSERTエラー: ${gachaError.message}`);
             }
             console.log('gacha_ticketsテーブル挿入成功');
-            //#endregion
 
             console.log('全てのユーザー関連データが正常に作成されました');
 
           } catch (insertError) {
-            //#region エラー時のクリーンアップ処理
             console.error('データ挿入エラー:', insertError);
 
             // エラー発生時は作成したレコードを削除してロールバック
@@ -350,7 +330,6 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             } catch (cleanupError) {
               console.error('クリーンアップ中にエラーが発生:', cleanupError);
             }
-            //#endregion
 
             throw insertError; // 上位のcatchブロックで処理するためにエラーを再スロー
           }
@@ -370,10 +349,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           router.push('/dashboard');
           onClose();
         }, 2000);
-        //#endregion
 
       } else if (modalMode === 'signin') {
-        //#region 既存ユーザーのログイン処理
         // Step 1: Supabaseでログイン認証
         const { data, error: signInError } = await supabase.auth.signInWithPassword({
           email,
@@ -422,11 +399,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           onClose();
           setIsProcessingSuccess(false); // 処理完了後にフラグをオフ
         }, 1000);
-        //#endregion
       }
-      //#endregion
     } catch (error) {
-      //#region エラーハンドリング
       // エラー内容をログに出力
       console.error('認証エラー:', error);
 
@@ -443,7 +417,6 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         type: 'error',
         message: translatedError
       });
-      //#endregion
     } finally {
       // 処理完了時に必ずローディング状態を解除
       setIsLoading(false);
@@ -515,9 +488,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       setIsLoading(false);
     }
   };
-  //#endregion
 
-  //#region useEffect関連
   // モーダルが開閉状態の変化を監視
   useEffect(() => {
     if (isOpen) {
@@ -635,11 +606,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       console.log('リセットモードに変更されました');
     }
   }, [modalMode]);
-  //#endregion
 
   if (!isOpen) return null;
 
-  //#region レンダリング
   return (
     <>
       <div
@@ -869,5 +838,4 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       )}
     </>
   );
-  //#endregion
 }

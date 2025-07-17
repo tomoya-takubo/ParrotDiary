@@ -1,4 +1,3 @@
-//#region インポート
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import styles from './ActivityHistory.module.css';
@@ -7,9 +6,7 @@ import DiaryModal from '@/components/dashboard/modals/DiaryModal';
 import { useAuth } from '@/lib/AuthContext';
 import EditDiaryModal from '@/components/dashboard/modals/EditDiaryModal';
 import { getEntryParrots } from '@/components/dashboard/Diary/ParrotSelector';
-//#endregion
 
-//#region 型定義
 /**
  * ActivityHistoryコンポーネントのprops
  */
@@ -67,14 +64,11 @@ type CellData = {
   isToday: boolean;
   isCurrentMonth: boolean;
 };
-//#endregion
 
-//#region 定数と初期化
 // Supabase クライアントの初期化
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseKey);
-//#endregion
 
 /**
  * ActivityHistory コンポーネント
@@ -89,17 +83,12 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
 }) => {
   const { user, session, isLoading: authLoading } = useAuth();
   
-  //#region 定数
   const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const MAX_AUTH_RETRIES = 3;
   const MONTHS_JP = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
-  //#endregion
 
-  //#region refs
   const containerRef = useRef<HTMLDivElement>(null);
-  //#endregion
 
-  //#region 状態管理
   // 表示する年月
   const [currentDate, setCurrentDate] = useState(() => {
     const now = new Date();
@@ -128,9 +117,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
   const [editingEntry, setEditingEntry] = useState<ModalDiaryEntry | null>(null);
   // 編集モーダル表示状態
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  //#endregion
 
-  //#region データ操作関数
   /**
    * データを再取得するトリガー関数
    */
@@ -275,9 +262,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
       return newDate;
     });
   };
-  //#endregion
 
-  //#region データ取得とカレンダー生成
   /**
    * 認証状態とトリガーに基づいてデータを取得するuseEffect
    */
@@ -498,9 +483,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
       return () => clearTimeout(timer);
     }
   }, [authLoading, authRetryCount]);
-  //#endregion
 
-  //#region イベントハンドラー
   /**
    * セルクリックのハンドラー
    * カレンダーのセルがクリックされたときの処理
@@ -612,9 +595,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
       }
     }
   };
-  //#endregion
 
-  //#region レンダリング
   return (
     <div className={`${styles.container} ${isGachaOpen ? styles.gachaOpen : ''}`} style={{ width }} ref={containerRef}>
       {/* カレンダーカード */}
@@ -734,7 +715,6 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
       )}
     </div>
   );
-  //#endregion
 };
 
 export default ActivityHistory;

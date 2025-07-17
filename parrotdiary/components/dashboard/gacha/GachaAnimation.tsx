@@ -1,15 +1,12 @@
 'use client';
 
-//#region インポート
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import Image from 'next/image';
 import { useAuth } from '@/lib/AuthContext'; // 認証コンテキストをインポート
-// #endregion
 
-//#region 基本設定と初期化
 /**
  * Supabaseクライアントの初期化
  * 環境変数からURLとAPIキーを取得
@@ -26,9 +23,7 @@ const getJSTISOString = () => {
   // 日本時間 = UTC + 9時間
   return new Date(now.getTime() + (9 * 60 * 60 * 1000)).toISOString();
 };
-//#endregion
 
-//#region 型定義
 /**
  * パロットの型定義
  * parrots テーブルの構造に合わせています
@@ -90,9 +85,7 @@ interface GachaResult {
   rarityType: RarityType;
   revealed: boolean; // 結果が表示されたかどうか
 }
-//#endregion
 
-//#region レアリティ設定
 /**
  * UUIDとレアリティタイプのマッピング
  * データベースのrarity_idとフロントエンドの表示を紐づけます
@@ -169,7 +162,6 @@ const rarityConfigs: Record<RarityType, RarityConfig> = {
     particleCount: 4
   }
 } as const;
-//#endregion
 
 /**
  * ガチャアニメーションコンポーネント
@@ -183,7 +175,6 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
   // 認証コンテキストからユーザー情報を取得
   const { user } = useAuth();
 
-  //#region 状態管理
   // 基本状態
   const [showResult, setShowResult] = useState(false);        // 結果表示モード
   const [processing, setProcessing] = useState(false);        // 処理中フラグ
@@ -201,13 +192,9 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
   // 単一ガチャ演出用の状態
   const [showingSingleResult, setShowingSingleResult] = useState(false); // 単一ガチャ結果表示
   const [currentSingleParrot, setCurrentSingleParrot] = useState<GachaResult | null>(null); // 単一ガチャのパロット
-  //#endregion
 
-  //#region 定数
   const maxGacha = 50; // ガチャ最大連数
-  // #endregion
 
-  //#region ライフサイクル管理と初期化
   // isOpenが変更された時の処理
   useEffect(() => {
     if (isOpen) {
@@ -292,9 +279,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
       sessionStorage.setItem('gachaState', JSON.stringify(stateToSave));
     }
   }, [showResult, gachaResults, allRevealed]);
-  //#endregion
 
-  //#region データ取得・操作関数
   /**
    * 一匹のparrotのgifのURLを取得
    */
@@ -430,9 +415,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
       return false;
     }
   };
-  //#endregion
 
-  //#region ガチャ実行処理
   /**
    * 複数回のガチャを一括で実行する関数 (最適化版)
    */
@@ -639,9 +622,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
       setProcessing(false);
     }
   };
-  //#endregion
 
-  //#region UIイベントハンドラ
   /**
    * ガチャ回数を増やす
    */
@@ -696,9 +677,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
     setCurrentSingleParrot(null);
     onClose();
   };
-  //#endregion
 
-  //#region UIコンポーネント
   /**
    * パーティクル効果のコンポーネント
    * レアリティに応じたパーティクルエフェクトを表示
@@ -819,12 +798,10 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
       </motion.div>
     );
   };
-  //#endregion
 
   // モーダルが閉じている場合は何も表示しない
   if (!isOpen) return null;
 
-  //#region レンダリング
   return (
       <AnimatePresence>
         {isOpen && (
@@ -1306,7 +1283,6 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
         )}
       </AnimatePresence>
   );
-  //#endregion
 };
 
 export default GachaAnimation;

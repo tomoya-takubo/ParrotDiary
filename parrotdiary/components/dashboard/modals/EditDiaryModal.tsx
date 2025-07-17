@@ -1,4 +1,3 @@
-// #region インポートと依存関係
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Edit3, Hash, Plus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
@@ -6,9 +5,7 @@ import { useAuth } from '@/lib/AuthContext';
 import styles from './EditDiaryModal.module.css';
 import { ParrotSelector, saveEntryParrots, getEntryParrots } from '@/components/dashboard/Diary/ParrotSelector';
 import { useReward } from '@/lib/RewardContext';
-// #endregion
 
-// #region 型定義
 /**
  * タグの型定義
  */
@@ -41,7 +38,6 @@ type EditDiaryModalProps = {
   date: string | null;
   onSave: () => void;
 };
-// #endregion
 
 /**
  * 3行日記の編集・作成を行うモーダルコンポーネント
@@ -53,7 +49,6 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
   date,
   onSave,
 }) => {
-  // #region 状態管理
   const { user } = useAuth();
   const { showReward } = useReward();
   
@@ -89,19 +84,15 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
     levelUp: false,
     newLevel: null
   });
-  // #endregion
 
-  // #region 参照
   const line1Ref = useRef<HTMLInputElement>(null);
   const line2Ref = useRef<HTMLInputElement>(null);
   const line3Ref = useRef<HTMLInputElement>(null);
   const tagInputRef = useRef<HTMLInputElement>(null);
-  // #endregion
 
   // よく使うタグ
   const frequentTags = allTags.slice(0, 5);
 
-  // #region ユーティリティ関数
   /**
    * 文字数に応じたXP報酬を計算する
    * @param totalChars 合計文字数
@@ -171,9 +162,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
       newLevel: currentLevel 
     };
   };
-  // #endregion
 
-  // #region 副作用処理
   /**
    * パロット情報をロード（初期表示時）
    */
@@ -245,9 +234,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
       fetchTags();
     }
   }, [isOpen, user]);
-  // #endregion
 
-  // #region イベントハンドラー
   /**
    * 1行目のEnterキー押下時処理
    */
@@ -352,9 +339,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
       }
     }
   };
-  // #endregion
 
-  // #region フォーム検証・保存処理
   /**
    * フォーム入力の検証
    * @returns 入力が有効かどうか
@@ -681,12 +666,10 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
       setIsLoading(false);
     }
   };
-  // #endregion
 
   // モーダルが開いていない場合は何も表示しない
   if (!isOpen) return null;
 
-  // #region レンダリング
   return (
     <div 
       className={styles.modalOverlay}
@@ -954,7 +937,6 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
       </div>
     </div>
   );
-  // #endregion
 };
 
 export default EditDiaryModal;

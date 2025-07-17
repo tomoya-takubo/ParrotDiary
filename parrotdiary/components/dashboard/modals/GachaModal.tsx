@@ -3,7 +3,6 @@ import { Gift, X } from 'lucide-react';
 import type { GachaResult } from '@/types';
 import styles from './GachaModal.module.css';
 
-// #region 型定義
 /**
  * GachaModalコンポーネントのプロパティ
  * @param isOpen モーダルの表示状態
@@ -23,21 +22,17 @@ type GachaModalProps = {
  * result: 結果表示
  */
 type AnimationState = 'initial' | 'spinning' | 'result';
-// #endregion 型定義
 
 /**
  * ガチャ機能用モーダルコンポーネント
  * ユーザーがチケットを使用してガチャを引くための機能を提供
  */
 const GachaModal: React.FC<GachaModalProps> = ({ isOpen, onClose, tickets = 3 }) => {
-  // #region 状態管理
   // アニメーション状態の管理
   const [animationState, setAnimationState] = useState<AnimationState>('initial');
   // ガチャ結果の管理
   const [result, setResult] = useState<GachaResult | null>(null);
-  // #endregion 状態管理
 
-  // #region 副作用
   /**
    * モーダルが閉じられたときに状態をリセットする
    */
@@ -47,9 +42,7 @@ const GachaModal: React.FC<GachaModalProps> = ({ isOpen, onClose, tickets = 3 })
       setResult(null);
     }
   }, [isOpen]);
-  // #endregion 副作用
 
-  // #region イベントハンドラー
   /**
    * ガチャを開始する
    * アニメーション状態を「spinning」に変更し、
@@ -81,12 +74,10 @@ const GachaModal: React.FC<GachaModalProps> = ({ isOpen, onClose, tickets = 3 })
       onClose();
     }
   };
-  // #endregion イベントハンドラー
 
   // モーダルが非表示の場合は何も描画しない
   if (!isOpen) return null;
 
-  // #region レンダリング
   return (
     <div 
       className={styles.modalOverlay} 
@@ -152,7 +143,6 @@ const GachaModal: React.FC<GachaModalProps> = ({ isOpen, onClose, tickets = 3 })
       </div>
     </div>
   );
-  // #endregion レンダリング
 };
 
 export default GachaModal;
