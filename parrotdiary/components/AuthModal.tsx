@@ -8,6 +8,7 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
 import { Database } from '../types/supabase';
 import { Eye, EyeOff } from 'lucide-react';
+import { updateLoginStreak } from '../utils/streakUtils';
 
 type AuthModalProps = {
   isOpen: boolean;
@@ -282,8 +283,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             console.log('user_streaksテーブルに挿入開始');
             const { error: streakError } = await supabase.from('user_streaks').insert({
               user_id: data.user.id,
-              login_streak_count: 0,
-              login_max_streak: 0,
+              login_streak_count: 1,
+              login_max_streak: 1,
               last_login_date: currentTime,
               created_at: currentTime,
               updated_at: currentTime
@@ -376,6 +377,24 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
             if (usersError) {
               console.error('usersテーブルの更新エラー:', usersError);
+            }
+
+            // ストリーク情報の更新
+            console.log('ストリーク更新処理開始:', data.user.id);
+            const streakResult = await updateLoginStreak(data.user.id);
+            
+            if (streakResult.success) {
+              console.log('ストリーク更新成功:', {
+                currentStreak: streakResult.currentStreak,
+                maxStreak: streakResult.maxStreak,
+                isNewRecord: streakResult.isNewRecord
+              });
+              
+              if (streakResult.isNewRecord) {
+                console.log('🎉 新記録達成！');
+              }
+            } else {
+              console.error('ストリーク更新エラー:', streakResult.error);
             }
 
           } catch (error) {

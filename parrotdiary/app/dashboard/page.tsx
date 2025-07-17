@@ -6,6 +6,7 @@ import styles from './page.module.css';
 import { useRouter } from 'next/navigation';
 import { signOut } from '@/lib/authentication';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { updateLoginStreak } from '@/utils/streakUtils';
 
 // コンポーネントのインポート
 import GachaAnimation from '@/components/dashboard/gacha/GachaAnimation';
@@ -212,20 +213,47 @@ export default function Dashboard() {
           .eq('id', user.id)
           .single();
 
-        // 継続記録
+        // 継続記録とストリーク更新
         let loginStreak = 0;
         try {
-          const { data: streakData } = await supabase
-            .from('user_streaks')
-            .select('login_streak_count, last_login_date, login_max_streak, last_streak_update_date')
-            .eq('user_id', user.id)
-            .single();
-          if (streakData) {
-            loginStreak = streakData.login_streak_count || 0;
-            // ...（ストリーク更新処理は省略。必要なら詳細を追記）...
+          // ダッシュボード表示時にストリーク更新を確認
+          console.log('ダッシュボード: ストリーク更新確認開始:', user.id);
+          const streakResult = await updateLoginStreak(user.id);
+          
+          if (streakResult.success) {
+            loginStreak = streakResult.currentStreak;
+            console.log('ダッシュボード: ストリーク更新確認完了:', {
+              currentStreak: streakResult.currentStreak,
+              maxStreak: streakResult.maxStreak,
+              isNewRecord: streakResult.isNewRecord
+            });
+            
+            if (streakResult.isNewRecord) {
+              console.log('🎉 ダッシュボード: 新記録達成確認！');
+            }
+          } else {
+            // エラー時は既存データを取得
+            console.warn('ダッシュボード: ストリーク更新エラー、既存データを取得:', streakResult.error);
+            const { data: streakData } = await supabase
+              .from('user_streaks')
+              .select('login_streak_count')
+              .eq('user_id', user.id)
+              .single();
+            loginStreak = streakData?.login_streak_count || 0;
           }
         } catch (streakError) {
           console.error('❌ ストリークデータ取得中の例外:', streakError);
+          // フォールバック：既存データを取得
+          try {
+            const { data: streakData } = await supabase
+              .from('user_streaks')
+              .select('login_streak_count')
+              .eq('user_id', user.id)
+              .single();
+            loginStreak = streakData?.login_streak_count || 0;
+          } catch (fallbackError) {
+            console.error('❌ フォールバックストリーク取得エラー:', fallbackError);
+          }
         }
 
         // 日記件数
