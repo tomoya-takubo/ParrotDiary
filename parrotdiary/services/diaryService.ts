@@ -55,8 +55,11 @@ export const diaryService = {
   
   /**
    * ユーザーの日記エントリーを取得
-   * @param userId ユーザーID
-   * @param limit 取得件数（デフォルト100件）
+   * タグ情報も含めて日記エントリーを取得し、作成日時の降順で返す
+   * @param userId - 取得対象のユーザーID
+   * @param limit - 取得件数の上限（デフォルト: 100）
+   * @returns Promise<DiaryEntry[]> 日記エントリーの配列（エラー時は空配列）
+   * @throws エラー時は空配列を返すため例外は発生しない
    */
   async getUserDiaryEntries(userId: string, limit = 100): Promise<DiaryEntry[]> {
     try {
@@ -160,7 +163,10 @@ export const diaryService = {
 
   /**
    * ユーザーのタグ使用状況を取得
-   * @param userId ユーザーID 
+   * 各タグの使用回数をカウントし、使用回数の多い順でソートして返す
+   * @param userId - 取得対象のユーザーID
+   * @returns Promise<TagWithCount[]> タグ名と使用回数のペア配列（エラー時は空配列）
+   * @throws エラー時は空配列を返すため例外は発生しない
    */
   async getUserTags(userId: string): Promise<TagWithCount[]> {
     try {
@@ -237,7 +243,10 @@ export const diaryService = {
 
   /**
    * 指定したIDの日記エントリーを取得
-   * @param entryId 日記エントリーID
+   * 単一の日記エントリーをIDで検索し、関連するタグ情報も含めて返す
+   * @param entryId - 取得する日記エントリーのID
+   * @returns Promise<DiaryEntry | null> 日記エントリー（見つからない場合やエラー時はnull）
+   * @throws エラー時はnullを返すため例外は発生しない
    */
   async getDiaryEntryById(entryId: string): Promise<DiaryEntry | null> {
     try {
@@ -323,7 +332,10 @@ export const diaryService = {
 
   /**
    * 日記エントリーを削除する
-   * @param entryId 削除する日記エントリーのID
+   * 日記エントリーと関連するパロットアイコン、タグ使用履歴を全て削除する
+   * @param entryId - 削除する日記エントリーのID（string または number）
+   * @returns Promise<boolean> 削除成功時はtrue
+   * @throws {Error} 削除処理中にエラーが発生した場合
    */
   async deleteEntry(entryId: string | number): Promise<boolean> {
     try {
@@ -386,8 +398,9 @@ export const diaryService = {
         } else {
           console.log('DiaryService: RPC関数により日記とその関連データを削除しました');
         }
-      } catch (error) {
+      } catch (rpcFallbackError) {
         // 直接SQL文を実行してみる最後の手段
+        console.error('DiaryService: RPC削除処理エラー:', rpcFallbackError);
         try {
           // トランザクションではないため、順序が重要
           await supabase.from('diary_parrot_icons').delete().eq('entry_id', entryId);
