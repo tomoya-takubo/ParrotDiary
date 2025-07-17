@@ -141,15 +141,28 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
    * 異なる形式の日付文字列を統一形式に変換する
    */
   const formatDateForComparison = (dateString: string): string => {
-    // スペース区切り形式
-    if (typeof dateString === 'string' && dateString.includes(' ')) {
-      return dateString.split(' ')[0];
+    try {
+      // UTCの日時文字列をJSTのローカル日付に変換
+      const date = new Date(dateString);
+      
+      // JSTでの日付文字列を取得（YYYY-MM-DD形式）
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      
+      return `${year}-${month}-${day}`;
+    } catch (error) {
+      console.error('日付変換エラー:', error, 'for dateString:', dateString);
+      
+      // フォールバック処理
+      if (typeof dateString === 'string' && dateString.includes(' ')) {
+        return dateString.split(' ')[0];
+      }
+      else if (typeof dateString === 'string' && dateString.includes('T')) {
+        return dateString.split('T')[0];
+      }
+      return dateString;
     }
-    // T区切り形式（ISO形式）
-    else if (typeof dateString === 'string' && dateString.includes('T')) {
-      return dateString.split('T')[0];
-    }
-    return dateString;
   };
 
   /**
@@ -322,12 +335,19 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
         data?.forEach((entry) => {
           const date = formatDateForComparison(entry.recorded_at);
           
+          console.log('✅ エントリー処理:', {
+            entryId: entry.entry_id,
+            recorded_at: entry.recorded_at,
+            formatted_date: date
+          });
+          
           if (!entriesByDate[date]) {
             entriesByDate[date] = [];
           }
           entriesByDate[date].push(entry as DBDiaryEntry);
         });
         
+        console.log('✅ 日付別エントリー:', entriesByDate);
         setEntriesByDate(entriesByDate);
         setError(null);
 
@@ -413,6 +433,11 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
             isToday: dateStr === todayStr,
             isCurrentMonth: true
           };
+          
+          // デバッグ用：エントリーがある日付の情報を出力
+          if (entries.length > 0) {
+            console.log(`📅 カレンダー: ${dateStr} に ${entries.length}件のエントリー（レベル${Math.min(entries.length, 4)}）`);
+          }
           
           day++;
           
