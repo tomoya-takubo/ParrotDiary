@@ -30,9 +30,9 @@ interface StreakData {
  */
 export const getCurrentJSTTime = (): string => {
   const now = new Date();
-  // 日本時間に調整（UTC+9）
-  now.setHours(now.getHours() + 9);
-  return now.toISOString();
+  // 日本時間に調整（UTC+9時間 = 9 * 60 * 60 * 1000ミリ秒）
+  const jstTime = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+  return jstTime.toISOString();
 };
 
 /**
@@ -42,9 +42,9 @@ export const getCurrentJSTTime = (): string => {
  */
 export const formatDateToJST = (dateString: string): string => {
   const date = new Date(dateString);
-  // JSTに調整
-  date.setHours(date.getHours() + 9);
   
+  // データベースから取得した日時がすでにJSTの可能性を考慮
+  // まずは日時をそのまま解釈して日付部分を取得
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
@@ -102,7 +102,19 @@ export const updateLoginStreak = async (userId: string): Promise<StreakUpdateRes
 
     const streakData = currentStreakData as StreakData;
     const today = getTodayJST();
+    
+    // デバッグ：生の日付データを確認
+    console.log('🔍 デバッグ - 生データ:', {
+      raw_last_login_date: streakData.last_login_date,
+      today_jst: today
+    });
+    
     const lastLoginDate = streakData.last_login_date ? formatDateToJST(streakData.last_login_date) : null;
+    
+    console.log('🔍 デバッグ - 変換後:', {
+      formatted_last_login_date: lastLoginDate,
+      today: today
+    });
     
     console.log('継続記録判定:', { today, lastLoginDate, currentStreak: streakData.login_streak_count });
 

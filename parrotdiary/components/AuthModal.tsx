@@ -8,7 +8,7 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
 import { Database } from '../types/supabase';
 import { Eye, EyeOff } from 'lucide-react';
-import { updateLoginStreak } from '../utils/streakUtils';
+import { updateLoginStreak, getCurrentJSTTime } from '../utils/streakUtils';
 
 type AuthModalProps = {
   isOpen: boolean;
@@ -113,16 +113,6 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     return errorMap[error] || 'エラーが発生しました。もう一度お試しください';
   };
 
-  /**
-   * 現在時刻を日本時間（JST）で取得
-   * @returns {string} - ISO形式の日本時間
-   */
-  const getCurrentJSTTime = () => {
-    const now = new Date();
-    // 日本時間に調整（UTC+9）
-    now.setHours(now.getHours() + 9);
-    return now.toISOString();
-  };
 
   /**
    * フォームに入力があるか確認
