@@ -8,6 +8,7 @@ import styles from './RewardNotification.module.css';
  * 
  * このコンポーネントは画面右上に表示され、獲得したXP、チケット、レベルアップ情報を表示します。
  * RewardContextから報酬データを取得し、データがある場合のみ表示されます。
+ * @returns 報酬通知コンポーネント（報酬がない場合はnull）
  */
 export default function RewardNotification() {
   const { reward } = useReward(); // RewardContextから報酬データを取得

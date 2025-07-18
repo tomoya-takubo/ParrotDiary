@@ -26,6 +26,11 @@ type AnimationState = 'initial' | 'spinning' | 'result';
 /**
  * ガチャ機能用モーダルコンポーネント
  * ユーザーがチケットを使用してガチャを引くための機能を提供
+ * @param props コンポーネントのプロパティ
+ * @param props.isOpen モーダルの表示状態
+ * @param props.onClose モーダルを閉じるコールバック関数
+ * @param props.tickets 所持チケット数（デフォルト: 3）
+ * @returns ガチャモーダルコンポーネント
  */
 const GachaModal: React.FC<GachaModalProps> = ({ isOpen, onClose, tickets = 3 }) => {
   // アニメーション状態の管理

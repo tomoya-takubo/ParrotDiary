@@ -57,6 +57,9 @@ type DiaryProps = {
 /**
  * 3行日記コンポーネント
  * ユーザーの日記エントリを表示し、新規作成や編集、検索機能を提供する
+ * @param props コンポーネントのプロパティ
+ * @param props.onSave 保存完了時のコールバック関数
+ * @returns 3行日記コンポーネント
  */
 const Diary: React.FC<DiaryProps> = ({ onSave }) => {
   const MAX_PARROTS = 5; // 最大パロット数

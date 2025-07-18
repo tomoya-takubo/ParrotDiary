@@ -41,6 +41,13 @@ type EditDiaryModalProps = {
 
 /**
  * 3行日記の編集・作成を行うモーダルコンポーネント
+ * @param props コンポーネントのプロパティ
+ * @param props.isOpen モーダルの表示状態
+ * @param props.onClose モーダルを閉じるコールバック関数
+ * @param props.entry 編集対象の日記エントリー
+ * @param props.date 編集対象の日付
+ * @param props.onSave 保存完了時のコールバック関数
+ * @returns 日記編集モーダルコンポーネント
  */
 const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
   isOpen,
@@ -167,6 +174,10 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
    * パロット情報をロード（初期表示時）
    */
   useEffect(() => {
+    /**
+     * 既存エントリーのパロット情報を読み込む内部関数
+     * エントリーIDが存在し、パロット情報が未設定の場合に実行
+     */
     const loadParrots = async () => {
       if (entry.entry_id && !entry.parrots) {
         try {
@@ -203,6 +214,10 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
    * タグ情報の取得
    */
   useEffect(() => {
+    /**
+     * ユーザーの使用済みタグ情報を取得する内部関数
+     * Supabaseからタグデータを取得し、使用頻度順にソート
+     */
     const fetchTags = async () => {
       if (!user?.id) return;
   

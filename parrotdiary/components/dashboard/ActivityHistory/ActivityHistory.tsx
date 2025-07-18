@@ -73,6 +73,13 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 /**
  * ActivityHistory コンポーネント
  * ユーザーの活動履歴をカレンダー形式で表示する
+ * @param props コンポーネントのプロパティ
+ * @param props.onCellClick カレンダーセルクリック時のコールバック関数
+ * @param props.width コンポーネントの幅（デフォルト: '100%'）
+ * @param props.isGachaOpen ガチャモーダルの開閉状態（デフォルト: false）
+ * @param props.onSave 保存完了時のコールバック関数
+ * @param props.refreshKey データ再読み込み用のキー
+ * @returns 活動履歴カレンダーコンポーネント
  */
 const ActivityHistory: React.FC<ActivityHistoryProps> = ({ 
   onCellClick, 
@@ -267,6 +274,10 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
    * 認証状態とトリガーに基づいてデータを取得するuseEffect
    */
   useEffect(() => {
+    /**
+     * 指定された月の日記エントリーを取得する内部関数
+     * Supabaseから日記データを取得し、各エントリーにパロット情報を付与
+     */
     const fetchDiaryEntries = async () => {
       try {
         if (authLoading) {
@@ -354,6 +365,8 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
 
   /**
    * カレンダーグリッドの生成（月間カレンダー形式）
+   * 現在表示中の月に対して7x6のグリッドを生成し、各セルに日記データを配置
+   * @returns 日記データを含むカレンダーグリッド（CellData[][]）
    */
   const generateCalendarGrid = () => {
     const today = new Date();
@@ -487,6 +500,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
   /**
    * セルクリックのハンドラー
    * カレンダーのセルがクリックされたときの処理
+   * @param cell クリックされたセルのデータ
    */
   const handleCellClick = async (cell: CellData) => {
     if (isGachaOpen) return;
