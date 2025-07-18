@@ -166,7 +166,7 @@ export const diaryService = {
       });
 
       return formattedEntries;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('DiaryService: 日記エントリー取得に失敗', error);
       return []; // エラー時は空配列を返す
     }
@@ -244,7 +244,7 @@ export const diaryService = {
 
       console.log(`DiaryService: ${formattedTags.length}件のタグを取得`);
       return formattedTags;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('DiaryService: タグ取得に失敗', error);
       return []; // エラー時は空配列を返す
     }
@@ -331,7 +331,7 @@ export const diaryService = {
         line3: String(typedEntry.line3 || ''),
         tags
       };
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('DiaryService: 日記エントリー詳細取得に失敗', error);
       return null; // エラー時はnullを返す
     }
@@ -361,7 +361,7 @@ export const diaryService = {
         } else {
           console.log('DiaryService: パロットアイコンを削除しました');
         }
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('DiaryService: パロットアイコン削除処理エラー:', error);
       }
       
@@ -377,7 +377,7 @@ export const diaryService = {
         } else {
           console.log('DiaryService: タグ使用履歴を削除しました');
         }
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('DiaryService: タグ使用履歴削除処理エラー:', error);
       }
       
@@ -403,7 +403,7 @@ export const diaryService = {
         } else {
           console.log('DiaryService: RPC関数により日記とその関連データを削除しました');
         }
-      } catch (rpcFallbackError) {
+      } catch (rpcFallbackError: unknown) {
         // 直接SQL文を実行してみる最後の手段
         console.error('DiaryService: RPC削除処理エラー:', rpcFallbackError);
         try {
@@ -420,7 +420,7 @@ export const diaryService = {
             console.error('DiaryService: 最終的な日記エントリー削除エラー:', finalDeleteError);
             throw finalDeleteError;
           }
-        } catch (finalError) {
+        } catch (finalError: unknown) {
           console.error('DiaryService: 最終的な削除処理エラー:', finalError);
           throw finalError;
         }
@@ -428,7 +428,7 @@ export const diaryService = {
       
       console.log('DiaryService: 日記エントリー削除成功', { entryId });
       return true;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('DiaryService: 日記エントリー削除に失敗', error);
       throw error;
     }

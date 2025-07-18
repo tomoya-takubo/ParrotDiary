@@ -55,7 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser(data.session.user);
           }
         }
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('AuthContext: 初期セッション取得エラー:', error);
       } finally {
         setIsLoading(false);
@@ -103,7 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       return response;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('AuthContext: ログイン例外:', error);
       throw error;
     } finally {
@@ -124,7 +124,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error('AuthContext: ログアウトエラー:', error);
       } else {
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('AuthContext: ログアウト例外:', error);
     } finally {
       setIsLoading(false);

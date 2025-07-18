@@ -82,7 +82,7 @@ export default function StartButton() {
       // ローディング状態を解除
       setIsLoading(false);
       
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('認証確認エラー:', error);
       // エラーが発生した場合は安全のためモーダルを表示
       setIsModalOpen(true);
@@ -99,7 +99,7 @@ export default function StartButton() {
         setIsLoading(true);
         // ユーザーセッションを取得するロジックがあれば追加
         setIsLoading(false);
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('認証状態確認エラー:', error);
         setIsLoading(false);
       }

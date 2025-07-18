@@ -77,7 +77,7 @@ export const ParrotCollection = () => {
             });
           }
         }
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Failed to fetch images:', error);
         setIsLoading(false);
       }

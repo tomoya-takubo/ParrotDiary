@@ -47,7 +47,7 @@ export const updatePassword = async (password: string): Promise<AuthResponse> =>
       user: data.user,
       message: 'パスワードが正常に更新されました'
     };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('パスワード更新処理エラー:', error);
     return {
       success: false,
@@ -69,7 +69,7 @@ export const signOut = async (): Promise<AuthResponse> => {
     if (error) throw error;
     
     return { success: true };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('サインアウトエラー:', error);
     return {
       success: false,

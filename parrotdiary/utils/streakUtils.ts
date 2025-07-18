@@ -189,7 +189,7 @@ export const updateLoginStreak = async (userId: string): Promise<StreakUpdateRes
       isNewRecord
     };
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('継続記録更新処理エラー:', error);
     return {
       success: false,
@@ -220,7 +220,7 @@ export const getStreakData = async (userId: string): Promise<StreakData | null> 
     }
 
     return data as StreakData;
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('継続記録取得処理エラー:', error);
     return null;
   }
