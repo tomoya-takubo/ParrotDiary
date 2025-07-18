@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Gift, X } from 'lucide-react';
 import type { GachaResult } from '@/types';
 import styles from './GachaModal.module.css';
+import { AnimationState } from '@/types/diary';
 
 /**
  * GachaModalコンポーネントのプロパティ
@@ -15,13 +16,6 @@ type GachaModalProps = {
   tickets?: number;
 };
 
-/**
- * ガチャのアニメーション状態
- * initial: 初期状態
- * spinning: 回転中（ガチャ実行中）
- * result: 結果表示
- */
-type AnimationState = 'initial' | 'spinning' | 'result';
 
 /**
  * ガチャ機能用モーダルコンポーネント

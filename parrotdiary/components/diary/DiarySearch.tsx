@@ -7,6 +7,7 @@ import Image from 'next/image';
 import EditDiaryModal from '@/components/dashboard/modals/EditDiaryModal';
 import { getEntryParrots } from '@/components/dashboard/Diary/ParrotSelector';
 import { supabase } from '@/lib/supabase';
+import { EditDiaryEntryType } from '@/types/diary';
 
 /**
  * 基本のDiaryEntryにパロット情報を追加した拡張型
@@ -24,17 +25,6 @@ interface DiarySearchProps {
   initialTags?: TagWithCount[];          // 追加
 }
 
-/**
- * 編集モーダル用のエントリータイプ
- */
-type EditDiaryEntryType = {
-  time: string;         // 時刻（HH:MM形式）
-  tags: string[];       // タグの配列
-  activities: string[]; // 日記の内容（最大3行）
-  created_at?: string;  // 作成日時
-  entry_id?: number | string; // エントリーID
-  parrots?: string[];   // パロットGIF画像のURL配列
-};
 
 /**
  * 日記検索ページのコンポーネント

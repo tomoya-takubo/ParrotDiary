@@ -7,45 +7,8 @@ import React, { useEffect, useState, useCallback } from 'react';
 import styles from './Diary.module.css';
 import { getEntryParrots } from './ParrotSelector';
 import EditDiaryModal from '@/components/dashboard/modals/EditDiaryModal';
+import { DiaryEntryType, ModalState } from '@/types/diary';
 
-/**
- * 日記エントリの型定義
- * データベースから取得した日記データの構造を表す
- */
-type DiaryEntryType = {
-  entry_id: number;
-  user_id: string;
-  recorded_at: string;
-  line1: string | null;
-  line2: string | null;
-  line3: string | null;
-  created_at: string;
-  updated_at: string;
-  tags?: string[];
-  parrots?: string[];
-};
-
-/**
- * 編集用の日記エントリ型定義
- * モーダルで編集する際のデータ構造
- */
-type EditDiaryEntryType = {
-  time: string;
-  tags: string[];
-  activities: string[];
-  created_at?: string;
-  entry_id?: number | string;
-  parrots?: string[];
-};
-
-/**
- * モーダル状態の型定義
- */
-type ModalState = {
-  isOpen: boolean;
-  entry: EditDiaryEntryType | null;
-  date: string | null;
-};
 
 /**
  * Diaryコンポーネントのプロパティ型定義

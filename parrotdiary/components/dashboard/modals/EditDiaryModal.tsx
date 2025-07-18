@@ -5,28 +5,8 @@ import { useAuth } from '@/lib/AuthContext';
 import styles from './EditDiaryModal.module.css';
 import { ParrotSelector, saveEntryParrots, getEntryParrots } from '@/components/dashboard/Diary/ParrotSelector';
 import { useReward } from '@/lib/RewardContext';
+import { EditDiaryEntryType, TagType } from '@/types/diary';
 
-/**
- * タグの型定義
- */
-type TagType = {
-  id: number;
-  name: string;
-  count: number;
-  lastUsed: string;
-};
-
-/**
- * 日記エントリーの型定義
- */
-type EditDiaryEntryType = {
-  time: string;
-  tags: string[];
-  activities: string[];
-  created_at?: string;
-  entry_id?: number | string;
-  parrots?: string[]; // パロットの配列
-};
 
 /**
  * モーダルのプロパティ型定義

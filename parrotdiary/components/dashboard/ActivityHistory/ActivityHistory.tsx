@@ -6,6 +6,7 @@ import DiaryModal from '@/components/dashboard/modals/DiaryModal';
 import { useAuth } from '@/lib/AuthContext';
 import EditDiaryModal from '@/components/dashboard/modals/EditDiaryModal';
 import { getEntryParrots } from '@/components/dashboard/Diary/ParrotSelector';
+import { ActivityLevel, EditDiaryEntryType } from '@/types/diary';
 
 /**
  * ActivityHistoryコンポーネントのprops
@@ -34,22 +35,6 @@ type DBDiaryEntry = {
   updated_at: string;
 };
 
-/**
- * モーダル表示用の日記エントリーの型
- */
-type ModalDiaryEntry = {
-  time: string;
-  tags: string[];
-  activities: string[];
-  created_at?: string;
-  entry_id?: number | string;
-  parrots?: string[];
-};
-
-/**
- * アクティビティのレベル（0-4）
- */
-type ActivityLevel = 0 | 1 | 2 | 3 | 4;
 
 /**
  * カレンダーセルのデータ型
@@ -115,13 +100,13 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
   // モーダル表示状態
   const [showModal, setShowModal] = useState(false);
   // モーダル用の日記エントリー
-  const [modalEntries, setModalEntries] = useState<ModalDiaryEntry[]>([]);
+  const [modalEntries, setModalEntries] = useState<EditDiaryEntryType[]>([]);
   // データ更新トリガー
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   // 認証リトライカウント
   const [authRetryCount, setAuthRetryCount] = useState(0);
   // 編集対象のエントリー
-  const [editingEntry, setEditingEntry] = useState<ModalDiaryEntry | null>(null);
+  const [editingEntry, setEditingEntry] = useState<EditDiaryEntryType | null>(null);
   // 編集モーダル表示状態
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
@@ -203,7 +188,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
    * DBデータをモーダル表示用データに変換
    * 日記エントリーからモーダル表示用のフォーマットに変換し、タグとパロット情報も取得する
    */
-  const convertToModalEntry = async (dbEntry: DBDiaryEntry): Promise<ModalDiaryEntry> => {
+  const convertToModalEntry = async (dbEntry: DBDiaryEntry): Promise<EditDiaryEntryType> => {
     const recordedTime = new Date(dbEntry.recorded_at);
     const hours = String(recordedTime.getHours()).padStart(2, '0');
     const minutes = String(recordedTime.getMinutes()).padStart(2, '0');
@@ -549,7 +534,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
   /**
    * エントリー編集ハンドラー
    */
-  const handleEditEntry = (entry: ModalDiaryEntry) => {
+  const handleEditEntry = (entry: EditDiaryEntryType) => {
     // entry_id が string 型の場合は number に変換
     const convertedEntry = {
       ...entry,
@@ -596,7 +581,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
         const entries = entriesByDate[newDateString] || [];
         
         // データ変換処理
-        let modalData: ModalDiaryEntry[] = [];
+        let modalData: EditDiaryEntryType[] = [];
         if (entries.length > 0) {
           modalData = await Promise.all(entries.map(convertToModalEntry));
         }

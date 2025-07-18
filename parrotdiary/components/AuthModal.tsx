@@ -8,18 +8,12 @@ import { useRouter } from 'next/navigation';
 import { Database } from '../types/supabase';
 import { Eye, EyeOff } from 'lucide-react';
 import { updateLoginStreak, getCurrentJSTTime } from '../utils/streakUtils';
+import { ModalMode, FormFeedback } from '@/types/diary';
 
 type AuthModalProps = {
   isOpen: boolean;
   onClose: () => void;
 }
-
-type ModalMode = 'signin' | 'signup' | 'reset';
-
-type FormFeedback = {
-  type: 'success' | 'error';
-  message: string;
-} | null;
 
 /**
  * 認証モーダルコンポーネント
