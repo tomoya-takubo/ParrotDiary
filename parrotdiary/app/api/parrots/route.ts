@@ -2,7 +2,12 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
-// 再帰的にファイルを探索する関数
+/**
+ * 再帰的にディレクトリ内の全ファイルを取得する関数
+ * @param dirPath 探索対象のディレクトリパス
+ * @param arrayOfFiles ファイルパスを格納する配列（再帰用）
+ * @returns 全ファイルパスの配列
+ */
 function getAllFiles(dirPath: string, arrayOfFiles: string[] = []): string[] {
   const files = fs.readdirSync(dirPath);
 
@@ -18,6 +23,12 @@ function getAllFiles(dirPath: string, arrayOfFiles: string[] = []): string[] {
   return arrayOfFiles;
 }
 
+/**
+ * パロット画像ファイル一覧を取得するGET API
+ * public/imagesディレクトリから全てのGIFファイルを探索し、
+ * フロントエンドで使用できる形式で返す
+ * @returns パロット画像データの配列（src, alt）
+ */
 export async function GET() {
   const parrotsDir = path.join(process.cwd(), 'public/images');
   const allFiles = getAllFiles(parrotsDir);
