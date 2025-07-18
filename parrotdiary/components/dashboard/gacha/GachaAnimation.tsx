@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
@@ -195,6 +195,10 @@ const GachaAnimation: React.FC<GachaAnimationProps> = React.memo(({
 
   const maxGacha = 50; // ガチャ最大連数
 
+  // フォーカス管理用のref
+  const modalContentRef = useRef<HTMLDivElement>(null);
+  const firstFocusableElementRef = useRef<HTMLButtonElement>(null);
+
   // isOpenが変更された時の処理
   useEffect(() => {
     if (isOpen) {
@@ -258,6 +262,47 @@ const GachaAnimation: React.FC<GachaAnimationProps> = React.memo(({
     const url = getSingleGifUrl('parrots', 'confusedparrot.gif');
     setGifUrl(url);
   }, []);
+
+  // モーダルが開いた時のフォーカス管理
+  useEffect(() => {
+    if (isOpen && !processing && !showResult && !showingSingleResult) {
+      // モーダルが開いて、処理中でも結果表示でもない場合に最初のボタンにフォーカス
+      setTimeout(() => {
+        firstFocusableElementRef.current?.focus();
+      }, 100);
+    }
+  }, [isOpen, processing, showResult, showingSingleResult]);
+
+  // フォーカストラップの実装
+  useEffect(() => {
+    const handleTabKey = (event: KeyboardEvent) => {
+      if (event.key === 'Tab' && modalContentRef.current) {
+        const focusableElements = modalContentRef.current.querySelectorAll(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        
+        const firstElement = focusableElements[0] as HTMLElement;
+        const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+        if (event.shiftKey) {
+          if (document.activeElement === firstElement) {
+            event.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            event.preventDefault();
+            firstElement.focus();
+          }
+        }
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleTabKey);
+      return () => document.removeEventListener('keydown', handleTabKey);
+    }
+  }, [isOpen]);
 
   // すべての結果が表示されたかチェック
   useEffect(() => {
@@ -837,6 +882,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = React.memo(({
                 background: "linear-gradient(135deg, #e0f2fe, #f0f9ff)", // 淡い青系の背景
               }}
               role="document"
+              ref={modalContentRef}
             >
               {/* エラー表示 */}
               {error ? (
@@ -889,9 +935,10 @@ const GachaAnimation: React.FC<GachaAnimationProps> = React.memo(({
                         { count: 30, from: 'from-yellow-500', to: 'to-orange-500' },
                         { count: 40, from: 'from-pink-500', to: 'to-fuchsia-500' },
                         { count: 50, from: 'from-purple-500', to: 'to-indigo-500' },
-                      ].map(({ count, from, to }) => (
+                      ].map(({ count, from, to }, index) => (
                         <button
                           key={count}
+                          ref={index === 0 ? firstFocusableElementRef : undefined}
                           onClick={() => runMultiGacha(count)}
                           disabled={tickets < count}
                           className={`py-3 bg-gradient-to-r ${from} ${to} text-white rounded-lg shadow-md ${

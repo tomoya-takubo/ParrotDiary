@@ -48,6 +48,11 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
   const [selectedTags, setSelectedTags] = useState<string[]>(entry.tags || []);
   const [currentTag, setCurrentTag] = useState('');
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
+
+  // フォーカス管理用のref
+  const modalRef = useRef<HTMLDivElement>(null);
+  const firstInputRef = useRef<HTMLTextAreaElement>(null);
+  const lastInteractiveElementRef = useRef<HTMLButtonElement>(null);
   const [allTags, setAllTags] = useState<TagType[]>([]);
   
   // パロット関連の状態
@@ -662,6 +667,62 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
     }
   };
 
+  // モーダルが開いた時の初期フォーカス設定
+  useEffect(() => {
+    if (isOpen) {
+      // モーダルが開いた時に最初のテキストエリアにフォーカス
+      setTimeout(() => {
+        firstInputRef.current?.focus();
+      }, 100);
+    }
+  }, [isOpen]);
+
+  // ESCキーでモーダルを閉じる
+  useEffect(() => {
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isOpen) {
+        event.preventDefault();
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscKey);
+      return () => document.removeEventListener('keydown', handleEscKey);
+    }
+  }, [isOpen, onClose]);
+
+  // フォーカストラップの実装
+  useEffect(() => {
+    const handleTabKey = (event: KeyboardEvent) => {
+      if (event.key === 'Tab' && modalRef.current) {
+        const focusableElements = modalRef.current.querySelectorAll(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        
+        const firstElement = focusableElements[0] as HTMLElement;
+        const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+        if (event.shiftKey) {
+          if (document.activeElement === firstElement) {
+            event.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            event.preventDefault();
+            firstElement.focus();
+          }
+        }
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleTabKey);
+      return () => document.removeEventListener('keydown', handleTabKey);
+    }
+  }, [isOpen]);
+
   // モーダルが開いていない場合は何も表示しない
   if (!isOpen) return null;
 
@@ -669,20 +730,32 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
     <div 
       className={styles.modalOverlay}
       onClick={handleOverlayClick}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="diary-modal-title"
+      aria-describedby="diary-modal-description"
     >
-      <div className={styles.modalContainer}>
+      <div 
+        className={styles.modalContainer}
+        ref={modalRef}
+        role="document"
+      >
         {/* 閉じるボタン */}
         <button
           onClick={onClose}
           className={styles.closeButton}
-          aria-label="閉じる"
+          aria-label="日記編集モーダルを閉じる"
+          type="button"
         >
           <X size={20} />
         </button>
         
         {/* モーダルヘッダー */}
         <div className={styles.modalHeader}>
-          <h2 className={styles.modalTitle}>
+          <h2 
+            id="diary-modal-title"
+            className={styles.modalTitle}
+          >
             {entry.activities.some(a => a !== '') ? '3行日記を編集' : '3行日記を作成'}
           </h2>
         </div>
@@ -723,7 +796,12 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
               </div>
             {/* エラーメッセージ表示 */}
             {formError && (
-              <div className={styles.errorText}>
+              <div 
+                className={styles.errorText}
+                role="alert"
+                aria-live="polite"
+                id="diary-modal-description"
+              >
                 {formError}
               </div>
             )}
@@ -731,17 +809,28 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
 
           {/* 1行目入力フィールド */}
           <div className={styles.inputGroup}>
+            <label htmlFor="line1-input" className={styles.visuallyHidden}>
+              1行目（50文字まで）
+            </label>
             <div className={styles.inputWrapper}>
               <input
+                id="line1-input"
                 type="text"
                 value={line1}
                 onChange={(e) => setLine1(e.target.value)}
                 onKeyPress={handleLine1KeyPress}
-                ref={line1Ref}
+                ref={firstInputRef}
                 className={styles.textInput}
                 maxLength={50}
+                placeholder="1行目を入力してください"
+                aria-label="1行目（50文字まで）"
+                aria-describedby="line1-char-count"
               />
-              <span className={styles.charCount}>
+              <span 
+                id="line1-char-count"
+                className={styles.charCount}
+                aria-live="polite"
+              >
                 {line1.length}/50
               </span>
             </div>
@@ -749,8 +838,12 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
 
           {/* 2行目入力フィールド */}
           <div className={styles.inputGroup}>
+            <label htmlFor="line2-input" className={styles.visuallyHidden}>
+              2行目（50文字まで）
+            </label>
             <div className={styles.inputWrapper}>
               <input
+                id="line2-input"
                 type="text"
                 value={line2}
                 onChange={(e) => handleLine2Change(e.target.value)}
@@ -759,8 +852,15 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
                 className={styles.textInput}
                 maxLength={50}
                 disabled={!line1.trim()}
+                placeholder="2行目を入力してください"
+                aria-label="2行目（50文字まで）"
+                aria-describedby="line2-char-count"
               />
-              <span className={styles.charCount}>
+              <span 
+                id="line2-char-count"
+                className={styles.charCount}
+                aria-live="polite"
+              >
                 {line2.length}/50
               </span>
             </div>
@@ -768,8 +868,12 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
 
           {/* 3行目入力フィールド */}
           <div className={styles.inputGroup}>
+            <label htmlFor="line3-input" className={styles.visuallyHidden}>
+              3行目（50文字まで）
+            </label>
             <div className={styles.inputWrapper}>
               <input
+                id="line3-input"
                 type="text"
                 value={line3}
                 onChange={(e) => handleLine3Change(e.target.value)}
@@ -778,8 +882,15 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
                 className={styles.textInput}
                 maxLength={50}
                 disabled={!line1.trim() || !line2.trim()}
+                placeholder="3行目を入力してください"
+                aria-label="3行目（50文字まで）"
+                aria-describedby="line3-char-count"
               />
-              <span className={styles.charCount}>
+              <span 
+                id="line3-char-count"
+                className={styles.charCount}
+                aria-live="polite"
+              >
                 {line3.length}/50
               </span>
             </div>

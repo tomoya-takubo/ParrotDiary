@@ -1,3 +1,17 @@
+/* #region アクセシビリティ - スクリーンリーダー対応 */
+/* 視覚的に隠されたラベル（スクリーンリーダー用） */
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* #region 基本レイアウト - モーダル全体の構造を定義 */
 /* モーダルオーバーレイ */
 .modalOverlay {

@@ -1111,6 +1111,19 @@ const CollectionPreview = () => {
       setSelectedParrot(obtainedParrots[nextIndex]);
     };
 
+    // フォーカス管理用のref
+    const modalContentRef = useRef<HTMLDivElement>(null);
+
+    // モーダルが開いた時のフォーカス管理
+    useEffect(() => {
+      if (parrot) {
+        // モーダルが開いた時にモーダルコンテンツにフォーカス
+        setTimeout(() => {
+          modalContentRef.current?.focus();
+        }, 100);
+      }
+    }, [parrot]);
+
     // タグボタンのレンダリングを最適化
     const frequentTagButtons = useMemo(() => {
       return frequentTags.map((tag) => {
@@ -1185,6 +1198,8 @@ const CollectionPreview = () => {
             className={`${styles.modalContent} ${getModalClass()}`} 
             onClick={e => e.stopPropagation()}
             role="document"
+            ref={modalContentRef}
+            tabIndex={-1}
           >
             <button 
               className={styles.closeButton} 
