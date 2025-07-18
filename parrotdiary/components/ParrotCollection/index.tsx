@@ -26,6 +26,7 @@ const getPublicUrl = (path: string): string => {
 /**
  * ParrotCollection コンポーネント
  * オウムのGIF画像をランダムに4つ表示するコンポーネント
+ * @returns パロットコレクション表示コンポーネント
  */
 export const ParrotCollection = () => {
   // 表示する画像のURLリスト

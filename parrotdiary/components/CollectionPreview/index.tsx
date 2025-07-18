@@ -89,6 +89,8 @@ type TagUsageCount = {
 
 /**
  * パロットコレクション一覧を表示するメインコンポーネント
+ * ユーザーの所持状況を含むパロット図鑑機能を提供
+ * @returns パロットコレクション表示コンポーネント
  */
 export default function CollectionPreview() {
   const [loading, setLoading] = useState(true);

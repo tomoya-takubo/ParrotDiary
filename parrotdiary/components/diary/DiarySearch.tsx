@@ -39,6 +39,14 @@ type EditDiaryEntryType = {
 /**
  * 日記検索ページのコンポーネント
  * ログインユーザーの日記を検索・フィルタリングする機能を提供します
+ * @param props コンポーネントのプロパティ
+ * @param props.initialUserId 初期ユーザーID
+ * @param props.onDataLoaded データロード完了時のコールバック関数
+ * @param props.preloadData データ先読みモードかどうか（デフォルト: false）
+ * @param props.initialEntries 初期日記エントリー配列（デフォルト: []）
+ * @param props.initialTags 初期タグ配列（デフォルト: []）
+ * @param ref コンポーネントの参照
+ * @returns 日記検索コンポーネント
  */
 const DiarySearch = forwardRef(({ 
   initialUserId, 
