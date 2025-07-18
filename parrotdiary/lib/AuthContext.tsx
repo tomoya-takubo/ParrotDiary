@@ -40,7 +40,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // 初期セッションの取得とリスナー設定を分離せず、一度に行う
     const setupAuth = async () => {
       try {
-        console.log('AuthContext: 認証設定開始');
         setIsLoading(true);
         
         // 既存のセッションを取得
@@ -49,16 +48,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (error) {
           console.error('AuthContext: セッション取得エラー:', error);
         } else {
-          console.log('AuthContext: セッション取得結果:', {
-            hasSession: !!data.session,
-            userId: data.session?.user?.id || 'なし'
-          });
           
           // 既存のセッションがあれば状態を更新
           if (data.session) {
             setSession(data.session);
             setUser(data.session.user);
-            console.log('AuthContext: ユーザー情報設定', data.session.user.id);
           }
         }
       } catch (error) {
@@ -74,10 +68,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // 認証状態変更の監視
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
-        console.log('AuthContext: 認証状態変更イベント:', event, {
-          hasSession: !!currentSession,
-          userId: currentSession?.user?.id || 'なし'
-        });
         
         // イベントに応じて状態を更新
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
@@ -105,13 +95,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signIn = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      console.log('AuthContext: ログイン試行', email);
       const response = await supabase.auth.signInWithPassword({ email, password });
       
       if (response.error) {
         console.error('AuthContext: ログインエラー:', response.error);
       } else {
-        console.log('AuthContext: ログイン成功:', response.data.user?.id);
       }
       
       return response;
@@ -130,13 +118,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     setIsLoading(true);
     try {
-      console.log('AuthContext: ログアウト試行');
       const { error } = await supabase.auth.signOut();
       
       if (error) {
         console.error('AuthContext: ログアウトエラー:', error);
       } else {
-        console.log('AuthContext: ログアウト成功');
       }
     } catch (error) {
       console.error('AuthContext: ログアウト例外:', error);

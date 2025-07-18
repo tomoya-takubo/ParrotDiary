@@ -1,6 +1,5 @@
 "use client";
 
-// components/CollectionPreview/index.tsx
 import { useEffect, useState, useMemo } from 'react';
 import { Search, LogIn, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import ParrotIcon from '../ParrotIcon';

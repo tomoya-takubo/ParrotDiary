@@ -19,7 +19,6 @@ let supabaseInstance: ReturnType<typeof createClient> | null = null;
  */
 export const getSupabase = () => {
   if (!supabaseInstance) {
-    console.log('Supabase: 新しいクライアントインスタンスを作成');
     supabaseInstance = createClient(supabaseUrl, supabaseKey);
   }
   return supabaseInstance;

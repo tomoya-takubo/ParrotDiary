@@ -19,11 +19,9 @@ export const updatePassword = async (password: string): Promise<AuthResponse> =>
   const supabase = createClientComponentClient<Database>();
   
   try {
-    console.log("パスワード更新プロセス開始");
     
     // 現在のセッションを確認
     const { data: sessionData } = await supabase.auth.getSession();
-    console.log("セッション確認結果:", { hasSession: !!sessionData.session });
     
     if (!sessionData.session) {
       console.error("セッションが存在しません");
@@ -35,7 +33,6 @@ export const updatePassword = async (password: string): Promise<AuthResponse> =>
     }
     
     // パスワード更新実行
-    console.log("Supabase Auth updateUser 呼び出し");
     const { data, error } = await supabase.auth.updateUser({ 
       password 
     });
@@ -45,7 +42,6 @@ export const updatePassword = async (password: string): Promise<AuthResponse> =>
       throw error;
     }
     
-    console.log("パスワード更新成功");
     return { 
       success: true,
       user: data.user,
