@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Star, Gift, Book, Award, LogOut, Shield, Medal, Trophy } from 'lucide-react';
 import styles from './page.module.css';
 import { useRouter } from 'next/navigation';
@@ -355,7 +355,13 @@ export default function Dashboard() {
     setShowGachaModal(false);
   };
 
-  const rankStyle = getRankStyle(userStatus.ranking);
+  // ランクスタイルの計算をメモ化
+  const rankStyle = useMemo(() => getRankStyle(userStatus.ranking), [userStatus.ranking]);
+
+  // サブテキストの計算をメモ化
+  const rankSubtext = useMemo(() => getRankSubtext(userStatus.streak), [userStatus.streak]);
+  const streakSubtext = useMemo(() => getStreakSubtext(userStatus.streak), [userStatus.streak]);
+  const diarySubtext = useMemo(() => getDiarySubtext(userStatus.totalDiaryEntries), [userStatus.totalDiaryEntries]);
 
   return (
     <div className={styles.pageContainer}>
@@ -458,7 +464,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className={styles.statDescription}>
-                {isLoadingUserStatus ? '読込中...' : getDiarySubtext(userStatus.totalDiaryEntries)}
+                {isLoadingUserStatus ? '読込中...' : diarySubtext}
               </div>
             </div>
             
@@ -479,7 +485,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className={styles.statDescription}>
-                {isLoadingUserStatus ? '読込中...' : getStreakSubtext(userStatus.streak)}
+                {isLoadingUserStatus ? '読込中...' : streakSubtext}
               </div>
             </div>
             
@@ -500,7 +506,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className={styles.statDescription}>
-                {isLoadingUserStatus ? '読込中...' : getRankSubtext(userStatus.streak)}
+                {isLoadingUserStatus ? '読込中...' : rankSubtext}
               </div>
             </div>
           </div>

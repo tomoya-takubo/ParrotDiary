@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle, useMemo } from 'react';
 import { Search, FilterIcon, Calendar, ChevronLeft, ChevronRight, Edit2, Trash2 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import diaryService, { DiaryEntry, TagWithCount } from '@/services/diaryService';
@@ -586,35 +586,48 @@ const DiarySearch = forwardRef(({
   };
 
   /**
-   * 検索条件に基づくエントリーのフィルタリング
+   * 検索条件に基づくエントリーのフィルタリング（useMemoで最適化）
    */
-  const filteredEntries = diaryEntries.filter((entry) => {
-    // 検索キーワードにマッチするか
-    const entryContent = `${entry.line1} ${entry.line2 || ''} ${entry.line3 || ''}`;
-    const matchesSearch =
-      searchTerm === '' ||
-      entryContent.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    // 選択されたタグにすべてマッチするか
-    const matchesTags =
-      selectedTags.length === 0 ||
-      selectedTags.every((tag) => entry.tags.includes(tag));
-    
-    // 日付範囲にマッチするか
-    const entryDate = new Date(entry.created_at);
-    const afterStart = !dateRange.start || entryDate >= new Date(dateRange.start);
-    const beforeEnd = !dateRange.end || entryDate <= new Date(dateRange.end + 'T23:59:59'); // 終了日の終わりまで含める
-    
-    return matchesSearch && matchesTags && afterStart && beforeEnd;
-  });
+  const filteredEntries = useMemo(() => {
+    return diaryEntries.filter((entry) => {
+      // 検索キーワードにマッチするか
+      const entryContent = `${entry.line1} ${entry.line2 || ''} ${entry.line3 || ''}`;
+      const matchesSearch =
+        searchTerm === '' ||
+        entryContent.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      // 選択されたタグにすべてマッチするか
+      const matchesTags =
+        selectedTags.length === 0 ||
+        selectedTags.every((tag) => entry.tags.includes(tag));
+      
+      // 日付範囲にマッチするか
+      const entryDate = new Date(entry.created_at);
+      const afterStart = !dateRange.start || entryDate >= new Date(dateRange.start);
+      const beforeEnd = !dateRange.end || entryDate <= new Date(dateRange.end + 'T23:59:59'); // 終了日の終わりまで含める
+      
+      return matchesSearch && matchesTags && afterStart && beforeEnd;
+    });
+  }, [diaryEntries, searchTerm, selectedTags, dateRange]);
 
   /**
-   * ページネーションのためのデータ計算
+   * ページネーションのためのデータ計算（useMemoで最適化）
    */
-  const indexOfLastEntry = currentPage * entriesPerPage;
-  const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
-  const currentEntries = filteredEntries.slice(indexOfFirstEntry, indexOfLastEntry);
-  const totalPages = Math.ceil(filteredEntries.length / entriesPerPage);
+  const paginationData = useMemo(() => {
+    const indexOfLastEntry = currentPage * entriesPerPage;
+    const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
+    const currentEntries = filteredEntries.slice(indexOfFirstEntry, indexOfLastEntry);
+    const totalPages = Math.ceil(filteredEntries.length / entriesPerPage);
+    
+    return {
+      indexOfLastEntry,
+      indexOfFirstEntry,
+      currentEntries,
+      totalPages
+    };
+  }, [currentPage, entriesPerPage, filteredEntries]);
+
+  const { currentEntries, totalPages } = paginationData;
 
   /**
    * ページネーションボタンのレンダリング
@@ -699,18 +712,21 @@ const DiarySearch = forwardRef(({
   };
   
   /**
-   * 表示するタグの制限（「すべて表示」が選択されていない場合は10件まで）
+   * 表示するタグの制限（「すべて表示」が選択されていない場合は10件まで、useMemoで最適化）
    */
-  const displayTags = showAllTags ? allTags : allTags.slice(0, 10);
+  const displayTags = useMemo(() => {
+    return showAllTags ? allTags : allTags.slice(0, 10);
+  }, [showAllTags, allTags]);
 
   /**
-   * アクティブなフィルターの数をカウント（バッジ表示用）
+   * アクティブなフィルターの数をカウント（バッジ表示用、useMemoで最適化）
    */
-  const activeFilterCount = 
-    (searchTerm ? 1 : 0) + 
-    selectedTags.length + 
-    (dateRange.start ? 1 : 0) + 
-    (dateRange.end ? 1 : 0);
+  const activeFilterCount = useMemo(() => {
+    return (searchTerm ? 1 : 0) + 
+           selectedTags.length + 
+           (dateRange.start ? 1 : 0) + 
+           (dateRange.end ? 1 : 0);
+  }, [searchTerm, selectedTags.length, dateRange.start, dateRange.end]);
 
   useEffect(() => {
     const handleResize = () => {

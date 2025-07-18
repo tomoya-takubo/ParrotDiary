@@ -578,7 +578,7 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = React.memo(({
       )}
     </div>
   );
-};
+});
 
 /**
  * 日記エントリー保存時にパロット情報を保存する関数
@@ -711,7 +711,7 @@ export const saveEntryParrots = async (
     console.error('日記パロット保存エラー:', error);
     return false;
   }
-});
+};
 
 /**
  * 日記エントリー読み込み時にパロット情報も取得する関数
@@ -773,3 +773,6 @@ export const getEntryParrots = async (entryId: string | number): Promise<string[
     return [];
   }
 };
+
+// 表示名をセット
+ParrotSelector.displayName = 'ParrotSelector';

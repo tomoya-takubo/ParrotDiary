@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import styles from './ActivityHistory.module.css';
 import { createClient } from '@supabase/supabase-js';
@@ -91,8 +91,6 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = React.memo(({
   const [entriesByDate, setEntriesByDate] = useState<Record<string, DBDiaryEntry[]>>({});
   // 選択されたセルデータ
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  // カレンダーデータ
-  const [calendarData, setCalendarData] = useState<CellData[][]>([]);
   // 日記エントリーデータのロード状態
   const [loading, setLoading] = useState(true);
   // エラー状態
@@ -349,11 +347,10 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = React.memo(({
   }, [user, session, authLoading, refreshTrigger, refreshKey]);
 
   /**
-   * カレンダーグリッドの生成（月間カレンダー形式）
+   * カレンダーグリッドの生成（月間カレンダー形式、useMemoで最適化）
    * 現在表示中の月に対して7x6のグリッドを生成し、各セルに日記データを配置
-   * @returns 日記データを含むカレンダーグリッド（CellData[][]）
    */
-  const generateCalendarGrid = () => {
+  const calendarGrid = useMemo(() => {
     const today = new Date();
     const todayStr = formatDateString(today);
     
@@ -455,17 +452,10 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = React.memo(({
       }
     }
     
-    setCalendarData(grid);
-  };
+    return grid;
+  }, [currentDate, entriesByDate]);
 
-  /**
-   * カレンダーグリッド生成のトリガーuseEffect
-   */
-  useEffect(() => {
-    if (!loading || Object.keys(entriesByDate).length >= 0) {
-      generateCalendarGrid();
-    }
-  }, [currentDate, entriesByDate, loading]);
+  // calendarGridはuseMemoで計算されるため、useEffectは不要
 
   /**
    * 認証リトライを処理するuseEffect
@@ -641,7 +631,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = React.memo(({
               
               {/* カレンダー本体 */}
               <div className={styles.monthlyGrid}>
-                {calendarData.map((week, weekIndex) => (
+                {calendarGrid.map((week, weekIndex) => (
                   <div key={`week-${weekIndex}`} className={styles.weekRow}>
                     {week.map((cell, dayIndex) => (
                       <div 
