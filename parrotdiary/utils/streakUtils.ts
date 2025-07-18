@@ -41,10 +41,14 @@ export const getCurrentJSTTime = (): string => {
  * @returns YYYY-MM-DD形式の日付文字列
  */
 export const formatDateToJST = (dateString: string): string => {
-  const date = new Date(dateString);
+  // ISO文字列から直接日付部分を抽出（タイムゾーン変換を回避）
+  // 例: "2025-07-18T17:37:24.426Z" → "2025-07-18"
+  if (dateString.includes('T')) {
+    return dateString.split('T')[0];
+  }
   
-  // データベースから取得した日時がすでにJSTの可能性を考慮
-  // まずは日時をそのまま解釈して日付部分を取得
+  // フォールバック: 既存の形式の場合
+  const date = new Date(dateString);
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
