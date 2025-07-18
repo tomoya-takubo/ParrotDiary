@@ -2,6 +2,12 @@ import { User } from "@/types/auth";
 
 const users: User[] = [];  // 開発用の仮のデータストア
 
+/**
+ * ユーザー登録
+ * @param email メールアドレス
+ * @param password パスワード
+ * @returns 登録されたユーザー
+ */
 export async function signUp(email: string, password: string): Promise<User> {
   if (users.find(u => u.email === email)) {
     throw new Error('このメールアドレスは既に登録されています');
@@ -12,6 +18,12 @@ export async function signUp(email: string, password: string): Promise<User> {
   return newUser;
 }
 
+/**
+ * ユーザーログイン
+ * @param email メールアドレス
+ * @param password パスワード
+ * @returns ログインしたユーザー
+ */
 export async function signIn(email: string, password: string): Promise<User> {
   const user = users.find(u => u.email === email && u.password === password);
   if (!user) {

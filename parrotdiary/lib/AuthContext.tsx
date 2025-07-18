@@ -4,16 +4,33 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Session, User, AuthResponse } from '@supabase/supabase-js';
 
+/**
+ * 認証コンテキストの型定義
+ */
 type AuthContextType = {
+  /** 現在のセッション */
   session: Session | null;
+  /** 現在のユーザー */
   user: User | null;
+  /** ローディング状態 */
   isLoading: boolean;
+  /** ログイン関数 */
   signIn: (email: string, password: string) => Promise<AuthResponse>;
+  /** ログアウト関数 */
   signOut: () => Promise<void>;
 };
 
+/**
+ * 認証コンテキスト
+ */
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * 認証プロバイダーコンポーネント
+ * @param props プロパティ
+ * @param props.children 子コンポーネント
+ * @returns 認証プロバイダー
+ */
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);

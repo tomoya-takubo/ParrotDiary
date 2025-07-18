@@ -1,9 +1,6 @@
-export type ParrotImage = {
-  src: string;
-  alt: string;
-};
-
-// ガチャ関連の型定義
+/**
+ * ガチャ結果の型定義
+ */
 export type GachaResult = {
   type: 'normal' | 'rare' | 'super_rare' | 'ultra_rare';
   name: string;
@@ -11,14 +8,9 @@ export type GachaResult = {
   image: string;
 };
 
-// 日記関連の型定義
-export type DiaryEntry = {
-  time: string;
-  tags: string[];
-  activities: string[];
-};
-
-// ユーザーステータスの型定義
+/**
+ * ユーザーステータスの型定義
+ */
 export type UserStatus = {
   level: number;
   currentXP: number;

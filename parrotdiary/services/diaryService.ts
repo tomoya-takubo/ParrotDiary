@@ -1,7 +1,8 @@
-// src/services/diaryService.ts
 import { supabase } from '@/lib/supabase';
 
-// 型定義
+/**
+ * 日記エントリーの型定義
+ */
 export interface DiaryEntry {
   entry_id: string;
   user_id: string;
@@ -13,10 +14,16 @@ export interface DiaryEntry {
   tags: string[];
 }
 
+/**
+ * タグと使用回数の型定義
+ */
 export interface TagWithCount {
   name: string;
   count: number;
 }
+/**
+ * 拡張日記エントリーの型定義（パロット画像付き）
+ */
 export interface ExtendedDiaryEntry extends DiaryEntry {
   parrots?: string[]; // パロットGIF画像のURL配列
 }
