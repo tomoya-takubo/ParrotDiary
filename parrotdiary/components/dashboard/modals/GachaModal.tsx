@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Gift, X } from 'lucide-react';
+import Image from 'next/image';
 import type { GachaResult } from '@/types';
 import styles from './GachaModal.module.css';
 import { AnimationState } from '@/types/diary';
@@ -124,10 +125,13 @@ const GachaModal: React.FC<GachaModalProps> = ({ isOpen, onClose, tickets = 3 })
         {/* 結果表示 - 獲得アイテム表示 */}
         {animationState === 'result' && result && (
           <div className={styles.resultState}>
-            <img 
+            <Image 
               src={result.image} 
               alt={result.name} 
+              width={200}
+              height={200}
               className={styles.resultImage}
+              priority
             />
             <h3 className={styles.resultTitle}>{result.name}</h3>
             <p className={styles.resultDescription}>{result.description}</p>

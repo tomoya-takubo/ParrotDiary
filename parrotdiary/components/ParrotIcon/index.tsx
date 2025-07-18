@@ -30,12 +30,13 @@ const ParrotIcon: React.FC<ParrotIconProps> = ({ imageUrl, name, obtained }) => 
         src={imageUrl}
         alt={`${name}の画像`}
         fill
-        unoptimized
         style={{
           objectFit: 'contain',
           opacity: obtained ? 1 : 0.3,  // obtained状態に応じて透明度を変更
         }}
         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        priority={obtained}
+        loading={obtained ? 'eager' : 'lazy'}
       />
     </div>
   );

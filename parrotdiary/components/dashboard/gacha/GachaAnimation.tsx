@@ -679,6 +679,15 @@ const GachaAnimation: React.FC<GachaAnimationProps> = React.memo(({
   }, [onClose]);
 
   /**
+   * モーダル背景クリック時の処理
+   */
+  const handleBackgroundClick = useCallback((e: React.MouseEvent) => {
+    if (e.target === e.currentTarget && (allRevealed || showingSingleResult)) {
+      handleCloseGacha();
+    }
+  }, [allRevealed, showingSingleResult, handleCloseGacha]);
+
+  /**
    * パーティクル効果のコンポーネント
    * レアリティに応じたパーティクルエフェクトを表示
    */
@@ -769,10 +778,13 @@ const GachaAnimation: React.FC<GachaAnimationProps> = React.memo(({
             {/* パロット画像 */}
             <div className={`relative w-3/4 h-3/4 rounded-full overflow-hidden bg-gradient-to-r ${rarityConfigs[result.rarityType].colors} p-1`}>
               <div className="bg-white rounded-full w-full h-full flex items-center justify-center">
-                <img 
+                <Image 
                   src={result.parrot.image_url || "/api/placeholder/64/64"} 
                   alt={result.parrot.name} 
-                  className="w-full h-full object-contain p-1" 
+                  width={64}
+                  height={64}
+                  className="w-full h-full object-contain p-1"
+                  loading="lazy"
                 />
               </div>
             </div>
@@ -810,11 +822,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = React.memo(({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center backdrop-blur-sm z-50"
-            onClick={useCallback((e) => {
-              if (e.target === e.currentTarget && (allRevealed || showingSingleResult)) {
-                handleCloseGacha();
-              }
-            }, [allRevealed, showingSingleResult, handleCloseGacha])}
+            onClick={handleBackgroundClick}
           >
             <motion.div
               initial={{ scale: 0.5, opacity: 0 }}
@@ -1018,10 +1026,13 @@ const GachaAnimation: React.FC<GachaAnimationProps> = React.memo(({
                           className={`w-48 h-48 mx-auto rounded-full flex items-center justify-center bg-gradient-to-r ${rarityConfigs[currentSingleParrot.rarityType].colors}`}
                         >
                           <div className="bg-white rounded-full p-2">
-                            <img 
+                            <Image 
                               src={currentSingleParrot.parrot.image_url || "/api/placeholder/120/120"} 
                               alt={currentSingleParrot.parrot.name || "Rare Parrot"} 
-                              className="w-32 h-32" 
+                              width={120}
+                              height={120}
+                              className="w-32 h-32 object-contain"
+                              priority
                             />
                           </div>
                         </motion.div>
@@ -1156,10 +1167,13 @@ const GachaAnimation: React.FC<GachaAnimationProps> = React.memo(({
                       >
                         <div className={`w-40 h-40 rounded-full bg-gradient-to-r ${rarityConfigs[detailParrot.rarityType].colors} p-2 mx-auto`}>
                           <div className="bg-white rounded-full w-full h-full flex items-center justify-center">
-                            <img 
+                            <Image 
                               src={detailParrot.parrot.image_url || "/api/placeholder/120/120"} 
                               alt={detailParrot.parrot.name} 
-                              className="w-32 h-32 object-contain" 
+                              width={120}
+                              height={120}
+                              className="w-32 h-32 object-contain"
+                              loading="lazy"
                             />
                           </div>
                         </div>
@@ -1284,5 +1298,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = React.memo(({
       </AnimatePresence>
   );
 });
+
+GachaAnimation.displayName = 'GachaAnimation';
 
 export default GachaAnimation;

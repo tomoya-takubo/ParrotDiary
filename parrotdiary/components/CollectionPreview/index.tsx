@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Search, LogIn, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import Image from 'next/image';
 import ParrotIcon from '../ParrotIcon';
 import styles from './styles.module.css';
 import { useAuth } from '@/lib/AuthContext';
@@ -1305,14 +1306,13 @@ const CollectionPreview = () => {
         <div className={styles.loadingSpinnerWrapper}>
           <div className={styles.loadingSpinner}></div>
           <div className={styles.loadingIconContainer}>
-            <img 
+            <Image 
               src="/gif/parrots/60fpsparrot.gif" 
               alt="Parrot Icon" 
+              width={64}
+              height={64}
               className={styles.loadingIcon}
-              onError={(e) => {
-                // 画像が404の場合は何も表示しない
-                e.currentTarget.style.display = 'none';
-              }}
+              unoptimized
             />
           </div>
         </div>
