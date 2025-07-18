@@ -1,6 +1,5 @@
 'use client';
 
-// import { Card, CardContent } from './ui/Card';
 import styles from '../styles/Home.module.css';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { validateEmailFormat, validatePasswordStrength } from '../lib/validation';
