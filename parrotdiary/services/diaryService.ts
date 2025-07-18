@@ -28,7 +28,9 @@ export interface ExtendedDiaryEntry extends DiaryEntry {
   parrots?: string[]; // パロットGIF画像のURL配列
 }
 
-// Supabaseから返ってくるデータの型定義
+/**
+ * Supabaseから返ってくる日記エントリーデータの型定義
+ */
 interface DiaryEntryData {
   entry_id: string;
   user_id: string;
@@ -39,7 +41,9 @@ interface DiaryEntryData {
   line3?: string;
 }
 
-// タグの使用履歴から取得されるデータの型定義
+/**
+ * タグの使用履歴から取得されるデータの型定義
+ */
 interface TagUsageData {
   entry_id: string;
   tag_id: string;
@@ -48,7 +52,9 @@ interface TagUsageData {
   };
 }
 
-// タグ情報の型定義
+/**
+ * タグ情報の型定義
+ */
 interface TagData {
   tag_id: string;
   name?: string;
