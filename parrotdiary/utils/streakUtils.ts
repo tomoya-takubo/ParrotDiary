@@ -16,7 +16,7 @@ export interface StreakUpdateResult {
 }
 
 /**
- * 継続記録データの型定義
+ * Supabaseから取得する継続記録データの型定義
  */
 interface StreakData {
   login_streak_count: number;
