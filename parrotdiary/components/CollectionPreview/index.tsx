@@ -1158,7 +1158,14 @@ const CollectionPreview = () => {
     }, [parrot.parrot_id]);
 
     return (
-      <div className={styles.modalOverlay} onClick={onClose}>
+      <div 
+        className={styles.modalOverlay} 
+        onClick={onClose}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="parrot-modal-title"
+        aria-describedby="parrot-modal-description"
+      >
         <div className={styles.modalNavigationWrapper}>
           {/* 左ナビゲーションボタン */}
           <button 
@@ -1168,6 +1175,7 @@ const CollectionPreview = () => {
               navigateToPreviousParrot();
             }}
             aria-label="前のパロット"
+            type="button"
           >
             <ChevronLeft size={24} />
           </button>
@@ -1176,8 +1184,16 @@ const CollectionPreview = () => {
           <div 
             className={`${styles.modalContent} ${getModalClass()}`} 
             onClick={e => e.stopPropagation()}
+            role="document"
           >
-            <button className={styles.closeButton} onClick={onClose}>×</button>
+            <button 
+              className={styles.closeButton} 
+              onClick={onClose}
+              aria-label="パロット詳細を閉じる"
+              type="button"
+            >
+              ×
+            </button>
             
             <div className={styles.modalHeader}>
               <div className={styles.modalIconWrapper}>
@@ -1190,7 +1206,12 @@ const CollectionPreview = () => {
               <div className={styles.modalInfo}>
                 {/* パロットナンバーを追加（表示順を優先） */}
                 <div className={styles.parrotNumber}>No.{parrot.display_order || parrotIndex + 1}</div>
-                <h2 className={styles.modalTitle}>{parrot.name}</h2>
+                <h2 
+                  id="parrot-modal-title"
+                  className={styles.modalTitle}
+                >
+                  {parrot.name}
+                </h2>
                 <span 
                   className={`${styles.rarityBadge} ${styles[`rarityBadge${parrot.rarity.abbreviation}`]}`}
                 >
@@ -1199,7 +1220,12 @@ const CollectionPreview = () => {
               </div>
             </div>
             <div className={styles.modalBody}>
-              <p className={styles.description}>{parrot.description}</p>
+              <p 
+                id="parrot-modal-description"
+                className={styles.description}
+              >
+                {parrot.description}
+              </p>
               <div className={styles.detailsSection}>
                 <h3>獲得情報</h3>
                 {obtainInfo ? (
@@ -1291,6 +1317,7 @@ const CollectionPreview = () => {
               navigateToNextParrot();
             }}
             aria-label="次のパロット"
+            type="button"
           >
             <ChevronRight size={24} />
           </button>

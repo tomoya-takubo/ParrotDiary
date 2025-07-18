@@ -823,6 +823,10 @@ const GachaAnimation: React.FC<GachaAnimationProps> = React.memo(({
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center backdrop-blur-sm z-50"
             onClick={handleBackgroundClick}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="gacha-modal-title"
+            aria-describedby="gacha-modal-description"
           >
             <motion.div
               initial={{ scale: 0.5, opacity: 0 }}
@@ -832,14 +836,22 @@ const GachaAnimation: React.FC<GachaAnimationProps> = React.memo(({
               style={{
                 background: "linear-gradient(135deg, #e0f2fe, #f0f9ff)", // 淡い青系の背景
               }}
+              role="document"
             >
               {/* エラー表示 */}
               {error ? (
                 <div className="py-8 text-center">
-                  <div className="text-red-500 text-xl mb-4">⚠️ {error}</div>
+                  <div 
+                    className="text-red-500 text-xl mb-4"
+                    role="alert"
+                    aria-live="assertive"
+                  >
+                    ⚠️ {error}
+                  </div>
                   <button
                     onClick={handleCloseGacha}
                     className="px-8 py-3 bg-gradient-to-r from-gray-400 to-gray-500 text-white rounded-lg hover:opacity-90 shadow-lg"
+                    aria-label="ガチャモーダルを閉じる"
                   >
                     閉じる
                   </button>
@@ -853,10 +865,20 @@ const GachaAnimation: React.FC<GachaAnimationProps> = React.memo(({
                   }}></div>
                   
                   <div className="relative z-10">
-                    <h3 className="text-xl font-bold mb-6 text-gray-800">ガチャを回す</h3>
+                    <h3 
+                      id="gacha-modal-title"
+                      className="text-xl font-bold mb-6 text-gray-800"
+                    >
+                      ガチャを回す
+                    </h3>
                     
                     <div className="mb-6">
-                      <p className="text-gray-700 mb-2">現在のチケット: <span className="font-bold text-blue-600">{tickets}枚</span></p>
+                      <p 
+                        id="gacha-modal-description"
+                        className="text-gray-700 mb-2"
+                      >
+                        現在のチケット: <span className="font-bold text-blue-600">{tickets}枚</span>
+                      </p>
                     </div>
                     
                     {/* クイックアクセスボタン */}
@@ -875,6 +897,8 @@ const GachaAnimation: React.FC<GachaAnimationProps> = React.memo(({
                           className={`py-3 bg-gradient-to-r ${from} ${to} text-white rounded-lg shadow-md ${
                             tickets < count ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'
                           }`}
+                          aria-label={`${count}連ガチャを実行 (${count}枚必要)`}
+                          aria-disabled={tickets < count}
                         >
                           {count}連ガチャ
                         </button>

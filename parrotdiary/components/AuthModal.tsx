@@ -49,6 +49,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   const emailInputRef = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
+  const modalContentRef = useRef<HTMLDivElement>(null);
 
   /**
    * メールアドレスのバリデーション
@@ -552,9 +553,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   // フォーカストラップの実装
   useEffect(() => {
     const handleTabKey = (e: KeyboardEvent) => {
-      if (e.key === 'Tab' && modalRef.current) {
-        const focusableElements = modalRef.current.querySelectorAll(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      if (e.key === 'Tab' && modalContentRef.current) {
+        const focusableElements = modalContentRef.current.querySelectorAll(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
         );
         const firstElement = focusableElements[0] as HTMLElement;
         const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
@@ -622,9 +623,19 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         aria-labelledby="modalTitle"
       >
         <div className={styles.modalCard}>
-          <div className={styles.modalContent}>
+          <div 
+            className={styles.modalContent}
+            ref={modalContentRef}
+            role="document"
+          >
             <div className={styles.closeButton}>
-              <button onClick={handleClose}>✕</button>
+              <button 
+                onClick={handleClose}
+                aria-label="モーダルを閉じる"
+                type="button"
+              >
+                ✕
+              </button>
             </div>
 
             {modalMode === 'reset' ? (
@@ -697,35 +708,53 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   {modalMode === 'signup' ? 'アカウント作成' : 'ログイン'}
                 </h2>
                 {/* タブ切り替え */}
-                <div className={styles.tabs}>
+                <div className={styles.tabs} role="tablist" aria-label="認証方法を選択">
                   <button
                     className={`${styles.tab} ${modalMode === 'signin' ? styles.activeTab : ''}`}
                     onClick={() => handleModeChange('signin')}
+                    role="tab"
+                    aria-selected={modalMode === 'signin'}
+                    aria-controls="auth-panel"
+                    type="button"
                   >
                     ログイン
                   </button>
                   <button
                     className={`${styles.tab} ${modalMode === 'signup' ? styles.activeTab : ''}`}
                     onClick={() => handleModeChange('signup')}
+                    role="tab"
+                    aria-selected={modalMode === 'signup'}
+                    aria-controls="auth-panel"
+                    type="button"
                   >
                     アカウント作成
                   </button>
                 </div>
                 {formFeedback && (
-                  <div className={`${styles.feedbackWrapper} ${formFeedback.type === 'success' ?
-                    styles.feedbackSuccess :
-                    styles.feedbackError
-                    }`}>
+                  <div 
+                    className={`${styles.feedbackWrapper} ${formFeedback.type === 'success' ?
+                      styles.feedbackSuccess :
+                      styles.feedbackError
+                      }`}
+                    role="alert"
+                    aria-live="polite"
+                  >
                     <div className={styles.feedbackContent}>
                       {formFeedback.type === 'success' ? '✓ ' : '⚠ '}
                       {formFeedback.message}
                     </div>
                   </div>
                 )}
-                <form className={styles.form} onSubmit={handleAuthSubmit}>
+                <form 
+                  className={styles.form} 
+                  onSubmit={handleAuthSubmit}
+                  id="auth-panel"
+                  role="tabpanel"
+                  aria-labelledby="modalTitle"
+                >
                   {/* メールアドレス入力部 */}
                   <div className={styles.formGroup}>
-                    <label className={styles.label}>メールアドレス</label>
+                    <label className={styles.label} htmlFor="email">メールアドレス</label>
                     <input
                       ref={emailInputRef}
                       id="email"
@@ -751,9 +780,11 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   </div>
                   {/* パスワード入力部 - 目のアイコンに変更 */}
                   <div className={styles.formGroup}>
-                    <label className={styles.label}>パスワード</label>
+                    <label className={styles.label} htmlFor="password">パスワード</label>
                     <div className={styles.passwordInput}>
                       <input
+                        id="password"
+                        name="password"
                         type={showPassword ? "text" : "password"}
                         className={`${styles.input} ${passwordError ? styles.inputError : ''}`}
                         value={password}
@@ -761,46 +792,50 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                           setPassword(e.target.value);
                           validatePassword(e.target.value);
                         }}
+                        aria-required="true"
+                        aria-invalid={!!passwordError}
+                        aria-describedby={passwordError ? "passwordError" : undefined}
                         required
                       />
-                      <div 
+                      <button
+                        type="button"
                         className={styles.passwordIcon} 
                         onClick={() => setShowPassword(!showPassword)}
-                        onTouchStart={() => {}} // タッチ操作の明示的サポート
-                        role="button"
-                        tabIndex={0}
                         aria-label={showPassword ? "パスワードを隠す" : "パスワードを表示"}
-                        style={{ padding: '8px' }} // タップ領域を広げる
+                        aria-pressed={showPassword}
                       >
                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </div>
+                      </button>
                     </div>
                     {passwordError && (
-                      <p className={styles.errorMessage}>{passwordError}</p>
+                      <p id="passwordError" className={styles.errorMessage}>{passwordError}</p>
                     )}
                   </div>
                   {modalMode === 'signup' && (
                     <div className={styles.formGroup}>
-                      <label className={styles.label}>パスワード（確認）</label>
+                      <label className={styles.label} htmlFor="confirmPassword">パスワード（確認）</label>
                       <div className={styles.passwordInput}>
                         <input
+                          id="confirmPassword"
+                          name="confirmPassword"
                           type={showPassword ? "text" : "password"}
                           className={styles.input}
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
+                          aria-required="true"
+                          aria-invalid={password !== confirmPassword && confirmPassword !== ''}
+                          aria-describedby="confirmPasswordHelp"
                           required
                         />
-                        <div 
+                        <button
+                          type="button"
                           className={styles.passwordIcon} 
                           onClick={() => setShowPassword(!showPassword)}
-                          onTouchStart={() => {}} // タッチ操作の明示的サポート
-                          role="button"
-                          tabIndex={0}
                           aria-label={showPassword ? "パスワードを隠す" : "パスワードを表示"}
-                          style={{ padding: '8px' }} // タップ領域を広げる
+                          aria-pressed={showPassword}
                         >
                           {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                        </div>
+                        </button>
                       </div>
                     </div>
                   )}
