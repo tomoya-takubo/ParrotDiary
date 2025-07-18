@@ -89,7 +89,7 @@ function getFileNameFromUrl(url: string): string {
  * パロット選択コンポーネント
  * ユーザーが所有するパロットを表示し、選択できるようにする
  */
-export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
+export const ParrotSelector: React.FC<ParrotSelectorProps> = React.memo(({
   userId,
   selectedParrots,
   onParrotsChange,
@@ -333,24 +333,24 @@ export const ParrotSelector: React.FC<ParrotSelectorProps> = ({
   /**
    * +ボタンがクリックされたときに呼ばれる関数
    */
-  const handleAddButtonClick = () => {
+  const handleAddButtonClick = useCallback(() => {
     setShowParrotDropdown(!showParrotDropdown);
-  };
+  }, [showParrotDropdown]);
 
   /**
    * 選択されたパロットを削除する関数
    */
-  const removeParrot = (parrotImageUrl: string) => {
+  const removeParrot = useCallback((parrotImageUrl: string) => {
     onParrotsChange(selectedParrots.filter(p => p !== parrotImageUrl));
-  };
+  }, [selectedParrots, onParrotsChange]);
 
   /**
    * タグをクリックした時の処理
    */
-  const handleTagClick = (tagName: string) => {
+  const handleTagClick = useCallback((tagName: string) => {
     setSelectedTag(selectedTag === tagName ? null : tagName);
     setCurrentPage(0); // ページをリセット
-  };
+  }, [selectedTag]);
 
   /**
    * パロットをフィルタリングする処理
@@ -711,7 +711,7 @@ export const saveEntryParrots = async (
     console.error('日記パロット保存エラー:', error);
     return false;
   }
-};
+});
 
 /**
  * 日記エントリー読み込み時にパロット情報も取得する関数

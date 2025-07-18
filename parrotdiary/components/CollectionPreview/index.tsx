@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Search, LogIn, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import ParrotIcon from '../ParrotIcon';
 import styles from './styles.module.css';
@@ -91,7 +91,7 @@ type TagUsageCount = {
  * ユーザーの所持状況を含むパロット図鑑機能を提供
  * @returns パロットコレクション表示コンポーネント
  */
-export default function CollectionPreview() {
+const CollectionPreview = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [parrots, setParrots] = useState<Parrot[]>([]);
@@ -346,7 +346,7 @@ export default function CollectionPreview() {
    * パロットカードクリック時の処理
    * @param parrot クリックされたパロット
    */
-  const handleParrotClick = (parrot: Parrot) => {
+  const handleParrotClick = useCallback((parrot: Parrot) => {
     // ログイン済みユーザーの場合のみ、獲得済みパロットの詳細を表示
     if (isAuthenticated && parrot.obtained) {
       setSelectedParrot(parrot);
@@ -357,21 +357,21 @@ export default function CollectionPreview() {
       // 未ログイン時はログインを促す
       alert('ログインすると獲得したパロットの詳細を確認できます');
     }
-  };
+  }, [isAuthenticated]);
 
   /**
    * ログインボタンクリック時の処理
    */
-  const handleLogin = () => {
+  const handleLogin = useCallback(() => {
     // ログインページへリダイレクト
     window.location.href = '/login';
-  };
+  }, []);
   
   /**
    * ページネーション制御関数
    * @param pageNumber 移動先のページ番号
    */
-  const handlePageChange = (pageNumber: number) => {
+  const handlePageChange = useCallback((pageNumber: number) => {
     if (pageNumber < 1 || pageNumber > totalPages) return;
     
     // まずコンテンツにローディング状態を適用
@@ -389,7 +389,7 @@ export default function CollectionPreview() {
         gridElement.classList.remove(styles.loading);
       }
     }, 200);
-  };
+  }, [totalPages]);
 
   /**
    * 画面サイズに応じてitemsPerPageを調整する関数
@@ -1585,4 +1585,6 @@ export default function CollectionPreview() {
       )}
     </div>
   );
-}
+};
+
+export default React.memo(CollectionPreview);

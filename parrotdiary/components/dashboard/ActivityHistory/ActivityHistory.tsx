@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import styles from './ActivityHistory.module.css';
 import { createClient } from '@supabase/supabase-js';
@@ -66,7 +66,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
  * @param props.refreshKey データ再読み込み用のキー
  * @returns 活動履歴カレンダーコンポーネント
  */
-const ActivityHistory: React.FC<ActivityHistoryProps> = ({ 
+const ActivityHistory: React.FC<ActivityHistoryProps> = React.memo(({ 
   onCellClick, 
   width = '100%',
   isGachaOpen = false,
@@ -113,9 +113,9 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
   /**
    * データを再取得するトリガー関数
    */
-  const refreshData = () => {
+  const refreshData = useCallback(() => {
     setRefreshTrigger(prev => prev + 1);
-  };
+  }, []);
 
   /**
    * 日付文字列の処理を改善する関数
@@ -188,7 +188,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
    * DBデータをモーダル表示用データに変換
    * 日記エントリーからモーダル表示用のフォーマットに変換し、タグとパロット情報も取得する
    */
-  const convertToModalEntry = async (dbEntry: DBDiaryEntry): Promise<EditDiaryEntryType> => {
+  const convertToModalEntry = useCallback(async (dbEntry: DBDiaryEntry): Promise<EditDiaryEntryType> => {
     const recordedTime = new Date(dbEntry.recorded_at);
     const hours = String(recordedTime.getHours()).padStart(2, '0');
     const minutes = String(recordedTime.getMinutes()).padStart(2, '0');
@@ -242,18 +242,18 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
       entry_id: dbEntry.entry_id,
       parrots // パロット情報を追加
     };
-  };
+  }, [user?.id]);
 
   /**
    * 月を変更する関数
    */
-  const changeMonth = (increment: number) => {
+  const changeMonth = useCallback((increment: number) => {
     setCurrentDate(prevDate => {
       const newDate = new Date(prevDate);
       newDate.setMonth(newDate.getMonth() + increment);
       return newDate;
     });
-  };
+  }, []);
 
   /**
    * 認証状態とトリガーに基づいてデータを取得するuseEffect
@@ -487,7 +487,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
    * カレンダーのセルがクリックされたときの処理
    * @param cell クリックされたセルのデータ
    */
-  const handleCellClick = async (cell: CellData) => {
+  const handleCellClick = useCallback(async (cell: CellData) => {
     if (isGachaOpen) return;
   
     setSelectedDate(cell.date);
@@ -522,19 +522,19 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
         setShowModal(true);
       }
     }
-  };
+  }, [user?.id, onCellClick, isGachaOpen, entriesByDate]);
 
   /**
    * モーダルを閉じるハンドラー
    */
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setShowModal(false);
-  };
+  }, []);
 
   /**
    * エントリー編集ハンドラー
    */
-  const handleEditEntry = (entry: EditDiaryEntryType) => {
+  const handleEditEntry = useCallback((entry: EditDiaryEntryType) => {
     // entry_id が string 型の場合は number に変換
     const convertedEntry = {
       ...entry,
@@ -546,30 +546,30 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
     setEditingEntry(convertedEntry);
     setIsEditModalOpen(true);
     setShowModal(false); // DiaryModalを閉じる
-  };
+  }, []);
   
   /**
    * 編集モーダルを閉じるハンドラー
    */
-  const handleCloseEditModal = () => {
+  const handleCloseEditModal = useCallback(() => {
     setIsEditModalOpen(false);
     setEditingEntry(null);
-  };
+  }, []);
 
   /**
    * 編集完了後のハンドラー
    */
-  const handleEditComplete = () => {
+  const handleEditComplete = useCallback(() => {
     setIsEditModalOpen(false);
     setEditingEntry(null);
     refreshData(); // 自分自身のカレンダー再取得
     onSave?.(); // page.tsx に通知して refreshKey を増やす
-  };
+  }, [refreshData, onSave]);
 
   /**
    * 日記モーダルの日付変更ハンドラー
    */
-  const handleDateChange = async (newDisplayDate: string) => {
+  const handleDateChange = useCallback(async (newDisplayDate: string) => {
     console.log('日付変更:', newDisplayDate);
     const newDateString = parseDisplayDate(newDisplayDate);
     
@@ -593,7 +593,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
         setModalEntries([]);
       }
     }
-  };
+  }, [entriesByDate, convertToModalEntry]);
 
   return (
     <div className={`${styles.container} ${isGachaOpen ? styles.gachaOpen : ''}`} style={{ width }} ref={containerRef}>
@@ -714,6 +714,9 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({
       )}
     </div>
   );
-};
+});
+
+// 表示名をセット
+ActivityHistory.displayName = 'ActivityHistory';
 
 export default ActivityHistory;

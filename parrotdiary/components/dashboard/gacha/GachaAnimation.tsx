@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
@@ -167,7 +167,7 @@ const rarityConfigs: Record<RarityType, RarityConfig> = {
  * ガチャアニメーションコンポーネント
  * Supabaseと連携してパロットを抽選し、ユーザーのコレクションに追加します
  */
-const GachaAnimation: React.FC<GachaAnimationProps> = ({
+const GachaAnimation: React.FC<GachaAnimationProps> = React.memo(({
   isOpen,
   startGacha,
   onClose,
@@ -666,7 +666,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
    * ガチャを閉じる処理
    * 状態をリセットして閉じる
    */
-  const handleCloseGacha = () => {
+  const handleCloseGacha = useCallback(() => {
     sessionStorage.removeItem('gachaState'); // セッションストレージをクリア
     setShowResult(false);
     setGachaResults([]);
@@ -676,7 +676,7 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
     setShowingSingleResult(false);
     setCurrentSingleParrot(null);
     onClose();
-  };
+  }, [onClose]);
 
   /**
    * パーティクル効果のコンポーネント
@@ -810,11 +810,11 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center backdrop-blur-sm z-50"
-            onClick={(e) => {
+            onClick={useCallback((e) => {
               if (e.target === e.currentTarget && (allRevealed || showingSingleResult)) {
                 handleCloseGacha();
               }
-            }}
+            }, [allRevealed, showingSingleResult, handleCloseGacha])}
           >
             <motion.div
               initial={{ scale: 0.5, opacity: 0 }}
@@ -1283,6 +1283,6 @@ const GachaAnimation: React.FC<GachaAnimationProps> = ({
         )}
       </AnimatePresence>
   );
-};
+});
 
 export default GachaAnimation;
