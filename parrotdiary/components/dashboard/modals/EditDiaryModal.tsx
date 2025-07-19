@@ -51,8 +51,7 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
 
   // フォーカス管理用のref
   const modalRef = useRef<HTMLDivElement>(null);
-  const firstInputRef = useRef<HTMLTextAreaElement>(null);
-  const lastInteractiveElementRef = useRef<HTMLButtonElement>(null);
+  const firstInputRef = useRef<HTMLInputElement>(null);
   const [allTags, setAllTags] = useState<TagType[]>([]);
   
   // パロット関連の状態
@@ -77,7 +76,6 @@ const EditDiaryModal: React.FC<EditDiaryModalProps> = ({
     newLevel: null
   });
 
-  const line1Ref = useRef<HTMLInputElement>(null);
   const line2Ref = useRef<HTMLInputElement>(null);
   const line3Ref = useRef<HTMLInputElement>(null);
   const tagInputRef = useRef<HTMLInputElement>(null);
