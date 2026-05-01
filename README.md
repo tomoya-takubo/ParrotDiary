@@ -2,7 +2,7 @@
 
 感情記録とガチャ要素で継続習慣を促進するWebアプリケーション  
 
-デモサイトはこちら（https://parrot-diary.vercel.app/）  
+デモサイトはこちら（https://parrot-diary.vercel.app）  
 （お試し用アカウント: `test@example.com` / パスワード: `Testuser01`）  
 
 <p align="center">
